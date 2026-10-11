@@ -1,5 +1,6 @@
-"use client";
+import { redirect } from "next/navigation";
 
+<<<<<<< HEAD
 import React, { useState } from "react";
 import ModesyHeader from "@/components/layout/header/ModesyHeader";
 import ModesyFooter from "@/components/layout/footer/ModesyFooter";
@@ -138,3 +139,8 @@ export default function Home() {
     </div>
   );
 }
+=======
+export default function RootPage() {
+  redirect("/guest");
+}
+>>>>>>> c655ecfdb4356cc568d1e0b5019776b3e7d94317

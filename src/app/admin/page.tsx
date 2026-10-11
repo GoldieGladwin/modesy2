@@ -1,1 +1,6 @@
-export default function Page() { return <div>Admin Page</div>; }
+import React from "react";
+import MarketplaceHome from "@/components/home/MarketplaceHome";
+
+export default function AdminHomePage() {
+  return <MarketplaceHome />;
+}

@@ -2,8 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+<<<<<<< HEAD
 import ModesyHeader from "@/components/layout/header/ModesyHeader";
 import ModesyFooter from "@/components/layout/footer/ModesyFooter";
+=======
+import ModesyHeader from "@/components/layout/guest/ModesyHeader";
+import ModesyFooter from "@/components/layout/guest/ModesyFooter";
+>>>>>>> c655ecfdb4356cc568d1e0b5019776b3e7d94317
 import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 import LoginModal from "@/components/auth/LoginModal";
 

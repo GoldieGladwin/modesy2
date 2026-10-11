@@ -1,0 +1,54 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+<<<<<<< HEAD:src/app/register/page.tsx
+import ModesyHeader from "@/components/layout/header/ModesyHeader";
+import ModesyFooter from "@/components/layout/footer/ModesyFooter";
+=======
+>>>>>>> c655ecfdb4356cc568d1e0b5019776b3e7d94317:src/app/guest/register/page.tsx
+import RegisterForm from "@/components/auth/RegisterForm";
+import LoginModal from "@/components/auth/LoginModal";
+import { useRouter } from "next/navigation";
+
+export default function RegisterPage() {
+  const router = useRouter();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
+
+  return (
+    <div className="w-full">
+      {/* Breadcrumb */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-2 w-full">
+        <nav className="text-xs text-gray-500 flex items-center gap-1.5">
+          <Link href="/guest" className="hover:text-[#00a99d] transition">
+            Home
+          </Link>
+          <span>/</span>
+          <span className="text-gray-800 font-medium">Register</span>
+        </nav>
+      </div>
+
+      {/* Main Register Form */}
+      <main className="max-w-md w-full mx-auto px-4 py-8 sm:py-12 flex-1 flex flex-col justify-center">
+        <RegisterForm
+          onOpenLoginModal={() => router.push("/guest/login")}
+          onSuccess={(user) => {
+            setCurrentUser(user);
+            setTimeout(() => router.push("/guest"), 1000);
+          }}
+        />
+      </main>
+
+      {/* Modal khusus Login */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={(user) => {
+          setCurrentUser(user);
+          setTimeout(() => router.push("/guest"), 1000);
+        }}
+      />
+    </div>
+  );
+}

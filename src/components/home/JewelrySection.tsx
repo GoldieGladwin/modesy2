@@ -1,24 +1,144 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
 import { jewelryProductsData } from "@/data/products";
 
 export default function JewelrySection() {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const baseCount = jewelryProductsData.length;
+  // Duplicate 3 sets for seamless infinite loop
+  const extendedProducts = [
+    ...jewelryProductsData,
+    ...jewelryProductsData,
+    ...jewelryProductsData,
+  ];
 
-  const scroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = direction === "left" ? -280 : 280;
-      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+  const [currentIndex, setCurrentIndex] = useState(baseCount);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [isMoving, setIsMoving] = useState(false);
+  const [itemsPerView, setItemsPerView] = useState(6);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startXRef = useRef<number | null>(null);
+
+  // Responsive itemsPerView
+  useEffect(() => {
+    const updateItemsPerView = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setItemsPerView(2);
+      } else if (width < 768) {
+        setItemsPerView(3);
+      } else if (width < 1024) {
+        setItemsPerView(4);
+      } else {
+        setItemsPerView(6);
+      }
+    };
+
+    updateItemsPerView();
+    window.addEventListener("resize", updateItemsPerView);
+    return () => window.removeEventListener("resize", updateItemsPerView);
+  }, []);
+
+  // Slide navigation: exactly 1 card per click
+  const handleNext = () => {
+    if (isMoving) return;
+    setIsMoving(true);
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => prev + 1);
+  };
+
+  const handlePrev = () => {
+    if (isMoving) return;
+    setIsMoving(true);
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => prev - 1);
+  };
+
+  // Seamless reset for unlimited scrolling
+  const handleTransitionEnd = () => {
+    setIsMoving(false);
+    if (currentIndex >= baseCount * 2) {
+      setIsTransitioning(false);
+      setCurrentIndex((prev) => prev - baseCount);
+    } else if (currentIndex < baseCount) {
+      setIsTransitioning(false);
+      setCurrentIndex((prev) => prev + baseCount);
     }
   };
 
+  useEffect(() => {
+    if (!isTransitioning) {
+      const timer = setTimeout(() => {
+        setIsTransitioning(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isTransitioning]);
+
+  // Drag & Swipe navigation
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    startXRef.current = e.clientX;
+    setDragOffset(0);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || startXRef.current === null) return;
+    setDragOffset(e.clientX - startXRef.current);
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    if (dragOffset > 40) {
+      handlePrev();
+    } else if (dragOffset < -40) {
+      handleNext();
+    }
+    setDragOffset(0);
+    startXRef.current = null;
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      setDragOffset(0);
+      startXRef.current = null;
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    startXRef.current = e.touches[0].clientX;
+    setDragOffset(0);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || startXRef.current === null) return;
+    setDragOffset(e.touches[0].clientX - startXRef.current);
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    if (dragOffset > 40) {
+      handlePrev();
+    } else if (dragOffset < -40) {
+      handleNext();
+    }
+    setDragOffset(0);
+    startXRef.current = null;
+  };
+
+  const itemWidthPercentage = 100 / itemsPerView;
+
   return (
     <section className="w-full my-6 font-sans">
-      {/* Section Header with Clickable Title and View All Link */}
+      {/* Section Header */}
       <div className="flex items-center justify-between mb-3.5">
         <Link href="/products/jewelry-accessories" className="group/title inline-block">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900 group-hover/title:text-[#00a99d] tracking-tight transition-colors">
@@ -33,38 +153,60 @@ export default function JewelrySection() {
         </Link>
       </div>
 
-      {/* Product Carousel Container */}
-      <div className="relative group">
+      <div className="relative group select-none">
         {/* Navigation Arrow Left */}
         <button
-          onClick={() => scroll("left")}
-          className="absolute -left-3.5 top-[35%] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/95 border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-white hover:scale-105 transition cursor-pointer"
-          aria-label="Previous products"
+          type="button"
+          onClick={handlePrev}
+          className="absolute -left-3.5 top-[38%] -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-[#00a99d] hover:bg-white hover:scale-105 active:scale-95 transition cursor-pointer"
+          aria-label="Previous product"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        {/* Horizontal Scroll Area */}
+        {/* Viewport & Sliding Track */}
         <div
-          ref={scrollContainerRef}
-          className="flex gap-3.5 overflow-x-auto scroll-smooth pb-2 no-scrollbar"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          className={`overflow-hidden w-full py-1 ${
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          }`}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-          {jewelryProductsData.map((product) => (
-            <div
-              key={product.id}
-              className="flex-shrink-0 w-[180px] sm:w-[195px] md:w-[200px] lg:w-[calc((100%-70px)/6)]"
-            >
-              <ProductCard product={product} />
-            </div>
-          ))}
+          <div
+            className="flex will-change-transform"
+            style={{
+              transform: `translateX(calc(-${currentIndex * itemWidthPercentage}% + ${dragOffset}px))`,
+              transition: isDragging
+                ? "none"
+                : isTransitioning
+                ? "transform 500ms cubic-bezier(0.25, 1, 0.5, 1)"
+                : "none",
+            }}
+            onTransitionEnd={handleTransitionEnd}
+          >
+            {extendedProducts.map((product, idx) => (
+              <div
+                key={`${product.id}-${idx}`}
+                className="shrink-0 px-1.5"
+                style={{ width: `${itemWidthPercentage}%` }}
+              >
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Navigation Arrow Right */}
         <button
-          onClick={() => scroll("right")}
-          className="absolute -right-3.5 top-[35%] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/95 border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-white hover:scale-105 transition cursor-pointer"
-          aria-label="Next products"
+          type="button"
+          onClick={handleNext}
+          className="absolute -right-3.5 top-[38%] -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-[#00a99d] hover:bg-white hover:scale-105 active:scale-95 transition cursor-pointer"
+          aria-label="Next product"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
