@@ -153,7 +153,6 @@ export default function JewelrySection() {
         </Link>
       </div>
 
-      {/* Product Carousel Container */}
       <div className="relative group select-none">
         {/* Navigation Arrow Left */}
         <button

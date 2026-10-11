@@ -89,7 +89,7 @@ export default function BlogListingPage() {
                 <div>
                   {/* Title */}
                   <Link href={`/blog/${post.categorySlug}/${post.slug}`}>
-                    <h2 className="text-base font-bold text-gray-900 line-clamp-2 hover:text-[#1963d8] leading-snug transition-colors">
+                    <h2 className="text-base font-bold text-gray-900 line-clamp-2 hover:text-[#1963d8] leading-snug transition-colors h-[3rem] overflow-hidden">
                       {post.title}
                     </h2>
                   </Link>
@@ -111,7 +111,7 @@ export default function BlogListingPage() {
                   </div>
 
                   {/* Snippet */}
-                  <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed h-[2.5rem] overflow-hidden">
                     {post.description}
                   </p>
                 </div>
