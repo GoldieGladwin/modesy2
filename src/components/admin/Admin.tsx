@@ -1,33 +1,27 @@
-/**
- * Fitur: Orders, Brands, Payments, Email Blacklist,
- * Reviews, Newsletter, dan Categories.
- *
- * INTEGRATION GUIDE:
- * 1. Import HaidarAdmin ke entry point admin utama.
- * 2. Gunakan component ini sesuai sistem routing proyek.
- * 3. Jangan menyalin seluruh kode ke admin.ts.
- * 4. Pastikan import dan tipe data tetap mengarah
- *    ke folder haidar.
- *
- * TODO: Integrasi dilakukan bersama tim.
- */
 'use client';
 
 import React, { useState } from 'react';
-import HaidarOrders from './HaidarOrders';
-import HaidarBrands from './HaidarBrands';
-import HaidarPayments from './HaidarPayments';
-import HaidarEmailBlacklist from './HaidarEmailBlacklist';
-import HaidarReviews from './HaidarReviews';
-import HaidarNewsletter from './HaidarNewsletter';
-import HaidarCategories from './HaidarCategories';
+import Orders from './orders/Orders';
+import Brands from './brands/Brands';
+import Payments from './payments/Payments';
+import EmailBlacklist from './email-blacklist/EmailBlacklist';
+import Reviews from './reviews/Reviews';
+import Newsletter from './newsletter/Newsletter';
+import Categories from './categories/Categories';
 
-type TabType = 'orders' | 'brands' | 'payments' | 'blacklist' | 'reviews' | 'newsletter' | 'categories';
+type TabType =
+  | 'orders'
+  | 'brands'
+  | 'payments'
+  | 'blacklist'
+  | 'reviews'
+  | 'newsletter'
+  | 'categories';
 
-export default function HaidarAdmin() {
+export default function Admin() {
   const [activeTab, setActiveTab] = useState<TabType>('orders');
 
-  const tabs: { id: TabType, label: string }[] = [
+  const tabs: { id: TabType; label: string }[] = [
     { id: 'orders', label: 'Orders' },
     { id: 'brands', label: 'Brands' },
     { id: 'categories', label: 'Categories' },
@@ -39,14 +33,22 @@ export default function HaidarAdmin() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'orders': return <HaidarOrders />;
-      case 'brands': return <HaidarBrands />;
-      case 'payments': return <HaidarPayments />;
-      case 'blacklist': return <HaidarEmailBlacklist />;
-      case 'reviews': return <HaidarReviews />;
-      case 'newsletter': return <HaidarNewsletter />;
-      case 'categories': return <HaidarCategories />;
-      default: return <HaidarOrders />;
+      case 'orders':
+        return <Orders />;
+      case 'brands':
+        return <Brands />;
+      case 'payments':
+        return <Payments />;
+      case 'blacklist':
+        return <EmailBlacklist />;
+      case 'reviews':
+        return <Reviews />;
+      case 'newsletter':
+        return <Newsletter />;
+      case 'categories':
+        return <Categories />;
+      default:
+        return <Orders />;
     }
   };
 
@@ -56,7 +58,7 @@ export default function HaidarAdmin() {
       <div className="w-full md:w-64 bg-white border-r border-gray-200 shrink-0">
         <div className="p-4 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
-          <p className="text-sm text-gray-500">Haidar Module</p>
+          <p className="text-sm text-gray-500">Management Modules</p>
         </div>
         <nav className="p-4 space-y-1">
           {tabs.map((tab) => (
@@ -77,9 +79,7 @@ export default function HaidarAdmin() {
 
       {/* Main Content Area */}
       <div className="flex-1 p-4 md:p-8 overflow-auto">
-        <div className="max-w-7xl mx-auto">
-          {renderContent()}
-        </div>
+        <div className="max-w-7xl mx-auto">{renderContent()}</div>
       </div>
     </div>
   );
