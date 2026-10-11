@@ -316,6 +316,8 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                               pathname?.startsWith(sub.href + "/") ||
                               (sub.href === "/admin/admin-panel/help-center/knowledge-base" &&
                                 (pathname === "/admin/admin-panel/help-center" || pathname === "/admin/admin-panel/help-center/")) ||
+                              (sub.href === "/admin/admin-panel/help-center/support-tickets" &&
+                                (pathname === "/admin/admin-panel/help-center/tickets" || pathname?.startsWith("/admin/admin-panel/help-center/tickets"))) ||
                               (sub.href === "/admin/admin-panel/blog/posts" &&
                                 pathname === "/admin/admin-panel/blog");
                             return (
