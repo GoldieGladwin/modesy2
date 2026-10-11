@@ -114,6 +114,9 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
           { title: "Featured Products", href: "/admin/admin-panel/products/featured" },
           { title: "Special Offers", href: "/admin/admin-panel/products/special-offers" },
           { title: "Pending Products", href: "/admin/admin-panel/products/pending" },
+          { title: "Hidden Products", href: "/admin/admin-panel/products/hidden" },
+          { title: "Expired Products", href: "/admin/admin-panel/products/expired" },
+          { title: "Sold Products", href: "/admin/admin-panel/products/sold" },
           { title: "Drafts", href: "/admin/admin-panel/products/drafts" },
           { title: "Deleted Products", href: "/admin/admin-panel/products/deleted" },
         ],
@@ -148,36 +151,9 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
   {
     heading: "PAYMENTS",
     items: [
-      {
-        title: "Payments",
-        href: "/admin/admin-panel/payments",
-        icon: CreditCard,
-        hasSubmenu: true,
-        subItems: [
-          { title: "Payment History", href: "/admin/admin-panel/payments" },
-          { title: "Payment Settings", href: "/admin/admin-panel/payments/settings" },
-        ],
-      },
-      {
-        title: "Earnings",
-        href: "/admin/admin-panel/earnings",
-        icon: DollarSign,
-        hasSubmenu: true,
-        subItems: [
-          { title: "Earnings", href: "/admin/admin-panel/earnings" },
-          { title: "Seller Balances", href: "/admin/admin-panel/earnings/balances" },
-        ],
-      },
-      {
-        title: "Payouts",
-        href: "/admin/admin-panel/payouts",
-        icon: Banknote,
-        hasSubmenu: true,
-        subItems: [
-          { title: "Payout Requests", href: "/admin/admin-panel/payouts" },
-          { title: "Payout Settings", href: "/admin/admin-panel/payouts/settings" },
-        ],
-      },
+      { title: "Payments", href: "/admin/admin-panel/payments", icon: CreditCard },
+      { title: "Earning", href: "/admin/admin-panel/earnings", icon: DollarSign },
+      { title: "Payouts", href: "/admin/admin-panel/payouts", icon: Banknote },
     ],
   },
   {
@@ -323,11 +299,15 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
         hasSubmenu: true,
         subItems: [
           { title: "General Settings", href: "/admin/admin-panel/settings" },
-          { title: "Visual Settings", href: "/admin/admin-panel/settings/visual" },
-          { title: "System Settings", href: "/admin/admin-panel/settings/system" },
-          { title: "Email Settings", href: "/admin/admin-panel/settings/email" },
+          { title: "Language Settings", href: "/admin/admin-panel/settings/language" },
+          { title: "Product Settings", href: "/admin/admin-panel/settings/product" },
           { title: "Payment Settings", href: "/admin/admin-panel/settings/payment" },
+          { title: "Visual Settings", href: "/admin/admin-panel/settings/visual" },
+          { title: "Font Settings", href: "/admin/admin-panel/settings/font" },
+          { title: "Route Settings", href: "/admin/admin-panel/settings/route" },
           { title: "Currency Settings", href: "/admin/admin-panel/settings/currency" },
+          { title: "Email Settings", href: "/admin/admin-panel/settings/email" },
+          { title: "Social Login", href: "/admin/admin-panel/settings/social-login" },
         ],
       },
     ],
@@ -341,22 +321,26 @@ interface SidebarProps {
 
 export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+  const [openSubmenus, setOpenSubmenus] = React.useState<Record<string, boolean>>({
+    Blog: true,
+    Location: true,
+    "Help Center": true,
+    Settings: true,
+  });
 
-  // Auto-expand active submenu based on current URL path
-  useEffect(() => {
-    ADMIN_PANEL_NAV_SECTIONS.forEach((section) => {
-      section.items.forEach((item) => {
-        if (item.subItems) {
-          const isMatch = item.subItems.some(
-            (sub) => pathname === sub.href || pathname?.startsWith(sub.href + "/")
-          );
-          if (isMatch) {
-            setOpenSubmenus((prev) => ({ ...prev, [item.title]: true }));
-          }
-        }
-      });
-    });
+  React.useEffect(() => {
+    if (pathname?.startsWith("/admin/admin-panel/location")) {
+      setOpenSubmenus((prev) => ({ ...prev, Location: true }));
+    }
+    if (pathname?.startsWith("/admin/admin-panel/help-center")) {
+      setOpenSubmenus((prev) => ({ ...prev, "Help Center": true }));
+    }
+    if (pathname?.includes("/settings") || pathname?.includes("/setting")) {
+      setOpenSubmenus((prev) => ({ ...prev, Settings: true }));
+    }
+    if (pathname?.includes("/products")) {
+      setOpenSubmenus((prev) => ({ ...prev, Products: true }));
+    }
   }, [pathname]);
 
   const toggleSubmenu = (title: string) => {
@@ -372,11 +356,10 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <aside
-      className={`fixed top-0 left-0 bottom-0 z-40 w-64 bg-[#343b4a] text-[#95a2b5] flex flex-col font-sans transition-all duration-300 ease-in-out select-none overflow-y-auto scrollbar-thin scrollbar-thumb-[#4a5568] scrollbar-track-transparent ${
-        isOpen
+      className={`fixed top-0 left-0 bottom-0 z-40 w-64 bg-[#343b4a] text-[#95a2b5] flex flex-col font-sans transition-all duration-300 ease-in-out select-none overflow-y-auto scrollbar-thin scrollbar-thumb-[#4a5568] scrollbar-track-transparent ${isOpen
           ? "translate-x-0 opacity-100 visible"
           : "-translate-x-full lg:-translate-x-full opacity-0 invisible pointer-events-none"
-      }`}
+        }`}
     >
       {/* 1. BRAND HEADER: "Modesy Panel" */}
       <div className="pt-6 pb-4 text-center shrink-0">
@@ -453,22 +436,20 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                       <button
                         type="button"
                         onClick={() => toggleSubmenu(item.title)}
-                        className={`w-full relative px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group cursor-pointer ${
-                          isParentActive
+                        className={`w-full relative px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group cursor-pointer ${isParentActive
                             ? "text-white font-medium"
                             : "text-[#95a2b5] hover:text-white"
-                        }`}
+                          }`}
                       >
                         {isParentActive && (
                           <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#007bff]" />
                         )}
                         <div className="flex items-center gap-3.5 min-w-0">
                           <Icon
-                            className={`w-[17px] h-[17px] shrink-0 transition-colors ${
-                              isParentActive
+                            className={`w-[17px] h-[17px] shrink-0 transition-colors ${isParentActive
                                 ? "text-white"
                                 : "text-[#95a2b5] group-hover:text-white"
-                            }`}
+                              }`}
                           />
                           <span className="truncate">{item.title}</span>
                         </div>
@@ -484,7 +465,13 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                           {item.subItems!.map((sub) => {
                             const isSubActive =
                               pathname === sub.href ||
-                              pathname?.startsWith(sub.href + "/");
+                              pathname?.startsWith(sub.href + "/") ||
+                              (sub.href === "/admin/admin-panel/help-center/knowledge-base" &&
+                                (pathname === "/admin/admin-panel/help-center" || pathname === "/admin/admin-panel/help-center/")) ||
+                              (sub.href === "/admin/admin-panel/help-center/support-tickets" &&
+                                (pathname === "/admin/admin-panel/help-center/tickets" || pathname?.startsWith("/admin/admin-panel/help-center/tickets"))) ||
+                              (sub.href === "/admin/admin-panel/blog/posts" &&
+                                pathname === "/admin/admin-panel/blog");
                             return (
                               <Link
                                 key={sub.title}
@@ -494,11 +481,10 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                                     onClose();
                                   }
                                 }}
-                                className={`block pl-14 pr-6 py-2 text-[13.5px] transition-colors ${
-                                  isSubActive
+                                className={`block pl-14 pr-6 py-2 text-[13.5px] transition-colors ${isSubActive
                                     ? "text-white font-medium"
                                     : "text-[#95a2b5] hover:text-white"
-                                }`}
+                                  }`}
                               >
                                 {sub.title}
                               </Link>
@@ -519,22 +505,21 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                         onClose();
                       }
                     }}
-                    className={`px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group relative ${
+                    className={`px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group ${
                       isActive
                         ? "text-white font-medium"
                         : "text-[#95a2b5] hover:text-white"
-                    }`}
+                      }`}
                   >
                     {isActive && (
                       <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#007bff]" />
                     )}
                     <div className="flex items-center gap-3.5 min-w-0">
                       <Icon
-                        className={`w-[17px] h-[17px] shrink-0 transition-colors ${
-                          isActive
+                        className={`w-[17px] h-[17px] shrink-0 transition-colors ${isActive
                             ? "text-white"
                             : "text-[#95a2b5] group-hover:text-white"
-                        }`}
+                          }`}
                       />
                       <span className="truncate">{item.title}</span>
                     </div>
