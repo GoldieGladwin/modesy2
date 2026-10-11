@@ -1,3 +1,4 @@
+export { default as ProductsView } from "./ProductsView";
 export { default as FeaturedProductsView } from "./FeaturedProductsView";
 export { default as SpecialOffersView } from "./SpecialOffersView";
 export { default as PendingProductsView } from "./PendingProductsView";
