@@ -112,7 +112,17 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
           { title: "Categories", href: "/admin/admin-panel/blog/categories" },
         ],
       },
-      { title: "Location", href: "/admin/admin-panel/location", icon: MapPin },
+      {
+        title: "Location",
+        href: "/admin/admin-panel/location/countries",
+        icon: MapPin,
+        hasSubmenu: true,
+        subItems: [
+          { title: "Countries", href: "/admin/admin-panel/location/countries" },
+          { title: "States", href: "/admin/admin-panel/location/states" },
+          { title: "Cities", href: "/admin/admin-panel/location/cities" },
+        ],
+      },
     ],
   },
   {
@@ -125,7 +135,16 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
   {
     heading: "MANAGEMENT TOOLS",
     items: [
-      { title: "Help Center", href: "/admin/admin-panel/help-center", icon: HelpCircle },
+      {
+        title: "Help Center",
+        href: "/admin/admin-panel/help-center/support-tickets",
+        icon: HelpCircle,
+        hasSubmenu: true,
+        subItems: [
+          { title: "Support Tickets", href: "/admin/admin-panel/help-center/support-tickets" },
+          { title: "Knowledge Base", href: "/admin/admin-panel/help-center/knowledge-base" },
+        ],
+      },
       { title: "Cache System", href: "/admin/admin-panel/cache-system", icon: Database },
       { title: "SEO Tools", href: "/admin/admin-panel/seo-tools", icon: Search },
       { title: "Ad Spaces", href: "/admin/admin-panel/ad-spaces", icon: Tv },
@@ -157,7 +176,18 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = React.useState<Record<string, boolean>>({
     Blog: true,
+    Location: true,
+    "Help Center": true,
   });
+
+  React.useEffect(() => {
+    if (pathname?.startsWith("/admin/admin-panel/location")) {
+      setOpenSubmenus((prev) => ({ ...prev, Location: true }));
+    }
+    if (pathname?.startsWith("/admin/admin-panel/help-center")) {
+      setOpenSubmenus((prev) => ({ ...prev, "Help Center": true }));
+    }
+  }, [pathname]);
 
   const toggleSubmenu = (title: string) => {
     setOpenSubmenus((prev) => ({
@@ -237,6 +267,7 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                   item.subItems!.some(
                     (sub) =>
                       pathname === sub.href ||
+                      pathname?.startsWith(sub.href + "/") ||
                       (sub.href === "/admin/admin-panel/blog/posts" && pathname === "/admin/admin-panel/blog")
                   );
                 const isActive =
@@ -282,6 +313,11 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                           {item.subItems!.map((sub) => {
                             const isSubActive =
                               pathname === sub.href ||
+                              pathname?.startsWith(sub.href + "/") ||
+                              (sub.href === "/admin/admin-panel/help-center/knowledge-base" &&
+                                (pathname === "/admin/admin-panel/help-center" || pathname === "/admin/admin-panel/help-center/")) ||
+                              (sub.href === "/admin/admin-panel/help-center/support-tickets" &&
+                                (pathname === "/admin/admin-panel/help-center/tickets" || pathname?.startsWith("/admin/admin-panel/help-center/tickets"))) ||
                               (sub.href === "/admin/admin-panel/blog/posts" &&
                                 pathname === "/admin/admin-panel/blog");
                             return (

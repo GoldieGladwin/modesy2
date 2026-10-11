@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LOCATIONS_DATA } from "@/data/locations";
+import { LOCATIONS_DATA } from "@/components/admin/location/locations";
 
 interface LocationModalProps {
   isOpen: boolean;
