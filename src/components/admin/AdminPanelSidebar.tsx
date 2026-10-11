@@ -95,7 +95,17 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
     items: [
       { title: "Payments", href: "/admin/admin-panel/payments", icon: CreditCard },
       { title: "Earning", href: "/admin/admin-panel/earnings", icon: DollarSign },
-      { title: "Payouts", href: "/admin/admin-panel/payouts", icon: Banknote },
+      {
+        title: "Payouts",
+        href: "/admin/admin-panel/payouts/payout-requests",
+        icon: Banknote,
+        hasSubmenu: true,
+        subItems: [
+          { title: "Add Payout", href: "/admin/admin-panel/payouts/add-payout" },
+          { title: "Payout Requests", href: "/admin/admin-panel/payouts/payout-requests" },
+          { title: "Payout Settings", href: "/admin/admin-panel/payouts/payout-settings" },
+        ],
+      },
     ],
   },
   {
@@ -178,6 +188,7 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
     Blog: true,
     Location: true,
     "Help Center": true,
+    Payouts: true,
   });
 
   React.useEffect(() => {
@@ -186,6 +197,14 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
     }
     if (pathname?.startsWith("/admin/admin-panel/help-center")) {
       setOpenSubmenus((prev) => ({ ...prev, "Help Center": true }));
+    }
+    if (
+      pathname?.startsWith("/admin/admin-panel/payouts") ||
+      pathname === "/admin/admin-panel/add-payout" ||
+      pathname === "/admin/admin-panel/payout-requests" ||
+      pathname === "/admin/admin-panel/payout-settings"
+    ) {
+      setOpenSubmenus((prev) => ({ ...prev, Payouts: true }));
     }
   }, [pathname]);
 
@@ -198,11 +217,10 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <aside
-      className={`fixed top-0 left-0 bottom-0 z-40 w-64 bg-[#343b4a] text-[#95a2b5] flex flex-col font-sans transition-all duration-300 ease-in-out select-none overflow-y-auto scrollbar-thin scrollbar-thumb-[#4a5568] scrollbar-track-transparent ${
-        isOpen
+      className={`fixed top-0 left-0 bottom-0 z-40 w-64 bg-[#343b4a] text-[#95a2b5] flex flex-col font-sans transition-all duration-300 ease-in-out select-none overflow-y-auto scrollbar-thin scrollbar-thumb-[#4a5568] scrollbar-track-transparent ${isOpen
           ? "translate-x-0 opacity-100 visible"
           : "-translate-x-full lg:-translate-x-full opacity-0 invisible pointer-events-none"
-      }`}
+        }`}
     >
       {/* 1. BRAND HEADER: "Modesy Panel" (Ikut ter-scroll & Klik untuk Refresh Halaman) */}
       <div className="pt-6 pb-4 text-center shrink-0">
@@ -282,22 +300,20 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                       <button
                         type="button"
                         onClick={() => toggleSubmenu(item.title)}
-                        className={`w-full relative px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group cursor-pointer ${
-                          isParentActive
+                        className={`w-full relative px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group cursor-pointer ${isParentActive
                             ? "text-white font-medium"
                             : "text-[#95a2b5] hover:text-white"
-                        }`}
+                          }`}
                       >
                         {isParentActive && (
                           <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#007bff]" />
                         )}
                         <div className="flex items-center gap-3.5 min-w-0">
                           <Icon
-                            className={`w-[17px] h-[17px] shrink-0 transition-colors ${
-                              isParentActive
+                            className={`w-[17px] h-[17px] shrink-0 transition-colors ${isParentActive
                                 ? "text-white"
                                 : "text-[#95a2b5] group-hover:text-white"
-                            }`}
+                              }`}
                           />
                           <span className="truncate">{item.title}</span>
                         </div>
@@ -314,6 +330,12 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                             const isSubActive =
                               pathname === sub.href ||
                               pathname?.startsWith(sub.href + "/") ||
+                              (sub.href === "/admin/admin-panel/payouts/payout-requests" &&
+                                (pathname === "/admin/admin-panel/payouts" || pathname === "/admin/admin-panel/payout-requests")) ||
+                              (sub.href === "/admin/admin-panel/payouts/add-payout" &&
+                                pathname === "/admin/admin-panel/add-payout") ||
+                              (sub.href === "/admin/admin-panel/payouts/payout-settings" &&
+                                pathname === "/admin/admin-panel/payout-settings") ||
                               (sub.href === "/admin/admin-panel/help-center/knowledge-base" &&
                                 (pathname === "/admin/admin-panel/help-center" || pathname === "/admin/admin-panel/help-center/")) ||
                               (sub.href === "/admin/admin-panel/help-center/support-tickets" &&
@@ -329,11 +351,10 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                                     onClose();
                                   }
                                 }}
-                                className={`block pl-14 pr-6 py-2 text-[13.5px] transition-colors ${
-                                  isSubActive
+                                className={`block pl-14 pr-6 py-2 text-[13.5px] transition-colors ${isSubActive
                                     ? "text-white font-medium"
                                     : "text-[#95a2b5] hover:text-white"
-                                }`}
+                                  }`}
                               >
                                 {sub.title}
                               </Link>
@@ -354,19 +375,17 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                         onClose();
                       }
                     }}
-                    className={`px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group ${
-                      isActive
+                    className={`px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group ${isActive
                         ? "text-white font-medium"
                         : "text-[#95a2b5] hover:text-white"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <Icon
-                        className={`w-[17px] h-[17px] shrink-0 transition-colors ${
-                          isActive
+                        className={`w-[17px] h-[17px] shrink-0 transition-colors ${isActive
                             ? "text-white"
                             : "text-[#95a2b5] group-hover:text-white"
-                        }`}
+                          }`}
                       />
                       <span className="truncate">{item.title}</span>
                     </div>
