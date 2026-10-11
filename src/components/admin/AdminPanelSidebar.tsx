@@ -95,7 +95,17 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
     items: [
       { title: "Payments", href: "/admin/admin-panel/payments", icon: CreditCard },
       { title: "Earning", href: "/admin/admin-panel/earnings", icon: DollarSign },
-      { title: "Payouts", href: "/admin/admin-panel/payouts", icon: Banknote },
+      {
+        title: "Payouts",
+        href: "/admin/admin-panel/payouts/payout-requests",
+        icon: Banknote,
+        hasSubmenu: true,
+        subItems: [
+          { title: "Add Payout", href: "/admin/admin-panel/payouts/add-payout" },
+          { title: "Payout Requests", href: "/admin/admin-panel/payouts/payout-requests" },
+          { title: "Payout Settings", href: "/admin/admin-panel/payouts/payout-settings" },
+        ],
+      },
     ],
   },
   {
@@ -178,6 +188,7 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
     Blog: true,
     Location: true,
     "Help Center": true,
+    Payouts: true,
   });
 
   React.useEffect(() => {
@@ -186,6 +197,14 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
     }
     if (pathname?.startsWith("/admin/admin-panel/help-center")) {
       setOpenSubmenus((prev) => ({ ...prev, "Help Center": true }));
+    }
+    if (
+      pathname?.startsWith("/admin/admin-panel/payouts") ||
+      pathname === "/admin/admin-panel/add-payout" ||
+      pathname === "/admin/admin-panel/payout-requests" ||
+      pathname === "/admin/admin-panel/payout-settings"
+    ) {
+      setOpenSubmenus((prev) => ({ ...prev, Payouts: true }));
     }
   }, [pathname]);
 
@@ -311,6 +330,12 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                             const isSubActive =
                               pathname === sub.href ||
                               pathname?.startsWith(sub.href + "/") ||
+                              (sub.href === "/admin/admin-panel/payouts/payout-requests" &&
+                                (pathname === "/admin/admin-panel/payouts" || pathname === "/admin/admin-panel/payout-requests")) ||
+                              (sub.href === "/admin/admin-panel/payouts/add-payout" &&
+                                pathname === "/admin/admin-panel/add-payout") ||
+                              (sub.href === "/admin/admin-panel/payouts/payout-settings" &&
+                                pathname === "/admin/admin-panel/payout-settings") ||
                               (sub.href === "/admin/admin-panel/help-center/knowledge-base" &&
                                 (pathname === "/admin/admin-panel/help-center" || pathname === "/admin/admin-panel/help-center/")) ||
                               (sub.href === "/admin/admin-panel/help-center/support-tickets" &&
