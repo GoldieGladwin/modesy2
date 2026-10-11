@@ -15,8 +15,8 @@ import {
   Clock,
   Flag,
 } from "lucide-react";
-import ModesyHeader from "@/components/layout/ModesyHeader";
-import ModesyFooter from "@/components/layout/ModesyFooter";
+import ModesyHeader from "@/components/layout/header/ModesyHeader";
+import ModesyFooter from "@/components/layout/footer/ModesyFooter";
 import LoginModal from "@/components/auth/LoginModal";
 import ProductCard from "@/components/product/ProductCard";
 import {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const brands = [
@@ -22,35 +22,96 @@ const brands = [
     { id: 16, name: "Mango", logo: "https://placehold.co/200x80/ffffff/333333?text=MANGO" },
 ];
 
+// Gandakan array menjadi 3 kali lipat untuk efek looping tanpa ujung yang halus
+const extendedBrands = [...brands, ...brands, ...brands];
+
 export default function ShopByBrand() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [isHovered, setIsHovered] = useState(false);
+
+    // Set posisi scroll awal ke blok tengah (block ke-2) agar bisa scroll ke kiri/kanan tanpa ujung
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            container.style.scrollBehavior = 'auto'; // Matikan smooth sementara
+            container.scrollLeft = container.scrollWidth / 3;
+            // Nyalakan smooth kembali di frame berikutnya
+            requestAnimationFrame(() => {
+                container.style.scrollBehavior = 'smooth';
+            });
+        }
+    }, []);
+
+    // Auto-scroll setiap 2 detik (berhenti jika di-hover)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (scrollContainerRef.current && !isHovered) {
+                scrollContainerRef.current.scrollBy({
+                    left: 200, // Geser 200px ke kanan (konten ke kiri)
+                    behavior: "smooth",
+                });
+            }
+        }, 2000);
+
+        return () => clearInterval(interval);
+    }, [isHovered]);
+
+    // Handle lompatan tanpa batas saat mentok
+    const handleScroll = () => {
+        if (!scrollContainerRef.current) return;
+        const container = scrollContainerRef.current;
+        
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        const oneThird = container.scrollWidth / 3; // Ukuran 1 set array asli
+        
+        // Jika sudah mencapai ujung kanan (blok ke-3)
+        if (container.scrollLeft >= maxScroll - 10) {
+            container.style.scrollBehavior = 'auto'; // Matikan animasi
+            container.scrollLeft -= oneThird;        // Lompat balik sejauh 1 set (tak terlihat oleh mata)
+            requestAnimationFrame(() => {
+                container.style.scrollBehavior = 'smooth'; // Nyalakan lagi
+            });
+        } 
+        // Jika sudah mencapai ujung kiri (blok ke-1)
+        else if (container.scrollLeft <= 10) {
+            container.style.scrollBehavior = 'auto';
+            container.scrollLeft += oneThird;
+            requestAnimationFrame(() => {
+                container.style.scrollBehavior = 'smooth';
+            });
+        }
+    };
 
     const scroll = (direction: "left" | "right") => {
         if (scrollContainerRef.current) {
-            const { scrollLeft, clientWidth } = scrollContainerRef.current;
-            const scrollAmount = clientWidth * 0.8; // Scroll 80% of container width
-            scrollContainerRef.current.scrollTo({
-                left: direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+            const { clientWidth } = scrollContainerRef.current;
+            const scrollAmount = clientWidth * 0.8;
+            scrollContainerRef.current.scrollBy({
+                left: direction === "left" ? -scrollAmount : scrollAmount,
                 behavior: "smooth",
             });
         }
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div 
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+            onMouseEnter={() => setIsHovered(true)} 
+            onMouseLeave={() => setIsHovered(false)}
+        >
             <h2 className="text-xl font-bold text-gray-900 mb-6">Shop By Brand</h2>
 
             <div className="relative group px-1">
                 <div
                     className="flex border border-gray-200 overflow-x-auto no-scrollbar scroll-smooth"
                     ref={scrollContainerRef}
+                    onScroll={handleScroll}
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
-                    {brands.map((brand, index) => (
+                    {extendedBrands.map((brand, index) => (
                         <div
-                            key={brand.id}
-                            className={`flex-none w-1/2 sm:w-1/4 md:w-1/6 lg:w-[12.5%] h-24 sm:h-28 flex items-center justify-center p-4 sm:p-6 bg-white hover:bg-gray-50 transition-colors cursor-pointer ${index !== brands.length - 1 ? 'border-r border-gray-200' : ''
-                                }`}
+                            key={`${brand.id}-${index}`}
+                            className="flex-none w-1/2 sm:w-1/4 md:w-1/6 lg:w-[12.5%] h-24 sm:h-28 flex items-center justify-center p-4 sm:p-6 bg-white hover:bg-gray-50 transition-colors cursor-pointer border-r border-gray-200"
                         >
                             <img
                                 src={brand.logo}

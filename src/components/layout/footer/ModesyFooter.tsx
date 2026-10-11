@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import ModesyLogo from "./ModesyLogo";
+import ModesyLogo from "../header/ModesyLogo";
 
 export default function ModesyFooter() {
   return (

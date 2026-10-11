@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import ModesyHeader from "@/components/layout/ModesyHeader";
-import ModesyFooter from "@/components/layout/ModesyFooter";
+import ModesyHeader from "@/components/layout/header/ModesyHeader";
+import ModesyFooter from "@/components/layout/footer/ModesyFooter";
 import LoginForm from "@/components/auth/LoginForm";
 import LoginModal from "@/components/auth/LoginModal";
 import { useRouter } from "next/navigation";
