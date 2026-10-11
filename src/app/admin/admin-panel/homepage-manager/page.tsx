@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { CheckCircle2, X } from "lucide-react";
-import { ModesyBannerItem } from "@/types/uliladmin";
+import { ModesyBannerItem } from "@/types/admin";
 
 import FeaturedCategoriesManager from "@/components/admin/homepage-manager/FeaturedCategoriesManager";
 import ProductsByCategoryManager from "@/components/admin/homepage-manager/ProductsByCategoryManager";
