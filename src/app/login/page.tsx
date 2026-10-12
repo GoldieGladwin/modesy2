@@ -33,7 +33,7 @@ export default function LoginPage() {
 
       <main className="max-w-md w-full mx-auto px-4 py-8 sm:py-12 flex-1 flex flex-col justify-center">
         <LoginForm
-          onSwitchToRegister={() => router.push("/register")}
+          onSwitchToRegister={() => router.push("/guest/register")}
           onSuccess={(user) => {
             setCurrentUser(user);
             setTimeout(() => router.push("/"), 1000);

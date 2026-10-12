@@ -39,9 +39,8 @@ export default function AdminCommentsPage() {
                   <td className="py-3 px-3 text-[#00a99d] font-medium">{c.onPost}</td>
                   <td className="py-3 px-3 text-gray-600 max-w-xs truncate">{c.comment}</td>
                   <td className="py-3 px-3">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      c.status === "Approved" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${c.status === "Approved" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      }`}>
                       {c.status}
                     </span>
                   </td>

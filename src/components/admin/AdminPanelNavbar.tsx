@@ -170,11 +170,10 @@ export default function AdminPanelNavbar({ onToggleSidebar }: NavbarProps) {
                     setSelectedLanguage(lang.name);
                     setLangDropdownOpen(false);
                   }}
-                  className={`w-full text-left px-3.5 py-2 hover:bg-gray-50 transition flex items-center justify-between ${
-                    selectedLanguage === lang.name
+                  className={`w-full text-left px-3.5 py-2 hover:bg-gray-50 transition flex items-center justify-between ${selectedLanguage === lang.name
                       ? "text-[#00a99d] font-bold bg-teal-50/40"
                       : "text-gray-700"
-                  }`}
+                    }`}
                 >
                   <span>{lang.name}</span>
                   {selectedLanguage === lang.name && (
