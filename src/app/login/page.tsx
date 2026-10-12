@@ -2,13 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-<<<<<<< HEAD
-import ModesyHeader from "@/components/layout/header/ModesyHeader";
-import ModesyFooter from "@/components/layout/footer/ModesyFooter";
-=======
 import ModesyHeader from "@/components/layout/guest/ModesyHeader";
 import ModesyFooter from "@/components/layout/guest/ModesyFooter";
->>>>>>> c655ecfdb4356cc568d1e0b5019776b3e7d94317
 import LoginForm from "@/components/auth/LoginForm";
 import LoginModal from "@/components/auth/LoginModal";
 import { useRouter } from "next/navigation";
@@ -38,7 +33,7 @@ export default function LoginPage() {
 
       <main className="max-w-md w-full mx-auto px-4 py-8 sm:py-12 flex-1 flex flex-col justify-center">
         <LoginForm
-          onSwitchToRegister={() => router.push("/register")}
+          onSwitchToRegister={() => router.push("/guest/register")}
           onSuccess={(user) => {
             setCurrentUser(user);
             setTimeout(() => router.push("/"), 1000);

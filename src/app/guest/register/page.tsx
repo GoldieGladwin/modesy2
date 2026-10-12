@@ -2,11 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-<<<<<<< HEAD:src/app/register/page.tsx
-import ModesyHeader from "@/components/layout/header/ModesyHeader";
-import ModesyFooter from "@/components/layout/footer/ModesyFooter";
-=======
->>>>>>> c655ecfdb4356cc568d1e0b5019776b3e7d94317:src/app/guest/register/page.tsx
 import RegisterForm from "@/components/auth/RegisterForm";
 import LoginModal from "@/components/auth/LoginModal";
 import { useRouter } from "next/navigation";

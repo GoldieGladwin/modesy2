@@ -3,11 +3,6 @@
 import React, { use, useState } from "react";
 import Link from "next/link";
 import { Folder, Clock } from "lucide-react";
-<<<<<<< HEAD:src/app/blog/[category]/[slug]/page.tsx
-import ModesyHeader from "@/components/layout/header/ModesyHeader";
-import ModesyFooter from "@/components/layout/footer/ModesyFooter";
-=======
->>>>>>> c655ecfdb4356cc568d1e0b5019776b3e7d94317:src/app/guest/blog/[category]/[slug]/page.tsx
 import LoginModal from "@/components/auth/LoginModal";
 import { blogPostsData } from "@/data/blogs";
 
@@ -24,7 +19,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
   const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
 
   // Find post by slug
-  const post = blogPostsData.find((p) => p.slug === slug);
+  const post = blogPostsData.find((p) => p.slug === slug || p.slug === decodeURIComponent(slug));
 
   if (!post) {
     return (
@@ -68,12 +63,12 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
             Home
           </Link>
           <span>/</span>
-          <Link href="/blog" className="hover:text-[#00a99d]">
+          <Link href="/guest/blog" className="hover:text-[#00a99d]">
             Blog
           </Link>
           <span>/</span>
           <Link
-            href={`/blog?category=${encodeURIComponent(post.category)}`}
+            href={`/guest/blog?category=${encodeURIComponent(post.category)}`}
             className="hover:text-[#00a99d]"
           >
             {post.category}
@@ -98,7 +93,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
             {/* Meta */}
             <div className="flex items-center gap-4 text-xs text-gray-400 pb-2 border-b border-gray-100">
               <Link
-                href={`/blog?category=${encodeURIComponent(post.category)}`}
+                href={`/guest/blog?category=${encodeURIComponent(post.category)}`}
                 className="flex items-center gap-1 hover:text-[#1963d8] transition"
               >
                 <Folder className="w-3.5 h-3.5 text-gray-400" />
@@ -189,7 +184,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
                     className="border border-gray-200 rounded-sm overflow-hidden flex flex-col hover:shadow-sm transition"
                   >
                     <div className="aspect-[16/10] bg-gray-100 overflow-hidden">
-                      <Link href={`/blog/${rel.categorySlug}/${rel.slug}`}>
+                      <Link href={`/guest/blog/${rel.categorySlug}/${rel.slug}`}>
                         <img
                           src={rel.image}
                           alt={rel.title}
@@ -198,7 +193,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
                       </Link>
                     </div>
                     <div className="p-3 space-y-1.5">
-                      <Link href={`/blog/${rel.categorySlug}/${rel.slug}`}>
+                      <Link href={`/guest/blog/${rel.categorySlug}/${rel.slug}`}>
                         <h4 className="text-xs font-bold text-gray-900 line-clamp-2 hover:text-[#1963d8]">
                           {rel.title}
                         </h4>
@@ -283,7 +278,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
                 {latestPosts.map((lp) => (
                   <div key={lp.id} className="space-y-1.5 group">
                     <Link
-                      href={`/blog/${lp.categorySlug}/${lp.slug}`}
+                      href={`/guest/blog/${lp.categorySlug}/${lp.slug}`}
                       className="block aspect-[16/10] bg-gray-100 overflow-hidden rounded-xs"
                     >
                       <img
@@ -292,7 +287,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                       />
                     </Link>
-                    <Link href={`/blog/${lp.categorySlug}/${lp.slug}`}>
+                    <Link href={`/guest/blog/${lp.categorySlug}/${lp.slug}`}>
                       <h4 className="text-xs font-bold text-gray-800 line-clamp-2 group-hover:text-[#1963d8] transition">
                         {lp.title}
                       </h4>

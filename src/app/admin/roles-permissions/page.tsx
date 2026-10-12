@@ -1,3 +1,5 @@
-import RolesPermissionsPage from '../roles/page';
+import { redirect } from 'next/navigation';
 
-export default RolesPermissionsPage;
+export default function RolesPermissionsRedirectPage() {
+  redirect('/admin/admin-panel/roles-permissions');
+}

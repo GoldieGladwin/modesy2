@@ -43,7 +43,7 @@ export default function AdminSidebar({ isOpen = true }: AdminSidebarProps) {
       title: 'NAVIGATION',
       items: [
         { name: 'Home', href: '/admin', icon: Home, active: pathname === '/admin' },
-        { name: 'Theme', href: '/admin/theme', icon: Palette, active: pathname === '/admin/theme' },
+        { name: 'Theme', href: '/admin/admin-panel/theme', icon: Palette, active: pathname === '/admin/admin-panel/theme' || pathname === '/admin/theme' },
         { name: 'Slider', href: '/admin/slider', icon: SlidersHorizontal, active: pathname === '/admin/slider' },
         { name: 'Homepage Manager', href: '/admin/homepage-manager', icon: Layout, active: pathname === '/admin/homepage-manager' }
       ]
@@ -61,7 +61,7 @@ export default function AdminSidebar({ isOpen = true }: AdminSidebarProps) {
       items: [
         { name: 'Products', href: '/admin/products', icon: Package, active: pathname === '/admin/products' },
         { name: 'Categories', href: '/admin/categories', icon: FolderTree, active: pathname === '/admin/categories' },
-        { name: 'Custom Fields', href: '/admin/custom-fields', icon: ListFilter, active: pathname === '/admin/custom-fields' }
+        { name: 'Custom Fields', href: '/admin/admin-panel/custom-fields', icon: ListFilter, active: pathname === '/admin/admin-panel/custom-fields' || pathname === '/admin/custom-fields' }
       ]
     },
     {
@@ -84,7 +84,7 @@ export default function AdminSidebar({ isOpen = true }: AdminSidebarProps) {
       items: [
         { name: 'Comments', href: '/admin/comments', icon: MessageSquare, active: pathname === '/admin/comments' },
         { name: 'Reviews', href: '/admin/reviews', icon: Star, active: pathname === '/admin/reviews' },
-        { name: 'SEO Tools', href: '/admin/seo-tools', icon: Search, active: pathname === '/admin/seo-tools' },
+        { name: 'SEO Tools', href: '/admin/admin-panel/seo-tools', icon: Search, active: pathname === '/admin/admin-panel/seo-tools' || pathname === '/admin/seo-tools' },
         { name: 'Settings', href: '/admin/settings', icon: Settings, active: pathname === '/admin/settings' }
       ]
     }

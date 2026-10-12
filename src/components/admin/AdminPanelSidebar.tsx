@@ -152,7 +152,16 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
     heading: "PAYMENTS",
     items: [
       { title: "Payments", href: "/admin/admin-panel/payments", icon: CreditCard },
-      { title: "Earning", href: "/admin/admin-panel/earnings", icon: DollarSign },
+      {
+        title: "Earnings",
+        href: "/admin/admin-panel/earnings",
+        icon: DollarSign,
+        hasSubmenu: true,
+        subItems: [
+          { title: "Earnings", href: "/admin/admin-panel/earnings" },
+          { title: "Seller Balances", href: "/admin/admin-panel/earnings/seller-balances" },
+        ],
+      },
       { title: "Payouts", href: "/admin/admin-panel/payouts", icon: Banknote },
     ],
   },
@@ -197,9 +206,11 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
         icon: Users,
         hasSubmenu: true,
         subItems: [
-          { title: "Users", href: "/admin/admin-panel/membership" },
-          { title: "Vendors", href: "/admin/admin-panel/membership/vendors" },
-          { title: "Administrators", href: "/admin/admin-panel/membership/admins" },
+          { title: "Users", href: "/admin/admin-panel/membership/users" },
+          { title: "Membership Plans", href: "/admin/admin-panel/membership/plans" },
+          { title: "Shop Opening Requests", href: "/admin/admin-panel/membership/shop-opening-requests" },
+          { title: "User Login Activities", href: "/admin/admin-panel/membership/login-activities" },
+          { title: "Account Deletion Requests", href: "/admin/admin-panel/membership/account-deletion-requests" },
         ],
       },
       {
@@ -258,8 +269,8 @@ export const ADMIN_PANEL_NAV_SECTIONS: NavSection[] = [
         icon: MessageCircle,
         hasSubmenu: true,
         subItems: [
-          { title: "Product Comments", href: "/admin/admin-panel/comments" },
-          { title: "Blog Comments", href: "/admin/admin-panel/comments/blog" },
+          { title: "Product Comments", href: "/admin/admin-panel/comments/pending-product" },
+          { title: "Blog Comments", href: "/admin/admin-panel/comments/pending-blog" },
         ],
       },
       {
@@ -357,8 +368,8 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <aside
       className={`fixed top-0 left-0 bottom-0 z-40 w-64 bg-[#343b4a] text-[#95a2b5] flex flex-col font-sans transition-all duration-300 ease-in-out select-none overflow-y-auto scrollbar-thin scrollbar-thumb-[#4a5568] scrollbar-track-transparent ${isOpen
-          ? "translate-x-0 opacity-100 visible"
-          : "-translate-x-full lg:-translate-x-full opacity-0 invisible pointer-events-none"
+        ? "translate-x-0 opacity-100 visible"
+        : "-translate-x-full lg:-translate-x-full opacity-0 invisible pointer-events-none"
         }`}
     >
       {/* 1. BRAND HEADER: "Modesy Panel" */}
@@ -437,8 +448,8 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                         type="button"
                         onClick={() => toggleSubmenu(item.title)}
                         className={`w-full relative px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group cursor-pointer ${isParentActive
-                            ? "text-white font-medium"
-                            : "text-[#95a2b5] hover:text-white"
+                          ? "text-white font-medium"
+                          : "text-[#95a2b5] hover:text-white"
                           }`}
                       >
                         {isParentActive && (
@@ -447,8 +458,8 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                         <div className="flex items-center gap-3.5 min-w-0">
                           <Icon
                             className={`w-[17px] h-[17px] shrink-0 transition-colors ${isParentActive
-                                ? "text-white"
-                                : "text-[#95a2b5] group-hover:text-white"
+                              ? "text-white"
+                              : "text-[#95a2b5] group-hover:text-white"
                               }`}
                           />
                           <span className="truncate">{item.title}</span>
@@ -482,8 +493,8 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                                   }
                                 }}
                                 className={`block pl-14 pr-6 py-2 text-[13.5px] transition-colors ${isSubActive
-                                    ? "text-white font-medium"
-                                    : "text-[#95a2b5] hover:text-white"
+                                  ? "text-white font-medium"
+                                  : "text-[#95a2b5] hover:text-white"
                                   }`}
                               >
                                 {sub.title}
@@ -505,8 +516,7 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                         onClose();
                       }
                     }}
-                    className={`px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group ${
-                      isActive
+                    className={`px-6 py-2.5 text-[14px] flex items-center justify-between transition-colors group ${isActive
                         ? "text-white font-medium"
                         : "text-[#95a2b5] hover:text-white"
                       }`}
@@ -517,8 +527,8 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
                     <div className="flex items-center gap-3.5 min-w-0">
                       <Icon
                         className={`w-[17px] h-[17px] shrink-0 transition-colors ${isActive
-                            ? "text-white"
-                            : "text-[#95a2b5] group-hover:text-white"
+                          ? "text-white"
+                          : "text-[#95a2b5] group-hover:text-white"
                           }`}
                       />
                       <span className="truncate">{item.title}</span>

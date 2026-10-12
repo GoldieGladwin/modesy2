@@ -3,13 +3,8 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { Folder, Clock } from "lucide-react";
-<<<<<<< HEAD
-import ModesyHeader from "@/components/layout/header/ModesyHeader";
-import ModesyFooter from "@/components/layout/footer/ModesyFooter";
-=======
 import ModesyHeader from "@/components/layout/guest/ModesyHeader";
 import ModesyFooter from "@/components/layout/guest/ModesyFooter";
->>>>>>> c655ecfdb4356cc568d1e0b5019776b3e7d94317
 import LoginModal from "@/components/auth/LoginModal";
 import { blogPostsData } from "@/data/blogs";
 
@@ -79,7 +74,7 @@ export default function BlogListingPage() {
             >
               {/* Thumbnail */}
               <div className="relative w-full aspect-[16/10] bg-gray-100 overflow-hidden">
-                <Link href={`/blog/${post.categorySlug}/${post.slug}`} className="block w-full h-full">
+                <Link href={`/guest/blog/${post.categorySlug}/${post.slug}`} className="block w-full h-full">
                   <img
                     src={post.image}
                     alt={post.title}
@@ -93,7 +88,7 @@ export default function BlogListingPage() {
               <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>
                   {/* Title */}
-                  <Link href={`/blog/${post.categorySlug}/${post.slug}`}>
+                  <Link href={`/guest/blog/${post.categorySlug}/${post.slug}`}>
                     <h2 className="text-base font-bold text-gray-900 line-clamp-2 hover:text-[#1963d8] leading-snug transition-colors h-[3rem] overflow-hidden">
                       {post.title}
                     </h2>
