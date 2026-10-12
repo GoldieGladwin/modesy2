@@ -1,5 +1,5 @@
 import React from "react";
-import { ProductsView } from "@/components/admin/products";
+import ProductsContainer from "@/components/admin/dashboard/products/ProductsContainer";
 
 export const metadata = {
   title: "Products - Modesy Admin",
@@ -7,5 +7,5 @@ export const metadata = {
 };
 
 export default function AdminProductsPage() {
-  return <ProductsView />;
+  return <ProductsContainer />;
 }

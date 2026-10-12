@@ -1,5 +1,5 @@
 import React from "react";
-import { PendingProductsView } from "@/components/admin/products";
+import ProductsContainer from "@/components/admin/dashboard/products/ProductsContainer";
 
 export const metadata = {
   title: "Pending Products - Modesy Admin",
@@ -7,5 +7,11 @@ export const metadata = {
 };
 
 export default function PendingProductsPage() {
-  return <PendingProductsView />;
+  return (
+    <ProductsContainer
+      title="Pending Products"
+      initialItems={[]}
+      emptyMessage="No records found!"
+    />
+  );
 }
