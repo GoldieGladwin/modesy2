@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CATEGORIES, CategoryItem } from "@/data/categories";
 import LocationModal from "@/components/modals/LocationModal";
+import { useAuth } from "@/context/AuthContext";
 import {
-  Shield,
+  Layers,
   LayoutGrid,
   User,
   Wallet,
@@ -65,12 +66,14 @@ export default function AdminHeader() {
     { name: "Arabic", flag: "/assets/img/flag_ar.png" },
   ];
 
+  const { logout } = useAuth();
+
   // Daftar menu dropdown profil admin sesuai urutan
   const adminProfileMenus = [
     {
       title: "Admin Panel",
       href: "/admin/admin-panel",
-      icon: Shield,
+      icon: Layers,
       match: (path: string) => path.startsWith("/admin/admin-panel"),
     },
     {
@@ -333,12 +336,12 @@ export default function AdminHeader() {
                 onClick={() => setAdminDropdownOpen(!adminDropdownOpen)}
                 className="flex items-center space-x-1.5 text-[#333333] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
               >
-                {/* Nebula Avatar Circle matching Modesy photo */}
-                <div className="w-[26px] h-[26px] rounded-full overflow-hidden shrink-0 shadow-xs ring-1 ring-black/10 relative flex items-center justify-center bg-slate-900">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 via-purple-600 to-pink-500 opacity-90" />
-                  <div className="absolute w-3.5 h-3.5 rounded-full bg-cyan-300/50 blur-[1px] -top-0.5 -left-0.5" />
-                  <div className="absolute w-3.5 h-3.5 rounded-full bg-pink-400/50 blur-[1px] bottom-0 right-0" />
-                </div>
+                {/* Dandelion Avatar Circle matching Modesy photo */}
+                <img
+                  src="/assets/img/admin-avatar.jpg"
+                  alt="Admin"
+                  className="w-[26px] h-[26px] rounded-full object-cover shrink-0 ring-1 ring-black/10"
+                />
                 <span className="font-medium text-[14px] text-[#333]">Admin</span>
                 <svg
                   width="10"
@@ -364,6 +367,25 @@ export default function AdminHeader() {
                 <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-[#ebebeb] rounded-[3px] shadow-[0_4px_15px_rgba(0,0,0,0.08)] z-50 py-2">
                   {visibleMenus.map((item) => {
                     const Icon = item.icon;
+                    if (item.title === "Logout") {
+                      return (
+                        <button
+                          key={item.title}
+                          type="button"
+                          onClick={() => {
+                            setAdminDropdownOpen(false);
+                            logout();
+                          }}
+                          className="w-full text-left flex items-center gap-3 px-4 py-2 text-[14px] text-gray-700 hover:text-[#00a99d] hover:bg-gray-50/80 transition-colors font-normal group cursor-pointer border-0 bg-transparent"
+                        >
+                          <Icon
+                            className="w-[18px] h-[18px] text-gray-500 group-hover:text-[#00a99d] transition-colors shrink-0"
+                            strokeWidth={1.75}
+                          />
+                          <span className="truncate">{item.title}</span>
+                        </button>
+                      );
+                    }
                     return (
                       <Link
                         key={item.title}
@@ -764,11 +786,11 @@ export default function AdminHeader() {
                 {/* Admin Profile Box in Mobile */}
                 <div className="p-3 bg-gray-50 rounded border border-gray-200 mb-2">
                   <div className="flex items-center space-x-2.5 mb-2.5 pb-2.5 border-b border-gray-200">
-                    <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow-xs ring-1 ring-black/10 relative flex items-center justify-center bg-slate-900">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 via-purple-600 to-pink-500 opacity-90" />
-                      <div className="absolute w-4 h-4 rounded-full bg-cyan-300/50 blur-[1px] -top-0.5 -left-0.5" />
-                      <div className="absolute w-4 h-4 rounded-full bg-pink-400/50 blur-[1px] bottom-0 right-0" />
-                    </div>
+                    <img
+                      src="/assets/img/admin-avatar.jpg"
+                      alt="Admin"
+                      className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-black/10"
+                    />
                     <div>
                       <div className="text-[14px] font-semibold text-gray-800">
                         Admin

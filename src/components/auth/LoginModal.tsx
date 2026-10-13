@@ -39,6 +39,14 @@ export default function LoginModal({
     };
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setSuccess(null);
+      setIsLoading(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -57,10 +65,14 @@ export default function LoginModal({
       setIsLoading(false);
       setSuccess("Login successful!");
       if (onSuccess) {
-        onSuccess({ email, name: email.split("@")[0] });
+        const isAdmin = email.toLowerCase().includes("admin");
+        onSuccess({
+          email,
+          name: isAdmin ? "Admin" : (email.split("@")[0] || "User"),
+        });
       }
-      setTimeout(onClose, 1000);
-    }, 800);
+      setTimeout(onClose, 800);
+    }, 600);
   };
 
   const handleGoToRegister = () => {
