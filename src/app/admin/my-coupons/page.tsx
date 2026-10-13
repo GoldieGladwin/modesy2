@@ -1,88 +1,121 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
-import { Ticket, Copy, Check, Clock, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { Clock } from "lucide-react";
+
+interface CouponItem {
+  code: string;
+  shopName: string;
+  discount: string;
+  validTill: string;
+  image: string;
+  productLink?: string;
+}
 
 export default function AdminMyCouponsPage() {
-  const coupons = [
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  const coupons: CouponItem[] = [
     {
-      code: "WELCOME20",
-      discount: "20% OFF",
-      minPurchase: "Min purchase $50",
-      expires: "Valid until Dec 31, 2026",
-      status: "Active",
-      category: "All Categories",
-    },
-    {
-      code: "ADMINSPECIAL",
-      discount: "50% OFF",
-      minPurchase: "No minimum purchase",
-      expires: "Unlimited",
-      status: "Active",
-      category: "Internal Test",
-    },
-    {
-      code: "FREESHIP100",
-      discount: "Free Shipping",
-      minPurchase: "Min purchase $100",
-      expires: "Valid until Nov 15, 2026",
-      status: "Active",
-      category: "Physical Goods",
+      code: "41GN0LDX",
+      shopName: "TRENDSHOP",
+      discount: "15% Coupon",
+      validTill: "31 March 2027",
+      image: "/images/products/trendshop-coupon.jpg",
+      productLink: "/admin/products",
     },
   ];
 
+  const handleCopy = (code: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(code).catch(() => {});
+    }
+    setCopiedCode(code);
+    setTimeout(() => {
+      setCopiedCode(null);
+    }, 2000);
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-gray-500 mb-6 flex items-center gap-1.5">
-        <Link href="/admin" className="hover:text-[#00a99d]">Home</Link>
-        <span>/</span>
-        <span className="text-gray-800 font-medium">My Coupons</span>
-      </nav>
+    <div className="w-full bg-white flex-1 min-h-[calc(100vh-280px)] py-6 sm:py-8">
+      <div className="max-w-[1330px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <nav className="text-[13px] text-[#777777] mb-3 flex items-center gap-1.5 font-normal">
+          <Link href="/admin" className="hover:text-[#00a99d] transition-colors">
+            Home
+          </Link>
+          <span className="text-[#999999]">/</span>
+          <span className="text-[#555555]">My Coupons</span>
+        </nav>
 
-      <div className="bg-white border border-gray-200 rounded-sm p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 mb-6 gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Ticket className="w-5 h-5 text-[#00a99d]" />
-              My Coupons
-            </h1>
-            <p className="text-xs text-gray-500 mt-1">
-              Exclusive discount vouchers and promotional coupons associated with your admin account.
-            </p>
-          </div>
-          <div className="text-xs font-semibold px-3 py-1.5 bg-teal-50 text-[#00a99d] rounded border border-teal-100 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5" /> 3 Coupons Available
-          </div>
-        </div>
+        {/* Title */}
+        <h1 className="text-[28px] font-normal text-[#222222] tracking-tight mb-8">
+          My Coupons
+        </h1>
 
-        {/* Coupons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Coupon Cards - Horizontal cards placed on the left with spacious whitespace */}
+        <div className="flex flex-col gap-6 items-start">
           {coupons.map((coupon) => (
             <div
               key={coupon.code}
-              className="border border-dashed border-[#00a99d] bg-teal-50/20 rounded-md p-5 flex flex-col justify-between relative overflow-hidden"
+              className="w-full max-w-[440px] bg-white border border-dashed border-[#dcdcdc] rounded-[4px] p-5 transition-shadow"
             >
-              <div className="absolute -right-6 -top-6 w-16 h-16 bg-[#00a99d]/10 rounded-full" />
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#00a99d] bg-white px-2 py-0.5 rounded border border-teal-100">
-                  {coupon.category}
-                </span>
-                <div className="text-2xl font-black text-gray-900 mt-3">{coupon.discount}</div>
-                <p className="text-xs text-gray-600 mt-1">{coupon.minPurchase}</p>
-                <p className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {coupon.expires}
-                </p>
+              {/* Top Section: Left Circular Image & Right Coupon Info */}
+              <div className="flex items-center">
+                {/* Left: Circular Image with right dashed border */}
+                <div className="pr-4 border-r border-dashed border-[#dcdcdc] flex items-center justify-center shrink-0">
+                  <div className="w-[100px] h-[100px] rounded-full overflow-hidden shrink-0 relative bg-[#f5d76e]">
+                    <Image
+                      src={coupon.image}
+                      alt={coupon.shopName}
+                      width={100}
+                      height={100}
+                      className="w-full h-full object-cover"
+                      priority
+                    />
+                  </div>
+                </div>
+
+                {/* Right: Coupon Details */}
+                <div className="pl-4 flex-1 min-w-0">
+                  <div className="text-[14px] font-bold text-[#222222] uppercase tracking-wide truncate">
+                    {coupon.shopName}
+                  </div>
+                  <div className="text-[24px] font-bold text-[#111111] leading-tight mt-1">
+                    {coupon.discount}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[13px] font-medium text-[#28a745] mt-1.5">
+                    <Clock className="w-3.5 h-3.5 shrink-0 stroke-[2.2]" />
+                    <span className="truncate">Valid till: {coupon.validTill}</span>
+                  </div>
+                  <div className="mt-2.5">
+                    <Link
+                      href={coupon.productLink || "/admin/products"}
+                      className="text-[13px] text-[#555555] hover:text-[#00a99d] transition-colors inline-flex items-center gap-1 font-normal"
+                    >
+                      <span>See Products</span>
+                      <span className="text-[14px] leading-none">→</span>
+                    </Link>
+                  </div>
+                </div>
               </div>
 
-              <div className="mt-5 pt-4 border-t border-teal-100 flex items-center justify-between">
-                <span className="font-mono font-bold text-gray-800 bg-white px-2.5 py-1 rounded border border-gray-200 text-xs">
-                  {coupon.code}
-                </span>
+              {/* Bottom Section: Code Input + COPY CODE Button */}
+              <div className="mt-5 flex items-stretch">
+                <input
+                  type="text"
+                  readOnly
+                  value={coupon.code}
+                  className="flex-1 min-w-0 h-[38px] px-3.5 text-[13px] text-[#555555] font-medium bg-white border border-[#dcdcdc] border-r-0 rounded-l-[3px] focus:outline-none select-all font-mono tracking-wider"
+                />
                 <button
                   type="button"
-                  className="px-3 py-1 bg-[#00a99d] text-white rounded text-xs font-semibold hover:bg-[#008f85] transition flex items-center gap-1 cursor-pointer"
+                  onClick={() => handleCopy(coupon.code)}
+                  className="h-[38px] px-5 bg-[#00a99d] hover:bg-[#008f85] text-white text-[12px] font-bold uppercase tracking-wider rounded-r-[3px] transition-colors shrink-0 flex items-center justify-center cursor-pointer"
                 >
-                  <Copy className="w-3 h-3" /> Copy
+                  {copiedCode === coupon.code ? "COPIED" : "COPY CODE"}
                 </button>
               </div>
             </div>

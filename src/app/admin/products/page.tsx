@@ -1,1 +1,5 @@
-export default function Page() { return <div>Admin Page</div>; }
+import { redirect } from "next/navigation";
+
+export default function Page() {
+  redirect("/admin/admin-panel/products");
+}
