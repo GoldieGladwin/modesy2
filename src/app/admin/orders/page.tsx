@@ -87,11 +87,10 @@ export default function AdminOrdersStorePage() {
                   </td>
                   <td className="py-3 px-4">
                     <span
-                      className={`px-2 py-0.5 rounded font-semibold text-[10px] ${
-                        order.status === "Completed"
+                      className={`px-2 py-0.5 rounded font-semibold text-[10px] ${order.status === "Completed"
                           ? "bg-green-100 text-green-800"
                           : "bg-blue-100 text-blue-800"
-                      }`}
+                        }`}
                     >
                       {order.status}
                     </span>
