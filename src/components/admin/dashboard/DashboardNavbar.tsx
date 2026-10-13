@@ -79,8 +79,9 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
       href: "/admin/messages",
       icon: MessageSquare,
       match: (path: string) =>
-        path.startsWith("/admin/messages") ||
-        path.startsWith("/admin/massages"),
+        path === "/admin/messages" ||
+        path.startsWith("/admin/messages/") ||
+        path.startsWith("/messages"),
     },
     {
       title: "Profile Settings",
