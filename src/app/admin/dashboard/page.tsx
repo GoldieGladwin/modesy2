@@ -412,7 +412,7 @@ export default function AdminStoreDashboardPage() {
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#f4f4f4] flex justify-end bg-white rounded-b-[3px]">
               <Link
-                href="/admin/comments"
+                href="/admin/dashboard/comments"
                 className="bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555] hover:text-[#222] border border-[#ddd] text-xs px-3 py-1 rounded-[3px] transition-colors"
               >
                 View All
@@ -493,7 +493,7 @@ export default function AdminStoreDashboardPage() {
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#f4f4f4] flex justify-end bg-white rounded-b-[3px]">
               <Link
-                href="/admin/reviews"
+                href="/admin/dashboard/reviews"
                 className="bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555] hover:text-[#222] border border-[#ddd] text-xs px-3 py-1 rounded-[3px] transition-colors"
               >
                 View All
