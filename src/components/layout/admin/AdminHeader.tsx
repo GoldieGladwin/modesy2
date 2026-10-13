@@ -136,10 +136,7 @@ export default function AdminHeader() {
   ];
 
   const isHome = pathname === "/admin" || pathname === "/admin/";
-  const visibleMenus = adminProfileMenus.filter((item) => {
-    if (isHome) return true;
-    return !item.match(pathname || "");
-  });
+  const visibleMenus = adminProfileMenus;
 
   // Close dropdowns on outside click
   useEffect(() => {

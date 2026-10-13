@@ -9,7 +9,7 @@ import {
   Check,
   Image as ImageIcon,
 } from "lucide-react";
-import { ModesyBannerItem } from "@/types/uliladmin";
+import { ModesyBannerItem } from "@/types/admin";
 
 interface Props {
   onNotify?: (msg: string) => void;
@@ -129,14 +129,14 @@ export default function HomepageBannersManager({ onNotify, onEditBanner }: Props
         prev.map((b) =>
           b.id === editingBanner.id
             ? {
-                ...b,
-                url: bannerUrl,
-                language,
-                order: parsedOrder,
-                width: formattedWidth,
-                location,
-                imageUrl: selectedImage,
-              }
+              ...b,
+              url: bannerUrl,
+              language,
+              order: parsedOrder,
+              width: formattedWidth,
+              location,
+              imageUrl: selectedImage,
+            }
             : b
         )
       );
@@ -176,11 +176,10 @@ export default function HomepageBannersManager({ onNotify, onEditBanner }: Props
         className="flex items-center gap-2.5 cursor-pointer select-none text-xs text-gray-700 py-1"
       >
         <div
-          className={`w-4 h-4 rounded-full flex items-center justify-center transition-all duration-200 ${
-            isChecked
+          className={`w-4 h-4 rounded-full flex items-center justify-center transition-all duration-200 ${isChecked
               ? "bg-[#5046e5] text-white ring-2 ring-[#5046e5]/20"
               : "border-2 border-gray-300 bg-white hover:border-gray-400"
-          }`}
+            }`}
         >
           {isChecked && <Check className="w-2.5 h-2.5 stroke-[3]" />}
         </div>
@@ -271,9 +270,8 @@ export default function HomepageBannersManager({ onNotify, onEditBanner }: Props
               return (
                 <tr
                   key={b.id}
-                  className={`hover:bg-gray-50/70 transition-all duration-200 ${
-                    isDeleting ? "opacity-0 -translate-x-3" : "opacity-100 translate-x-0"
-                  }`}
+                  className={`hover:bg-gray-50/70 transition-all duration-200 ${isDeleting ? "opacity-0 -translate-x-3" : "opacity-100 translate-x-0"
+                    }`}
                 >
                   <td className="py-3.5 px-3 text-gray-700 font-normal">{b.id}</td>
                   <td className="py-3.5 px-3">

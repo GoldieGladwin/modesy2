@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock } from "lucide-react";
 
+import { Coupon } from "./types";
+
 export interface CouponItem {
   code: string;
   shopName: string;
@@ -15,8 +17,11 @@ export interface CouponItem {
 }
 
 interface CouponCardProps {
-  coupon: CouponItem;
+  coupon: CouponItem | (Coupon & { discount?: string; validTill?: string; image?: string; productLink?: string });
+  onEdit?: (coupon: any) => void;
+  onDelete?: (coupon: any) => void;
   onCopy?: (code: string) => void;
+  isCopied?: boolean;
 }
 
 export default function CouponCard({ coupon, onCopy }: CouponCardProps) {
@@ -33,7 +38,21 @@ export default function CouponCard({ coupon, onCopy }: CouponCardProps) {
     }, 2000);
   };
 
-  const imageSrc = coupon.image || "/images/products/trendshop-coupon.jpg";
+  const discountText =
+    (coupon as any).discount ||
+    ((coupon as any).discountType === "percentage"
+      ? `${(coupon as any).discountValue}% OFF`
+      : `$${(coupon as any).discountValue || 15} OFF`);
+
+  const validTillText =
+    (coupon as any).validTill ||
+    (coupon as any).expirationDate ||
+    "2026-12-31";
+
+  const imageSrc =
+    (coupon as any).image ||
+    (coupon as any).imageUrl ||
+    "/images/products/trendshop-coupon.jpg";
 
   return (
     <div className="w-full max-w-[440px] bg-white border border-dashed border-[#dcdcdc] rounded-[4px] p-5 transition-shadow">
@@ -59,11 +78,11 @@ export default function CouponCard({ coupon, onCopy }: CouponCardProps) {
             {coupon.shopName}
           </div>
           <div className="text-[24px] font-bold text-[#111111] leading-tight mt-1">
-            {coupon.discount}
+            {discountText}
           </div>
           <div className="flex items-center gap-1.5 text-[13px] font-medium text-[#28a745] mt-1.5">
             <Clock className="w-3.5 h-3.5 shrink-0 stroke-[2.2]" />
-            <span className="truncate">Valid till: {coupon.validTill}</span>
+            <span className="truncate">Valid till: {validTillText}</span>
           </div>
           <div className="mt-2.5">
             <Link
