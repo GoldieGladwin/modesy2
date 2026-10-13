@@ -4,10 +4,22 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { CATEGORIES, CategoryItem } from "@/data/categories";
 import LocationModal from "@/components/modals/LocationModal";
+import { useAuth } from "@/context/AuthContext";
+import {
+  Layers,
+  LayoutGrid,
+  User,
+  Wallet,
+  ShoppingBasket,
+  Tag,
+  MessageSquare,
+  Settings,
+  LogOut,
+} from "lucide-react";
 
 interface HeaderProps {
   onOpenLoginModal?: () => void;
-  currentUser?: { email: string; name: string } | null;
+  currentUser?: { email: string; name: string; avatar?: string } | null;
   onLogout?: () => void;
 }
 
@@ -38,6 +50,63 @@ export default function Header({
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(
     null
   );
+
+  // Global Auth Integration
+  const { user, isLoggedIn, openLoginModal, logout } = useAuth();
+  const effectiveUser = currentUser || user;
+  const effectiveIsLoggedIn = Boolean(currentUser || isLoggedIn);
+
+  // Admin dropdown state
+  const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
+  const adminRef = useRef<HTMLDivElement>(null);
+
+  const adminProfileMenus = [
+    {
+      title: "Admin Panel",
+      href: "/admin/admin-panel",
+      icon: Layers,
+    },
+    {
+      title: "Dashboard",
+      href: "/admin/dashboard",
+      icon: LayoutGrid,
+    },
+    {
+      title: "Profile",
+      href: "/admin/profile",
+      icon: User,
+    },
+    {
+      title: "Wallet",
+      href: "/admin/wallet",
+      icon: Wallet,
+    },
+    {
+      title: "Orders",
+      href: "/admin/orders",
+      icon: ShoppingBasket,
+    },
+    {
+      title: "My Coupons",
+      href: "/admin/my-coupons",
+      icon: Tag,
+    },
+    {
+      title: "Messages",
+      href: "/admin/messages",
+      icon: MessageSquare,
+    },
+    {
+      title: "Profile Settings",
+      href: "/admin/profile-settings",
+      icon: Settings,
+    },
+    {
+      title: "Logout",
+      href: "#logout",
+      icon: LogOut,
+    },
+  ];
 
   const currencyRef = useRef<HTMLDivElement>(null);
   const languageRef = useRef<HTMLDivElement>(null);
@@ -73,6 +142,12 @@ export default function Header({
         !languageRef.current.contains(event.target as Node)
       ) {
         setLanguageDropdownOpen(false);
+      }
+      if (
+        adminRef.current &&
+        !adminRef.current.contains(event.target as Node)
+      ) {
+        setAdminDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -242,39 +317,96 @@ export default function Header({
               )}
             </div>
 
-            {/* Login / Register or Logged In User */}
-            {currentUser ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-[#333] font-medium text-[14px]">
-                  {currentUser.name}
-                </span>
-                <span className="text-[#333e48] text-[13px]">/</span>
+            {/* Login / Register or Admin Profile Dropdown */}
+            {effectiveIsLoggedIn ? (
+              <div className="relative" ref={adminRef}>
                 <button
                   type="button"
-                  onClick={onLogout}
-                  className="text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
+                  onClick={() => setAdminDropdownOpen(!adminDropdownOpen)}
+                  className="flex items-center space-x-1.5 text-[#333333] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
                 >
-                  Logout
+                  <img
+                    src={effectiveUser?.avatar || "/assets/img/admin-avatar.jpg"}
+                    alt="Admin"
+                    className="w-[26px] h-[26px] rounded-full object-cover shrink-0 ring-1 ring-black/10"
+                  />
+                  <span className="font-medium text-[14px] text-[#333]">
+                    {effectiveUser?.name || "Admin"}
+                  </span>
+                  <svg
+                    width="10"
+                    height="6"
+                    viewBox="0 0 10 6"
+                    fill="none"
+                    className={`ml-1 transition-transform ${
+                      adminDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  >
+                    <path
+                      d="M1 1L5 5L9 1"
+                      stroke="#888888"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
+
+                {/* Dropdown Menu Sesuai Foto User */}
+                {adminDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-[#ebebeb] rounded-[3px] shadow-[0_4px_15px_rgba(0,0,0,0.08)] z-50 py-2">
+                    {adminProfileMenus.map((item) => {
+                      const Icon = item.icon;
+                      if (item.title === "Logout") {
+                        return (
+                          <button
+                            key={item.title}
+                            type="button"
+                            onClick={() => {
+                              setAdminDropdownOpen(false);
+                              if (onLogout) onLogout();
+                              logout();
+                            }}
+                            className="w-full text-left flex items-center gap-3 px-4 py-2 text-[14px] text-gray-700 hover:text-[#00a99d] hover:bg-gray-50/80 transition-colors font-normal group cursor-pointer border-0 bg-transparent"
+                          >
+                            <Icon
+                              className="w-[18px] h-[18px] text-gray-500 group-hover:text-[#00a99d] transition-colors shrink-0"
+                              strokeWidth={1.75}
+                            />
+                            <span className="truncate">{item.title}</span>
+                          </button>
+                        );
+                      }
+                      return (
+                        <Link
+                          key={item.title}
+                          href={item.href}
+                          onClick={() => setAdminDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-[14px] text-gray-700 hover:text-[#00a99d] hover:bg-gray-50/80 transition-colors font-normal group"
+                        >
+                          <Icon
+                            className="w-[18px] h-[18px] text-gray-500 group-hover:text-[#00a99d] transition-colors shrink-0"
+                            strokeWidth={1.75}
+                          />
+                          <span className="truncate">{item.title}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-center">
-                {onOpenLoginModal ? (
-                  <button
-                    type="button"
-                    onClick={onOpenLoginModal}
-                    className="text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
-                  >
-                    Login
-                  </button>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer text-[14px]"
-                  >
-                    Login
-                  </Link>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onOpenLoginModal) onOpenLoginModal();
+                    else openLoginModal();
+                  }}
+                  className="text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
+                >
+                  Login
+                </button>
                 <span className="text-[#333e48] text-[13px] mx-2">/</span>
                 <Link
                   href="/register"
@@ -393,21 +525,24 @@ export default function Header({
             </Link>
 
             {/* Sell Now Button */}
-            {onOpenLoginModal ? (
-              <button
-                type="button"
-                onClick={onOpenLoginModal}
-                className="bg-[#00a99d] hover:brightness-95 text-white text-[14px] font-medium px-5 py-2 rounded-[3px] transition-all cursor-pointer border-0 leading-[22px]"
-              >
-                Sell Now
-              </button>
-            ) : (
+            {effectiveIsLoggedIn ? (
               <Link
-                href="/login"
+                href="/admin/dashboard"
                 className="bg-[#00a99d] hover:brightness-95 text-white text-[14px] font-medium px-5 py-2 rounded-[3px] transition-all cursor-pointer border-0 leading-[22px] inline-block text-center"
               >
                 Sell Now
               </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenLoginModal) onOpenLoginModal();
+                  else openLoginModal();
+                }}
+                className="bg-[#00a99d] hover:brightness-95 text-white text-[14px] font-medium px-5 py-2 rounded-[3px] transition-all cursor-pointer border-0 leading-[22px]"
+              >
+                Sell Now
+              </button>
             )}
           </div>
         </div>
@@ -683,47 +818,81 @@ export default function Header({
                     </button>
                   )
                 )}
-                <div className="pt-2 flex items-center space-x-3 text-[14px]">
-                  {currentUser ? (
-                    <>
-                      <span className="text-[#333] font-medium">
-                        {currentUser.name}
-                      </span>
-                      <span className="text-gray-400">/</span>
-                      <button
-                        type="button"
-                        onClick={onLogout}
-                        className="text-[#666] hover:text-[#00a99d]"
-                      >
-                        Logout
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          onOpenLoginModal?.();
-                        }}
-                        className="text-[#666] hover:text-[#00a99d]"
-                      >
-                        Login
-                      </button>
-                      <span className="text-gray-400">/</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          onOpenLoginModal?.();
-                        }}
-                        className="text-[#666] hover:text-[#00a99d]"
-                      >
-                        Register
-                      </button>
-                    </>
-                  )}
-                </div>
+                {effectiveIsLoggedIn ? (
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200 my-2">
+                    <div className="flex items-center space-x-2.5 mb-2.5 pb-2.5 border-b border-gray-200">
+                      <img
+                        src={effectiveUser?.avatar || "/assets/img/admin-avatar.jpg"}
+                        alt="Admin"
+                        className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-black/10"
+                      />
+                      <div>
+                        <div className="text-[14px] font-semibold text-gray-800">
+                          {effectiveUser?.name || "Admin"}
+                        </div>
+                        <div className="text-[11px] text-gray-500">
+                          Administrator
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {adminProfileMenus.map((item) => {
+                        const Icon = item.icon;
+                        if (item.title === "Logout") {
+                          return (
+                            <button
+                              key={item.title}
+                              type="button"
+                              onClick={() => {
+                                setMobileMenuOpen(false);
+                                if (onLogout) onLogout();
+                                logout();
+                              }}
+                              className="flex items-center gap-2 p-1.5 text-[12px] text-red-600 hover:text-red-700 hover:bg-white rounded transition-colors text-left bg-transparent border-0 cursor-pointer"
+                            >
+                              <Icon className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                              <span className="truncate">{item.title}</span>
+                            </button>
+                          );
+                        }
+                        return (
+                          <Link
+                            key={item.title}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-2 p-1.5 text-[12px] text-gray-700 hover:text-[#00a99d] hover:bg-white rounded transition-colors"
+                          >
+                            <Icon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                            <span className="truncate">{item.title}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="pt-2 flex items-center space-x-3 text-[14px]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        if (onOpenLoginModal) onOpenLoginModal();
+                        else openLoginModal();
+                      }}
+                      className="text-[#666] hover:text-[#00a99d] bg-transparent border-0 cursor-pointer p-0"
+                    >
+                      Login
+                    </button>
+                    <span className="text-gray-400">/</span>
+                    <Link
+                      href="/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-[#666] hover:text-[#00a99d]"
+                    >
+                      Register
+                    </Link>
+                  </div>
+                )}
 
                 {/* Mobile Location */}
                 <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[14px]">

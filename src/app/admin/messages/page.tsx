@@ -1,128 +1,411 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
-import { Mail, Search, MessageSquare, Send, User, CheckCheck } from "lucide-react";
+import { Search, Send } from "lucide-react";
+
+interface Message {
+  id: string;
+  sender: "admin" | "other";
+  text: string;
+  time: string;
+}
+
+interface ChatContact {
+  id: string;
+  name: string;
+  avatar: string;
+  isOnline: boolean;
+  product: string;
+  lastMessageSnippet: string;
+  time: string;
+  messages: Message[];
+}
 
 export default function AdminMessagesPage() {
-  const conversations = [
+  const [searchQuery, setSearchQuery] = useState("");
+  const [inputMessage, setInputMessage] = useState("");
+
+  const initialChats: ChatContact[] = [
     {
-      id: "1",
-      user: "Sarah Jenkins (Buyer)",
-      lastMessage: "Hi admin, does the summer promotion apply to digital downloads?",
+      id: "peter-jone",
+      name: "Peter Jone",
+      avatar: "/images/peter-jone-avatar.jpg",
+      isOnline: true,
+      product: "Modern grey couch...",
+      lastMessageSnippet: "Hi, is this modern grey couch still available?",
       time: "10 mins ago",
-      unread: true,
+      messages: [
+        {
+          id: "m1",
+          sender: "other",
+          text: "Hi, is this modern grey couch still available?",
+          time: "15 mins ago",
+        },
+        {
+          id: "m2",
+          sender: "admin",
+          text: "Hello Peter! Yes, it's still available and ready for delivery.",
+          time: "10 mins ago",
+        },
+      ],
     },
     {
-      id: "2",
-      user: "Apex Tech Store (Vendor)",
-      lastMessage: "Payout request details have been confirmed. Thank you!",
-      time: "2 hours ago",
-      unread: false,
+      id: "trendshop-1",
+      name: "Trendshop",
+      avatar: "/images/trendshop-avatar.jpg",
+      isOnline: false,
+      product: "Black midi skirt with white flowers",
+      lastMessageSnippet: "Black midi skirt with white flowers",
+      time: "1 month ago",
+      messages: [
+        {
+          id: "ts-m1",
+          sender: "admin",
+          text: "hi",
+          time: "1 month ago",
+        },
+      ],
     },
     {
-      id: "3",
-      user: "Support Team",
-      lastMessage: "Automated daily system health audit report is ready.",
-      time: "Yesterday",
-      unread: false,
+      id: "trendshop-2",
+      name: "Trendshop",
+      avatar: "/images/trendshop-avatar.jpg",
+      isOnline: false,
+      product: "Summer fashion top lace",
+      lastMessageSnippet: "Summer fashion top lace",
+      time: "1 day ago",
+      messages: [
+        {
+          id: "ts2-m1",
+          sender: "other",
+          text: "Hello! We have restocked the Summer fashion top lace in all sizes.",
+          time: "1 day ago",
+        },
+      ],
+    },
+    {
+      id: "trendshop-3",
+      name: "Trendshop",
+      avatar: "/images/trendshop-avatar.jpg",
+      isOnline: false,
+      product: "Black fashion women backpack",
+      lastMessageSnippet: "Black fashion women backpack",
+      time: "11 days ago",
+      messages: [
+        {
+          id: "ts3-m1",
+          sender: "admin",
+          text: "Is the black fashion backpack made of waterproof leather?",
+          time: "11 days ago",
+        },
+        {
+          id: "ts3-m2",
+          sender: "other",
+          text: "Yes, it is high-grade water-resistant vegan leather.",
+          time: "11 days ago",
+        },
+      ],
+    },
+    {
+      id: "trendshop-4",
+      name: "Trendshop",
+      avatar: "/images/trendshop-avatar.jpg",
+      isOnline: false,
+      product: "Sun hat for women protection cap",
+      lastMessageSnippet: "Sun hat for women protection cap",
+      time: "21 days ago",
+      messages: [
+        {
+          id: "ts4-m1",
+          sender: "other",
+          text: "New UV protection sun hats have arrived for summer season.",
+          time: "21 days ago",
+        },
+      ],
+    },
+    {
+      id: "trendshop-5",
+      name: "Trendshop",
+      avatar: "/images/trendshop-avatar.jpg",
+      isOnline: false,
+      product: "Videokonferenz am Donnerstag ...",
+      lastMessageSnippet: "Videokonferenz am Donnerstag ...",
+      time: "27 days ago",
+      messages: [
+        {
+          id: "ts5-m1",
+          sender: "other",
+          text: "Videokonferenz am Donnerstag um 14:00 Uhr bestätigt.",
+          time: "27 days ago",
+        },
+      ],
+    },
+    {
+      id: "trendshop-6",
+      name: "Trendshop",
+      avatar: "/images/trendshop-avatar.jpg",
+      isOnline: false,
+      product: "Sun hat for women protection cap",
+      lastMessageSnippet: "Sun hat for women protection cap",
+      time: "1 month ago",
+      messages: [
+        {
+          id: "ts6-m1",
+          sender: "admin",
+          text: "Thank you for the fast shipping!",
+          time: "1 month ago",
+        },
+      ],
     },
   ];
 
+  const [chats, setChats] = useState<ChatContact[]>(initialChats);
+  const [activeChatId, setActiveChatId] = useState<string>("peter-jone");
+
+  const activeChat =
+    chats.find((c) => c.id === activeChatId) || chats[0];
+
+  const filteredChats = chats.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.lastMessageSnippet.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputMessage.trim()) return;
+
+    const newMessage: Message = {
+      id: "m-" + Date.now(),
+      sender: "admin",
+      text: inputMessage.trim(),
+      time: "Just now",
+    };
+
+    setChats((prev) =>
+      prev.map((c) =>
+        c.id === activeChat.id
+          ? {
+              ...c,
+              messages: [...c.messages, newMessage],
+              lastMessageSnippet: newMessage.text,
+              time: "Just now",
+            }
+          : c
+      )
+    );
+
+    setInputMessage("");
+  };
+
+  // Nebula Admin Avatar Circle matching Modesy Admin
+  const renderAdminAvatar = (sizeClass = "w-11 h-11") => (
+    <div
+      className={`${sizeClass} rounded-full overflow-hidden shrink-0 shadow-xs ring-1 ring-black/10 relative flex items-center justify-center bg-slate-900`}
+    >
+      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 via-purple-600 to-pink-500 opacity-90" />
+      <div className="absolute w-5 h-5 rounded-full bg-cyan-300/50 blur-[2px] -top-0.5 -left-0.5" />
+      <div className="absolute w-5 h-5 rounded-full bg-pink-400/50 blur-[2px] bottom-0 right-0" />
+      <div className="absolute w-3 h-3 rounded-full bg-amber-300/60 blur-[1px] top-1 right-1" />
+    </div>
+  );
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-gray-500 mb-6 flex items-center gap-1.5">
-        <Link href="/admin" className="hover:text-[#00a99d]">Home</Link>
-        <span>/</span>
-        <span className="text-gray-800 font-medium">Messages</span>
-      </nav>
+    <div className="w-full py-4 sm:py-6 font-sans text-gray-800">
+      <div className="max-w-[1240px] mx-auto px-4">
+        {/* Breadcrumb Navigation */}
+        <nav className="text-[13px] text-gray-500 mb-4 flex items-center gap-1.5 font-normal">
+          <Link href="/admin" className="hover:text-gray-800 transition-colors">
+            Home
+          </Link>
+          <span className="text-gray-400">/</span>
+          <span className="text-gray-500">Messages</span>
+        </nav>
 
-      <div className="bg-white border border-gray-200 rounded-sm overflow-hidden flex flex-col md:flex-row min-h-[550px]">
-        {/* Sidebar Conversations */}
-        <div className="w-full md:w-80 border-r border-gray-200 flex flex-col bg-gray-50/50">
-          <div className="p-4 border-b border-gray-200 bg-white">
-            <h1 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <Mail className="w-4 h-4 text-[#00a99d]" /> Messages
-            </h1>
-            <div className="mt-3 relative">
-              <input
-                type="text"
-                placeholder="Search conversations..."
-                className="w-full text-xs pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-[#00a99d]"
-              />
-              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
+        {/* 2-Column Chat Box Interface (WhatsApp Web style) */}
+        <div className="bg-white border border-[#e4e7ea] rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.03)] overflow-hidden flex flex-col md:flex-row h-[630px]">
+          {/* Kolom Kiri: Daftar Chat */}
+          <div className="w-full md:w-[320px] lg:w-[340px] shrink-0 border-r border-[#e4e7ea] flex flex-col bg-white">
+            {/* Profil Admin */}
+            <div className="p-4 pb-3 flex items-center gap-3">
+              {renderAdminAvatar("w-11 h-11")}
+              <span className="font-semibold text-[15px] text-gray-800">
+                Admin
+              </span>
+            </div>
+
+            {/* Kotak Search */}
+            <div className="px-4 pb-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white border border-[#e4e7ea] rounded-md text-[13px] pl-3.5 pr-9 py-2 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-teal-500 transition-colors"
+                />
+                <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none stroke-[1.75]" />
+              </div>
+            </div>
+
+            {/* Section Recent Chats */}
+            <div className="px-4 pt-1 pb-2">
+              <h2 className="text-[13px] font-semibold text-gray-500">
+                Recent Chats
+              </h2>
+            </div>
+
+            {/* Daftar Obrolan (Scrollable) */}
+            <div className="flex-1 overflow-y-auto divide-y divide-gray-100/50">
+              {filteredChats.map((chat) => {
+                const isSelected = chat.id === activeChat.id;
+                return (
+                  <button
+                    key={chat.id}
+                    type="button"
+                    onClick={() => setActiveChatId(chat.id)}
+                    className={`w-full text-left px-4 py-3 cursor-pointer transition-colors flex items-start gap-3 ${
+                      isSelected
+                        ? "bg-[#f1f5f9]/70"
+                        : "hover:bg-gray-50 bg-white"
+                    }`}
+                  >
+                    <img
+                      src={chat.avatar}
+                      alt={chat.name}
+                      className="w-11 h-11 rounded-full object-cover shrink-0 border border-gray-100"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[13px] font-semibold text-gray-800 truncate">
+                          {chat.name}
+                        </span>
+                      </div>
+                      <p className="text-[12px] text-gray-500 truncate mt-0.5">
+                        {chat.lastMessageSnippet}
+                      </p>
+                      <span className="text-[11px] text-gray-400 block mt-0.5">
+                        {chat.time}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+
+              {filteredChats.length === 0 && (
+                <div className="p-6 text-center text-xs text-gray-400">
+                  No conversations found
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-            {conversations.map((conv, idx) => (
-              <div
-                key={conv.id}
-                className={`p-3.5 hover:bg-gray-100/70 cursor-pointer transition flex items-start gap-3 ${
-                  idx === 0 ? "bg-teal-50/40 border-l-4 border-[#00a99d]" : ""
-                }`}
-              >
-                <div className="w-9 h-9 rounded-full bg-gray-200 text-gray-700 font-bold flex items-center justify-center text-xs shrink-0">
-                  {conv.user.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold text-gray-900 truncate">{conv.user}</h3>
-                    <span className="text-[10px] text-gray-400 shrink-0">{conv.time}</span>
+          {/* Kolom Kanan: Area Chat */}
+          <div className="flex-1 flex flex-col bg-white min-w-0">
+            {/* Header Chat */}
+            <div className="p-4 border-b border-[#e4e7ea] flex items-center justify-between bg-white">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <img
+                  src={activeChat.avatar}
+                  alt={activeChat.name}
+                  className="w-11 h-11 rounded-full object-cover shrink-0 border border-gray-100"
+                />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[14px] font-semibold text-gray-900 truncate">
+                      {activeChat.name}
+                    </h3>
+                    <span className="flex items-center gap-1 text-[11px] text-gray-500 font-normal">
+                      <span
+                        className={`w-2 h-2 rounded-full inline-block ${
+                          activeChat.isOnline ? "bg-emerald-500" : "bg-gray-400"
+                        }`}
+                      />
+                      {activeChat.isOnline ? "Online" : "Offline"}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-500 truncate mt-0.5">{conv.lastMessage}</p>
-                </div>
-                {conv.unread && (
-                  <span className="w-2 h-2 rounded-full bg-[#00a99d] shrink-0 mt-1.5" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat Content */}
-        <div className="flex-1 flex flex-col bg-white">
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-teal-100 text-[#00a99d] font-bold flex items-center justify-center text-xs">
-                S
-              </div>
-              <div>
-                <h2 className="text-xs font-bold text-gray-900">Sarah Jenkins (Buyer)</h2>
-                <span className="text-[10px] text-emerald-600 font-medium">● Online</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50/30">
-            <div className="flex items-start gap-2 max-w-md">
-              <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 text-xs flex items-center justify-center shrink-0">
-                S
-              </div>
-              <div className="bg-white border border-gray-200 p-3 rounded-lg text-xs text-gray-700 shadow-xs">
-                Hi admin, does the summer promotion apply to digital downloads?
-                <div className="text-[9px] text-gray-400 mt-1 text-right">10:14 AM</div>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2 max-w-md ml-auto justify-end">
-              <div className="bg-[#00a99d] text-white p-3 rounded-lg text-xs shadow-xs">
-                Hello Sarah! Yes, you can use the code WELCOME20 on eligible digital catalog products as well!
-                <div className="text-[9px] text-teal-100 mt-1 text-right flex items-center justify-end gap-1">
-                  10:18 AM <CheckCheck className="w-3 h-3" />
+                  {activeChat.product && (
+                    <p className="text-[12px] text-gray-600 hover:text-teal-600 transition-colors truncate cursor-pointer mt-0.5">
+                      {activeChat.product}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="p-3 border-t border-gray-200 flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Type your reply..."
-              className="flex-1 text-xs px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-[#00a99d]"
-            />
-            <button className="px-4 py-2.5 bg-[#00a99d] hover:bg-[#008f85] text-white rounded text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
-              <Send className="w-3.5 h-3.5" /> Send
-            </button>
+            {/* Gelembung Pesan (Chat Bubbles) */}
+            <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-white flex flex-col justify-end">
+              {activeChat.messages.map((msg) => {
+                if (msg.sender === "admin") {
+                  // Outgoing bubble (biru di kanan dengan avatar admin di sebelah kanan)
+                  return (
+                    <div
+                      key={msg.id}
+                      className="flex flex-col items-end gap-1 w-full"
+                    >
+                      <div className="flex items-end gap-2 max-w-[80%] sm:max-w-[70%]">
+                        <div className="bg-[#007bff] text-white text-[13px] px-3.5 py-2 rounded-lg shadow-2xs leading-relaxed break-words">
+                          {msg.text}
+                        </div>
+                        {renderAdminAvatar("w-7 h-7")}
+                      </div>
+                      <span className="text-[11px] text-gray-400 pr-9">
+                        {msg.time}
+                      </span>
+                    </div>
+                  );
+                } else {
+                  // Incoming bubble (balon putih di kiri dengan avatar lawan bicara di sebelah kiri)
+                  return (
+                    <div
+                      key={msg.id}
+                      className="flex flex-col items-start gap-1 w-full"
+                    >
+                      <div className="flex items-end gap-2 max-w-[80%] sm:max-w-[70%]">
+                        <img
+                          src={activeChat.avatar}
+                          alt={activeChat.name}
+                          className="w-7 h-7 rounded-full object-cover shrink-0 border border-gray-100"
+                        />
+                        <div className="bg-white border border-[#e4e7ea] text-gray-800 text-[13px] px-3.5 py-2 rounded-lg shadow-2xs leading-relaxed break-words">
+                          {msg.text}
+                        </div>
+                      </div>
+                      <span className="text-[11px] text-gray-400 pl-9">
+                        {msg.time}
+                      </span>
+                    </div>
+                  );
+                }
+              })}
+            </div>
+
+            {/* Kotak Input Pesan dengan Ikon Send di Paling Bawah */}
+            <div className="p-4 border-t border-[#e4e7ea] bg-white">
+              <form onSubmit={handleSendMessage} className="relative w-full">
+                <input
+                  type="text"
+                  placeholder="Write a message..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  className="w-full bg-[#f8f9fa] border border-[#e4e7ea] rounded-md text-[13px] pl-4 pr-10 py-2.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:bg-white transition-all"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputMessage.trim()}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
+                    inputMessage.trim()
+                      ? "text-blue-600 hover:text-blue-700"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
+                  aria-label="Send message"
+                >
+                  <Send className="w-4 h-4 stroke-[1.75]" />
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
