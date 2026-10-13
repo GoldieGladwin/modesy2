@@ -39,15 +39,17 @@ export default function RefundRequestsView() {
   };
 
   return (
-    <div className="space-y-4 font-sans">
+    <div className="bg-white border border-[#ebebeb] rounded-[4px] p-6 sm:p-7 shadow-xs font-sans">
       {/* Title */}
-      <h1 className="text-xl font-semibold text-gray-800 tracking-tight">
-        Refund Requests
-      </h1>
+      <div className="mb-6">
+        <h1 className="text-[18px] font-bold text-[#2d3748]">
+          Refund Requests
+        </h1>
+      </div>
 
       {/* Notification Toast */}
       {notification && (
-        <div className="bg-[#d4edda] border border-[#c3e6cb] text-[#155724] px-4 py-2.5 rounded-[3px] text-xs font-medium flex items-center justify-between shadow-xs">
+        <div className="mb-4 bg-[#d4edda] border border-[#c3e6cb] text-[#155724] px-4 py-2.5 rounded-[3px] text-xs font-medium flex items-center justify-between shadow-2xs">
           <span>{notification}</span>
           <button
             type="button"
@@ -63,20 +65,12 @@ export default function RefundRequestsView() {
       <RefundTable
         refunds={refunds}
         onOpenDetails={(item) => setSelectedRefund(item)}
-        onApprove={handleApproveRefund}
       />
 
-      {/* Entries Counter */}
-      <div className="text-xs text-gray-600 font-medium pt-1">
-        Number of Entries: {refunds.length}
-      </div>
-
-      {/* Warning Alert Banner */}
-      <div className="bg-[#d9edf7] border border-[#bce8f1] text-[#31708f] p-4 rounded-[3px] text-xs leading-relaxed shadow-2xs">
-        <strong className="font-bold">Warning!</strong> To complete a refund
-        request, you must return the buyer's money. If you click the "Approve
-        Refund" button, the system will change the order status to "Refund
-        Approved" and deduct the order amount from the seller's balance.
+      {/* Number of Entries */}
+      <div className="mt-6 text-xs text-[#333e48]">
+        Number of Entries:{" "}
+        <strong className="font-bold">{refunds.length}</strong>
       </div>
 
       {/* Refund Details Modal */}

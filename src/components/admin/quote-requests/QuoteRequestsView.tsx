@@ -10,7 +10,10 @@ export default function QuoteRequestsView() {
   const [quotes, setQuotes] = useState<QuoteRequestItem[]>(initialQuoteRequests);
   const [notification, setNotification] = useState<string | null>(null);
   const [filter, setFilter] = useState<QuoteFilterState>({
-    pageSize: 15,
+    status: "All",
+    search: "",
+  });
+  const [appliedFilter, setAppliedFilter] = useState<QuoteFilterState>({
     status: "All",
     search: "",
   });
@@ -26,15 +29,20 @@ export default function QuoteRequestsView() {
     setFilter((prev) => ({ ...prev, ...newFilter }));
   };
 
+  const handleApplyFilter = () => {
+    setAppliedFilter(filter);
+  };
+
   const filteredQuotes = quotes.filter((q) => {
-    if (filter.status !== "All" && q.status !== filter.status) return false;
-    if (filter.search.trim()) {
-      const query = filter.search.toLowerCase();
+    if (appliedFilter.status !== "All" && q.status !== appliedFilter.status)
+      return false;
+    if (appliedFilter.search.trim()) {
+      const query = appliedFilter.search.toLowerCase();
       const match =
         q.quoteNumber.toLowerCase().includes(query) ||
         q.productTitle.toLowerCase().includes(query) ||
-        q.seller.toLowerCase().includes(query) ||
-        q.buyer.toLowerCase().includes(query);
+        q.buyer.toLowerCase().includes(query) ||
+        (q.sku && q.sku.toLowerCase().includes(query));
       if (!match) return false;
     }
     return true;
@@ -67,15 +75,17 @@ export default function QuoteRequestsView() {
   };
 
   return (
-    <div className="space-y-4 font-sans">
+    <div className="bg-white border border-[#ebebeb] rounded-[4px] p-6 sm:p-7 shadow-xs font-sans">
       {/* Title */}
-      <h1 className="text-xl font-semibold text-gray-800 tracking-tight">
-        Quote Requests
-      </h1>
+      <div className="mb-6">
+        <h1 className="text-[18px] font-bold text-[#2d3748]">
+          Quote Requests
+        </h1>
+      </div>
 
       {/* Notification Toast */}
       {notification && (
-        <div className="bg-[#d4edda] border border-[#c3e6cb] text-[#155724] px-4 py-2.5 rounded-[3px] text-xs font-medium flex items-center justify-between shadow-xs">
+        <div className="mb-4 bg-[#d4edda] border border-[#c3e6cb] text-[#155724] px-4 py-2.5 rounded-[3px] text-xs font-medium flex items-center justify-between shadow-2xs">
           <span>{notification}</span>
           <button
             type="button"
@@ -91,7 +101,7 @@ export default function QuoteRequestsView() {
       <QuoteFilterBar
         filter={filter}
         onFilterChange={handleFilterChange}
-        onApplyFilter={() => {}}
+        onApplyFilter={handleApplyFilter}
       />
 
       {/* Table */}

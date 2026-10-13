@@ -86,9 +86,13 @@ export default function Footer() {
           {/* Column 1: Brand & Description (Wider col-span-4) */}
           <div className="lg:col-span-4">
             <Link href="/" className="inline-block mb-4">
-              <span className="text-[32px] font-bold text-gray-800 tracking-tight">
-                M<span className="text-[#00a99d]">o</span>desy
-              </span>
+              <img
+                src="/assets/img/logo.svg"
+                alt="Modesy"
+                width={160}
+                height={60}
+                className="w-[160px] h-[60px] object-contain select-none"
+              />
             </Link>
             <p className="text-gray-500 text-sm leading-relaxed mb-8 pr-4">
               Modesy is a modern e-commerce marketplace where buyers and sellers connect with ease. Whether you are looking to shop for unique items or grow your business by selling online, Modesy is here to help you every step of the way.
@@ -172,24 +176,43 @@ export default function Footer() {
               )}
             </form>
 
-            {/* Fake Payment Methods using CSS (karena aset gambar tidak tersedia di proyek utama) */}
-            <div className="flex items-center gap-3 mt-8">
-              {/* Visa */}
-              <span className="font-bold text-[#1434CB] text-xl italic tracking-tighter" aria-label="Visa">VISA</span>
-              {/* Mastercard */}
-              <span className="flex items-center -space-x-2" aria-label="Mastercard">
-                <span className="w-5 h-5 rounded-full bg-[#EB001B] opacity-90 mix-blend-multiply"></span>
-                <span className="w-5 h-5 rounded-full bg-[#F79E1B] opacity-90 mix-blend-multiply"></span>
-              </span>
-              {/* Maestro */}
-              <span className="flex items-center -space-x-2" aria-label="Maestro">
-                <span className="w-5 h-5 rounded-full bg-[#0064CB] opacity-90 mix-blend-multiply"></span>
-                <span className="w-5 h-5 rounded-full bg-[#CC0000] opacity-90 mix-blend-multiply"></span>
-              </span>
-              {/* Amex */}
-              <span className="font-bold text-[#002663] bg-[#0074df]/10 px-1 border border-[#0074df]/30 rounded text-[10px] py-0.5 tracking-wider" aria-label="American Express">AMEX</span>
-              {/* Discover */}
-              <span className="font-bold text-[#FF6000] text-sm italic tracking-tight" aria-label="Discover">Discover</span>
+            {/* Official Payment Logos */}
+            <div className="flex items-center gap-2.5 mt-8">
+              <img
+                src="/assets/img/payment/visa.svg"
+                alt="Visa"
+                width={32}
+                height={22}
+                className="h-[22px] w-auto object-contain"
+              />
+              <img
+                src="/assets/img/payment/mastercard.svg"
+                alt="Mastercard"
+                width={32}
+                height={22}
+                className="h-[22px] w-auto object-contain"
+              />
+              <img
+                src="/assets/img/payment/maestro.svg"
+                alt="Maestro"
+                width={32}
+                height={22}
+                className="h-[22px] w-auto object-contain"
+              />
+              <img
+                src="/assets/img/payment/amex.svg"
+                alt="American Express"
+                width={32}
+                height={22}
+                className="h-[22px] w-auto object-contain"
+              />
+              <img
+                src="/assets/img/payment/discover.svg"
+                alt="Discover"
+                width={32}
+                height={22}
+                className="h-[22px] w-auto object-contain"
+              />
             </div>
           </div>
 

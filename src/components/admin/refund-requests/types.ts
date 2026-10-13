@@ -5,12 +5,12 @@ export interface RefundRequestItem {
   orderNumber: string;
   productTitle: string;
   total: string;
-  commissionRate: string;
-  earnedAmount: string;
   buyer: string;
-  seller: string;
   status: RefundStatus;
   updated: string;
   date: string;
+  commissionRate?: string;
+  earnedAmount?: string;
+  seller?: string;
   reason?: string;
 }

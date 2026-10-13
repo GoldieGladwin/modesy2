@@ -1,6 +1,18 @@
-export type CouponStatus = 'Active' | 'Expired' | 'Scheduled';
+export type CouponStatus = "Active" | "Expired" | "Scheduled" | "Inactive";
 
-export type DiscountType = 'percentage' | 'fixed_amount';
+export type DiscountType = "percentage" | "fixed_amount";
+
+export interface CouponItem {
+  id: number;
+  code: string;
+  discountRate: string;
+  numberOfCoupons: number;
+  usedCoupons: number;
+  expiryDate: string;
+  status: "Active" | "Inactive";
+  date: string;
+  selectedProductIds?: number[];
+}
 
 export interface Coupon {
   id: string;
