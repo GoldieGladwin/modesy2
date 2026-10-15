@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Star, Heart, ShoppingBag, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 export interface ClothingProduct {
   id: number;
@@ -36,7 +37,7 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     likes: 0,
     price: 130,
     oldPrice: 150,
-    link: "#",
+    link: "/product/45",
   },
   {
     id: 41,
@@ -49,7 +50,7 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     likes: 0,
     price: 48,
     oldPrice: 55,
-    link: "#",
+    link: "/product/41",
   },
   {
     id: 38,
@@ -65,7 +66,7 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     likes: 0,
     price: 80,
     oldPrice: 89,
-    link: "#",
+    link: "/product/38",
   },
   {
     id: 35,
@@ -78,7 +79,7 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     likes: 0,
     price: 89,
     oldPrice: 99,
-    link: "#",
+    link: "/product/35",
   },
   {
     id: 31,
@@ -94,7 +95,7 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     likes: 1,
     price: 69,
     oldPrice: 79,
-    link: "#",
+    link: "/product/31",
   },
   {
     id: 28,
@@ -106,7 +107,7 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     rating: 0,
     likes: 0,
     price: 56,
-    link: "#",
+    link: "/product/28",
   },
   {
     id: 25,
@@ -122,7 +123,7 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     likes: 0,
     price: 49,
     oldPrice: 69,
-    link: "#",
+    link: "/product/25",
   },
   {
     id: 22,
@@ -134,7 +135,7 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     rating: 0,
     likes: 0,
     price: 99,
-    link: "#",
+    link: "/product/22",
   },
   {
     id: 19,
@@ -150,7 +151,7 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     likes: 1,
     price: 65,
     oldPrice: 79,
-    link: "#",
+    link: "/product/19",
   },
   {
     id: 14,
@@ -163,10 +164,10 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     likes: 0,
     price: 59,
     oldPrice: 69,
-    link: "#",
+    link: "/product/14",
   },
   {
-    id: 1,
+    id: 70,
     title: "Cobalt man t-shirt all colors",
     seller: "Admin",
     image: "/images/products/cobalt-man-tshirt.webp",
@@ -178,13 +179,14 @@ export const CLOTHING_PRODUCTS: ClothingProduct[] = [
     rating: 0,
     likes: 1,
     isQuote: true,
-    link: "#",
+    link: "/product/70",
   },
 ];
 
 const N = CLOTHING_PRODUCTS.length; // 11 produk
 
 export default function ClothingSection() {
+  const { addToCart } = useCart();
   const [wishlistState, setWishlistState] = useState<{ [key: number]: boolean }>({});
   const [visibleCount, setVisibleCount] = useState(6);
   const [currentIndex, setCurrentIndex] = useState(N); // Mulai dari set tengah (index 11)
@@ -286,13 +288,13 @@ export default function ClothingSection() {
         {/* Header Bagian Clothing: Persis Sesuai Screenshot Pengguna */}
         <div className="flex items-center justify-between pb-5 sm:pb-6 border-b border-gray-100 mb-6 sm:mb-8">
           <h2 className="text-2xl sm:text-[28px] lg:text-3xl font-bold text-gray-900 tracking-tight">
-            <Link href="#" className="hover:text-[#00a99d] transition-colors">
+            <Link href="/products" className="hover:text-[#00a99d] transition-colors">
               Clothing
             </Link>
           </h2>
 
           <Link
-            href="#"
+            href="/products"
             className="group inline-flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-black transition-colors"
           >
             <span>View All</span>
@@ -391,8 +393,19 @@ export default function ClothingSection() {
                           <button
                             type="button"
                             aria-label="Add to cart"
+                            title="Add to cart"
                             className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white text-gray-700 hover:text-black hover:bg-gray-50 shadow-md flex items-center justify-center transition-all cursor-pointer hover:scale-105"
-                            onClick={(e) => e.preventDefault()}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              addToCart({
+                                id: product.id,
+                                title: product.title,
+                                price: product.price ? `$${product.price}` : "Request a Quote",
+                                image: product.fallbackImage || product.image,
+                                seller: product.seller,
+                              }, 1);
+                            }}
                           >
                             <ShoppingBag className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                           </button>

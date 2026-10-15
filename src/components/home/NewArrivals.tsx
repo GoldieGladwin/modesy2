@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Star, Heart, ShoppingBag, ArrowRight } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 export interface ProductItem {
   id: number;
@@ -37,7 +38,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     likes: 0,
     price: 40,
     oldPrice: 45,
-    link: "#",
+    link: "/product/47",
   },
   {
     id: 46,
@@ -53,7 +54,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     likes: 0,
     price: 59,
     oldPrice: 69,
-    link: "#",
+    link: "/product/46",
   },
   {
     id: 45,
@@ -69,7 +70,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     likes: 0,
     price: 130,
     oldPrice: 150,
-    link: "#",
+    link: "/product/45",
   },
   {
     id: 44,
@@ -81,7 +82,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     rating: 0,
     likes: 1,
     price: 299,
-    link: "#",
+    link: "/product/44",
   },
   {
     id: 43,
@@ -96,11 +97,11 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     rating: 0,
     likes: 1,
     isQuote: true,
-    link: "#",
+    link: "/product/43",
   },
   {
     id: 42,
-    title: "Handcrafted decorative pillow for a luxurious...",
+    title: "Handcrafted decorative pillow for a luxurious touch",
     seller: "Admin",
     image: "/images/products/pillow.webp",
     fallbackImage:
@@ -112,7 +113,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     likes: 0,
     price: 59,
     oldPrice: 69,
-    link: "#",
+    link: "/product/42",
   },
   {
     id: 41,
@@ -125,7 +126,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     likes: 0,
     price: 48,
     oldPrice: 55,
-    link: "#",
+    link: "/product/41",
   },
   {
     id: 40,
@@ -141,7 +142,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     likes: 0,
     price: 59,
     oldPrice: 69,
-    link: "#",
+    link: "/product/1",
   },
   {
     id: 39,
@@ -157,7 +158,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     likes: 0,
     price: 29,
     oldPrice: 39,
-    link: "#",
+    link: "/product/39",
   },
   {
     id: 38,
@@ -173,7 +174,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     likes: 0,
     price: 80,
     oldPrice: 89,
-    link: "#",
+    link: "/product/38",
   },
   {
     id: 37,
@@ -188,7 +189,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     rating: 0,
     likes: 0,
     price: 79,
-    link: "#",
+    link: "/product/37",
   },
   {
     id: 36,
@@ -201,7 +202,7 @@ export const NEW_ARRIVALS_PRODUCTS: ProductItem[] = [
     likes: 0,
     price: 15,
     oldPrice: 20,
-    link: "#",
+    link: "/product/36",
   },
 ];
 
@@ -234,6 +235,7 @@ export const PROMO_BANNERS = [
 ];
 
 export default function NewArrivals() {
+  const { addToCart } = useCart();
   const [wishlistState, setWishlistState] = useState<{ [key: number]: boolean }>({});
 
   const toggleWishlist = (id: number, e: React.MouseEvent) => {
@@ -253,7 +255,7 @@ export default function NewArrivals() {
             New Arrivals
           </h2>
           <Link
-            href="#"
+            href="/products"
             className="group inline-flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-black transition-colors"
           >
             <span>View All</span>
@@ -315,8 +317,19 @@ export default function NewArrivals() {
                     <button
                       type="button"
                       aria-label="Add to cart"
+                      title="Add to cart"
                       className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white text-gray-700 hover:text-black hover:bg-gray-50 shadow-md flex items-center justify-center transition-all cursor-pointer hover:scale-105"
-                      onClick={(e) => e.preventDefault()}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addToCart({
+                          id: product.id,
+                          title: product.title,
+                          price: product.price ? `$${product.price}` : "Request a Quote",
+                          image: product.fallbackImage || product.image,
+                          seller: product.seller,
+                        }, 1);
+                      }}
                     >
                       <ShoppingBag className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                     </button>

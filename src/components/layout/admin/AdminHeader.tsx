@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CATEGORIES, CategoryItem } from "@/data/categories";
+import { CATEGORIES, CategoryItem, getCategorySlug } from "@/data/categories";
 import LocationModal from "@/components/modals/LocationModal";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -18,8 +18,10 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 export default function AdminHeader() {
+  const { totalCartItems } = useCart();
   const pathname = usePathname();
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
@@ -477,9 +479,11 @@ export default function AdminHeader() {
                   <circle cx="18" cy="20" r="1.5" fill="currentColor" />
                   <path d="M2 3h3.5l2.2 11.2a1.5 1.5 0 0 0 1.5 1.2h9.5a1.5 1.5 0 0 0 1.5-1.2L22 6H6" />
                 </svg>
-                <span className="absolute -top-1.5 -right-2 bg-[#f05a5b] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                  0
-                </span>
+                {totalCartItems > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#00a99d] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold">
+                    {totalCartItems}
+                  </span>
+                )}
               </div>
               <span className="text-[14px] font-medium leading-[26px]">
                 Cart
@@ -529,7 +533,11 @@ export default function AdminHeader() {
         <div className="max-w-[1320px] mx-auto px-4">
           <nav className="flex items-center space-x-1 overflow-x-auto">
             {CATEGORIES.map((category) => {
+              const categorySlug = getCategorySlug(category);
               const isHovered = hoveredCategoryId === category.id;
+              const isActive =
+                pathname === `/admin/category/${categorySlug}` ||
+                pathname === `/category/${categorySlug}`;
               return (
                 <div
                   key={category.id}
@@ -537,9 +545,9 @@ export default function AdminHeader() {
                   onMouseEnter={() => setHoveredCategoryId(category.id)}
                 >
                   <Link
-                    href={`/guest/products`}
+                    href={`/admin/category/${categorySlug}`}
                     className={`group relative px-3.5 py-[14px] text-[14px] font-medium whitespace-nowrap transition-colors block ${
-                      isHovered
+                      isHovered || isActive
                         ? "text-[#00a99d]"
                         : "text-[#222222] hover:text-[#00a99d]"
                     }`}
@@ -547,7 +555,7 @@ export default function AdminHeader() {
                     <span>{category.title}</span>
                     <span
                       className={`absolute bottom-0 left-0 right-0 h-[2px] bg-[#00a99d] transition-opacity ${
-                        isHovered ? "opacity-100" : "opacity-0"
+                        isHovered || isActive ? "opacity-100" : "opacity-0"
                       }`}
                     />
                   </Link>
@@ -569,15 +577,18 @@ export default function AdminHeader() {
               <div className="flex-1 flex flex-wrap gap-x-12 gap-y-6">
                 {activeCategory.subcategories.map((sub, idx) => (
                   <div key={idx} className="min-w-[150px] max-w-[200px]">
-                    <h4 className="font-bold text-[#222] text-[14px] mb-2.5 cursor-pointer hover:text-[#00a99d] transition-colors leading-[22px]">
+                    <Link
+                      href={`/admin/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(sub.title)}`}
+                      className="font-bold text-[#222] text-[14px] mb-2.5 cursor-pointer hover:text-[#00a99d] transition-colors leading-[22px] block"
+                    >
                       {sub.title}
-                    </h4>
+                    </Link>
                     {sub.items.length > 0 && (
                       <ul className="space-y-1.5 list-none p-0 m-0">
                         {sub.items.map((item, itemIdx) => (
                           <li key={itemIdx}>
                             <Link
-                              href="/guest/products"
+                              href={`/admin/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(sub.title)}&item=${encodeURIComponent(item)}`}
                               className="text-[13px] text-[#555] hover:text-[#00a99d] transition-colors cursor-pointer text-left block leading-[20px]"
                             >
                               {item}
@@ -594,9 +605,10 @@ export default function AdminHeader() {
               {activeCategory.images.length > 0 && (
                 <div className="w-[390px] shrink-0 grid grid-cols-2 gap-3">
                   {activeCategory.images.map((imgItem, imgIdx) => (
-                    <div
+                    <Link
+                      href={`/admin/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(imgItem.label)}`}
                       key={imgIdx}
-                      className="relative h-[120px] rounded-[3px] overflow-hidden group/card cursor-pointer bg-[#f4f4f4]"
+                      className="relative h-[120px] rounded-[3px] overflow-hidden group/card cursor-pointer bg-[#f4f4f4] block"
                     >
                       <img
                         src={imgItem.image}
@@ -609,7 +621,7 @@ export default function AdminHeader() {
                       <span className="absolute bottom-0 left-0 right-0 p-2.5 text-white text-[13px] font-semibold text-left drop-shadow-sm select-none">
                         {imgItem.label}
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -878,11 +890,12 @@ export default function AdminHeader() {
               <div className="space-y-1 py-2">
                 {CATEGORIES.map((cat) => {
                   const isExpanded = expandedMobileCategory === cat.id;
+                  const catSlug = getCategorySlug(cat);
                   return (
                     <div key={cat.id} className="border-b border-gray-100 pb-1">
                       <div className="flex items-center justify-between py-2">
                         <Link
-                          href="/guest/products"
+                          href={`/admin/category/${catSlug}`}
                           onClick={() => setMobileMenuOpen(false)}
                           className="text-left text-[14px] font-medium text-[#333] hover:text-[#00a99d]"
                         >
@@ -923,21 +936,27 @@ export default function AdminHeader() {
                         <div className="pl-4 space-y-2 pb-2">
                           {cat.subcategories.map((sub, sIdx) => (
                             <div key={sIdx}>
-                              <div className="text-[13px] font-semibold text-[#222]">
+                              <Link
+                                href={`/admin/category/${catSlug}?sub=${encodeURIComponent(sub.title)}`}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="text-[13px] font-semibold text-[#222] hover:text-[#00a99d] block"
+                              >
                                 {sub.title}
-                              </div>
-                              <div className="pl-2 space-y-1 mt-1">
-                                {sub.items.map((it, itIdx) => (
-                                  <Link
-                                    key={itIdx}
-                                    href="/guest/products"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="block text-[12px] text-[#666] hover:text-[#00a99d] py-0.5"
-                                  >
-                                    {it}
-                                  </Link>
-                                ))}
-                              </div>
+                              </Link>
+                              {sub.items.length > 0 && (
+                                <div className="pl-2 space-y-1 mt-1">
+                                  {sub.items.map((it, itIdx) => (
+                                    <Link
+                                      key={itIdx}
+                                      href={`/admin/category/${catSlug}?sub=${encodeURIComponent(sub.title)}&item=${encodeURIComponent(it)}`}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      className="block text-[12px] text-[#666] hover:text-[#00a99d] py-0.5"
+                                    >
+                                      {it}
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
