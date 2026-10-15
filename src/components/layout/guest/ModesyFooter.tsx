@@ -77,14 +77,14 @@ const SOCIAL_ICONS_ROW2 = [
 ];
 
 const CATEGORIES = [
-  { name: "Clothing", href: "/clothing" },
-  { name: "Shoes", href: "/shoes" },
-  { name: "Home & Living", href: "/home-living" },
-  { name: "Jewelry & Accessories", href: "/jewelry-accessories" },
-  { name: "Toys & Entertainment", href: "/toys-entertainment" },
-  { name: "Graphics & Photos", href: "/graphics-photos" },
-  { name: "Video & Audio", href: "/video-audio" },
-  { name: "Web Templates & Code", href: "/web-templates-code" },
+  { name: "Clothing", href: "/category/clothing" },
+  { name: "Shoes", href: "/category/shoes" },
+  { name: "Home & Living", href: "/category/home-living" },
+  { name: "Jewelry & Accessories", href: "/category/jewelry-accessories" },
+  { name: "Toys & Entertainment", href: "/category/toys-entertainment" },
+  { name: "Graphics & Photos", href: "/category/graphics-photos" },
+  { name: "Video & Audio", href: "/category/video-audio" },
+  { name: "Web Templates & Code", href: "/category/web-templates-code" },
 ];
 
 const QUICK_LINKS = [

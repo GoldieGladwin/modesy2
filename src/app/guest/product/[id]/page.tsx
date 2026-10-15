@@ -20,10 +20,12 @@ import ModesyFooter from "@/components/layout/guest/ModesyFooter";
 import LoginModal from "@/components/auth/LoginModal";
 import ProductCard from "@/components/product/ProductCard";
 import {
-  jewelryProductsData,
+  getProductById,
+  allProductsData,
   moreFromAdminProducts,
   Product,
 } from "@/data/products";
+import { useCart } from "@/context/CartContext";
 
 interface ProductDetailPageProps {
   params: Promise<{
@@ -33,13 +35,12 @@ interface ProductDetailPageProps {
 
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = use(params);
+  const { addToCart } = useCart();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
 
-  // Find product by id (default to product 1 if not found)
-  const product: Product =
-    jewelryProductsData.find((p) => p.id === parseInt(id, 10)) ||
-    jewelryProductsData[0];
+  // Find product by id
+  const product: Product = getProductById(id);
 
   // Gallery images
   const galleryImages =
@@ -51,7 +52,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState(
-    product.colors && product.colors.length > 0 ? product.colors[0].name : "Black"
+    product.colors && product.colors.length > 0 ? product.colors[0].name : "Standard"
   );
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -71,10 +72,17 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     );
   };
 
-  // "You may also like" products (items 6, 3, 9 from jewelry list)
-  const youMayAlsoLikeProducts = jewelryProductsData
+  // "You may also like" products
+  const youMayAlsoLikeProducts = allProductsData
     .filter((p) => p.id !== product.id)
-    .slice(0, 3);
+    .slice(0, 6);
+
+  // More from same seller
+  const moreFromThisSeller = allProductsData
+    .filter((p) => p.id !== product.id && p.seller === product.seller)
+    .slice(0, 6);
+  const displayMoreFromSeller =
+    moreFromThisSeller.length >= 2 ? moreFromThisSeller : moreFromAdminProducts;
 
   return (
     <div className="w-full">
@@ -86,12 +94,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             Home
           </Link>
           <span>/</span>
-          <Link href="/products/jewelry-accessories" className="hover:text-[#00a99d]">
-            Jewelry &amp; Accessories
-          </Link>
-          <span>/</span>
-          <Link href="/products/jewelry-accessories" className="hover:text-[#00a99d]">
-            {product.category || "Bags & Purses"}
+          <Link href="/products" className="hover:text-[#00a99d]">
+            {product.category || "Products"}
           </Link>
           <span>/</span>
           <span className="text-gray-800 font-semibold truncate max-w-xs sm:max-w-md">
@@ -313,7 +317,19 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 {/* Add to Cart Button */}
                 <button
                   type="button"
-                  onClick={() => alert(`Added ${quantity} "${product.title}" to cart!`)}
+                  onClick={() => {
+                    addToCart(
+                      {
+                        id: product.id,
+                        title: product.title,
+                        price: product.price,
+                        image: product.image,
+                        seller: product.seller,
+                        sku: product.sku,
+                      },
+                      quantity
+                    );
+                  }}
                   className="flex-1 py-2.5 px-6 bg-[#00a99d] hover:bg-[#008f85] text-white font-bold text-xs sm:text-sm rounded flex items-center justify-center gap-2 transition shadow-xs cursor-pointer"
                 >
                   <ShoppingCart className="w-4 h-4" />
@@ -488,7 +504,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3.5">
-            {moreFromAdminProducts.map((p) => (
+            {displayMoreFromSeller.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>

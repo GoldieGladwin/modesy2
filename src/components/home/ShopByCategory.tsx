@@ -29,61 +29,61 @@ const categories: Category[] = [
     id: "3",
     name: "Toys & Entertainment",
     image: "/categories/toys.jpg",
-    href: "/category/toys",
+    href: "/category/toys-entertainment",
   },
   {
     id: "4",
     name: "Women's Clothing",
     image: "/categories/womens_clothing.jpg",
-    href: "/category/womens-clothing",
+    href: "/category/clothing?sub=Women's%20Clothing",
   },
   {
     id: "5",
     name: "Men's Clothing",
     image: "/categories/mens_clothing.jpg",
-    href: "/category/mens-clothing",
+    href: "/category/clothing?sub=Men's%20Clothing",
   },
   {
     id: "6",
     name: "Furniture",
     image: "/categories/furniture.jpg",
-    href: "/category/furniture",
+    href: "/category/home-living?sub=Furniture",
   },
   {
     id: "7",
     name: "Necklaces & Accessories",
     image: "/categories/necklaces.jpg",
-    href: "/category/accessories",
+    href: "/category/jewelry-accessories?sub=Necklaces%20&%20Accessories",
   },
   {
     id: "8",
     name: "Graphics",
     image: "/categories/graphics.jpg",
-    href: "/category/graphics",
+    href: "/category/graphics-photos?sub=Graphics",
   },
   {
     id: "9",
     name: "Painting",
     image: "/categories/painting.jpg",
-    href: "/category/painting",
+    href: "/category/home-living?sub=Painting",
   },
   {
     id: "10",
     name: "Boots",
     image: "/categories/boots.jpg",
-    href: "/category/boots",
+    href: "/category/shoes?sub=Women's%20Shoes",
   },
   {
     id: "11",
     name: "Decorative Pillows",
     image: "/categories/pillows.jpg",
-    href: "/category/pillows",
+    href: "/category/home-living?sub=Home%20Decor",
   },
   {
     id: "12",
     name: "Handbags",
     image: "/categories/handbags.jpg",
-    href: "/category/handbags",
+    href: "/category/jewelry-accessories?sub=Bags%20&%20Purses",
   },
 ];
 
@@ -94,9 +94,8 @@ export default function ShopByCategory() {
         <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
           Shop By Category
         </h2>
-        {/* TODO(Team): Sesuaikan href "/categories" ini dengan halaman "View All" yang sebenarnya di project */}
         <Link
-          href="/categories"
+          href="/category/clothing"
           className="text-sm font-semibold text-gray-800 hover:text-[#00a99d] hover:underline transition-all pb-1 flex items-center gap-1 group"
         >
           View All 
