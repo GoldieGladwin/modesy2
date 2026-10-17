@@ -390,10 +390,6 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
             </div>
             <div className="space-y-0.5">
               <Link
-                href="/dashboard/comments"
-                onClick={onClose}
-                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
-                  pathname?.includes("/comments")
                 href="/admin/dashboard/comments"
                 onClick={onClose}
                 className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
@@ -413,10 +409,6 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
               </Link>
 
               <Link
-                href="/dashboard/reviews"
-                onClick={onClose}
-                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
-                  pathname?.includes("/reviews")
                 href="/admin/dashboard/reviews"
                 onClick={onClose}
                 className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${

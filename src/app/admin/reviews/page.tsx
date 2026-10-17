@@ -1,15 +1,9 @@
-import React from "react";
-import VendorReviewsView from "@/components/vendor/reviews/VendorReviewsView";
+import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Reviews - Dashboard - Modesy",
-  description: "View customer product reviews.",
+  title: "Reviews - Admin Dashboard - Modesy",
 };
 
 export default function AdminReviewsPage() {
-  return <VendorReviewsView />;
-import { redirect } from "next/navigation";
-
-export default function AdminReviewsRedirectPage() {
   redirect("/admin/dashboard/reviews");
 }

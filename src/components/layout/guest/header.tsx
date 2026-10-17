@@ -538,7 +538,6 @@ export default function Header({
             {/* Cart */}
             <Link
               href="/cart"
-              href="/guest/cart"
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative group"
             >
               <div className="relative mr-1.5 flex items-center">
@@ -556,12 +555,9 @@ export default function Header({
                   <circle cx="18" cy="20" r="1.5" fill="currentColor" />
                   <path d="M2 3h3.5l2.2 11.2a1.5 1.5 0 0 0 1.5 1.2h9.5a1.5 1.5 0 0 0 1.5-1.2L22 6H6" />
                 </svg>
-                {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-[#d9534f] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-xs">
-                    {cartCount}
-                {totalCartItems > 0 && (
+                {(totalCartItems > 0 || (cartCount ?? 0) > 0) && (
                   <span className="absolute -top-1.5 -right-2 bg-[#00a99d] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold">
-                    {totalCartItems}
+                    {totalCartItems > 0 ? totalCartItems : cartCount}
                   </span>
                 )}
               </div>
@@ -790,8 +786,6 @@ export default function Header({
             {/* Cart Icon */}
             <Link
               href="/cart"
-              className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative"
-              href="/guest/cart"
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative flex items-center"
               aria-label="Cart"
             >
@@ -809,12 +803,9 @@ export default function Header({
                 <circle cx="18" cy="20" r="1.5" fill="currentColor" />
                 <path d="M2 3h3.5l2.2 11.2a1.5 1.5 0 0 0 1.5 1.2h9.5a1.5 1.5 0 0 0 1.5-1.2L22 6H6" />
               </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#d9534f] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold shadow-xs">
-                  {cartCount}
-              {totalCartItems > 0 && (
+              {(totalCartItems > 0 || (cartCount ?? 0) > 0) && (
                 <span className="absolute -top-1 -right-1 bg-[#00a99d] text-white text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold">
-                  {totalCartItems}
+                  {totalCartItems > 0 ? totalCartItems : cartCount}
                 </span>
               )}
             </Link>

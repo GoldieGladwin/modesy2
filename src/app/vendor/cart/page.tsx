@@ -9,8 +9,4 @@ export const metadata: Metadata = {
 
 export default function VendorCartPage() {
   return <CartView />;
-import CartPageView from "@/components/cart/CartPageView";
-
-export default function VendorCartPage() {
-  return <CartPageView role="vendor" />;
 }
