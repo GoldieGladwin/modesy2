@@ -9,7 +9,7 @@ interface ProductFilterBarProps {
   filter: ProductFilterState;
   onFilterChange: (newFilter: Partial<ProductFilterState>) => void;
   onApplyFilter: () => void;
-  onExport?: (format: "csv" | "excel") => void;
+  onExport?: (format: "csv" | "excel" | "xml") => void;
 }
 
 export default function ProductFilterBar({
@@ -192,6 +192,17 @@ export default function ProductFilterBar({
                 >
                   <Download className="w-3.5 h-3.5 text-gray-500" />
                   <span>Export CSV</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExportOpen(false);
+                    onExport?.("xml");
+                  }}
+                  className="w-full px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 flex items-center gap-2 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-gray-500" />
+                  <span>Export XML</span>
                 </button>
                 <button
                   type="button"

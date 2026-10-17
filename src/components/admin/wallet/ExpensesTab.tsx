@@ -46,8 +46,8 @@ export default function ExpensesTab({
 
                   {/* Expense Amount */}
                   <td className="py-3.5 px-4 align-top whitespace-nowrap">
-                    <span className="font-bold text-[#e74c3c]">
-                      ${item.amount.toFixed(2)} ({item.currency})
+                    <span className="font-semibold text-[#e74c3c]">
+                      ${item.amount % 1 === 0 ? item.amount.toFixed(0) : item.amount.toFixed(2)} ({item.currency})
                     </span>
                   </td>
 

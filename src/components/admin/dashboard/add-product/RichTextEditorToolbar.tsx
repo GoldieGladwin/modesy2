@@ -19,6 +19,9 @@ import {
   List,
   MoreHorizontal,
   ChevronDown,
+  Image as ImageIcon,
+  Video,
+  Link2,
 } from "lucide-react";
 
 interface RichTextEditorToolbarProps {
@@ -31,9 +34,8 @@ export default function RichTextEditorToolbar({
   return (
     <div className="border-b border-gray-200 bg-white">
       {/* Top Menu Bar */}
-      <div className="flex items-center gap-4 px-3 py-1 text-xs text-[#555] border-b border-gray-100 select-none">
+      <div className="flex items-center gap-4 px-3 py-1.5 text-xs text-[#555] border-b border-gray-100 select-none">
         <span className="hover:text-black cursor-pointer">File</span>
-        <span className="hover:text-black cursor-pointer">Edit</span>
         <span className="hover:text-black cursor-pointer">Insert</span>
         <span className="hover:text-black cursor-pointer">Format</span>
         <span className="hover:text-black cursor-pointer">Table</span>
@@ -207,6 +209,40 @@ export default function RichTextEditorToolbar({
         >
           T<sub className="text-[9px]">x</sub>
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            const url = prompt("Enter Image URL:");
+            if (url) onFormat?.(`insertImage:${url}`);
+          }}
+          className="p-1.5 hover:bg-gray-100 rounded text-gray-600 hover:text-black"
+          title="Insert image"
+        >
+          <ImageIcon className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const url = prompt("Enter Video URL (YouTube, Vimeo, etc.):");
+            if (url) onFormat?.(`insertVideo:${url}`);
+          }}
+          className="p-1.5 hover:bg-gray-100 rounded text-gray-600 hover:text-black"
+          title="Insert video"
+        >
+          <Video className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const url = prompt("Enter Link URL:");
+            if (url) onFormat?.(`createLink:${url}`);
+          }}
+          className="p-1.5 hover:bg-gray-100 rounded text-gray-600 hover:text-black"
+          title="Insert link"
+        >
+          <Link2 className="w-3.5 h-3.5" />
+        </button>
+
         <button
           type="button"
           className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-black"

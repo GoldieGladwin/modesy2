@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
+import SalesContainer from "@/components/admin/dashboard/sales/SalesContainer";
+import { initialActiveSales } from "@/components/admin/dashboard/sales/mockData";
 
-export default function SalesIndexPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace("/admin/dashboard/sales/active");
-  }, [router]);
-
-  return null;
+export default function AdminSalesPage() {
+  return (
+    <div className="py-2 sm:py-4">
+      <SalesContainer
+        title="Sales"
+        initialItems={initialActiveSales}
+        showPaymentStatus={true}
+        pageSize={15}
+      />
+    </div>
+  );
 }

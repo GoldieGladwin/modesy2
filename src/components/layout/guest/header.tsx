@@ -19,14 +19,21 @@ import {
 
 interface HeaderProps {
   onOpenLoginModal?: () => void;
-  currentUser?: { email: string; name: string; avatar?: string } | null;
+  currentUser?: {
+    email: string;
+    name: string;
+    avatar?: string;
+    role?: "admin" | "vendor" | "user";
+  } | null;
   onLogout?: () => void;
+  cartCount?: number;
 }
 
 export default function Header({
   onOpenLoginModal,
   currentUser,
   onLogout,
+  cartCount = 3,
 }: HeaderProps = {}) {
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
@@ -59,6 +66,8 @@ export default function Header({
   // Admin dropdown state
   const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
   const adminRef = useRef<HTMLDivElement>(null);
+
+  const isVendor = effectiveUser?.role === "vendor";
 
   const adminProfileMenus = [
     {
@@ -107,6 +116,52 @@ export default function Header({
       icon: LogOut,
     },
   ];
+
+  // Vendor dropdown menus (Exactly 8 items as requested in the screenshot)
+  const vendorProfileMenus = [
+    {
+      title: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutGrid,
+    },
+    {
+      title: "Profile",
+      href: "/profile/daniel-jones",
+      icon: User,
+    },
+    {
+      title: "Wallet",
+      href: "/wallet",
+      icon: Wallet,
+    },
+    {
+      title: "Orders",
+      href: "/orders",
+      icon: ShoppingBasket,
+    },
+    {
+      title: "My Coupons",
+      href: "/my-coupons",
+      icon: Tag,
+    },
+    {
+      title: "Messages",
+      href: "/messages",
+      icon: MessageSquare,
+    },
+    {
+      title: "Profile Settings",
+      href: "/settings",
+      icon: Settings,
+    },
+    {
+      title: "Logout",
+      href: "#logout",
+      icon: LogOut,
+    },
+  ];
+
+  const activeProfileMenus = isVendor ? vendorProfileMenus : adminProfileMenus;
 
   const currencyRef = useRef<HTMLDivElement>(null);
   const languageRef = useRef<HTMLDivElement>(null);
@@ -317,7 +372,7 @@ export default function Header({
               )}
             </div>
 
-            {/* Login / Register or Admin Profile Dropdown */}
+            {/* Login / Register or Profile Dropdown (Vendor / Admin) */}
             {effectiveIsLoggedIn ? (
               <div className="relative" ref={adminRef}>
                 <button
@@ -326,12 +381,17 @@ export default function Header({
                   className="flex items-center space-x-1.5 text-[#333333] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
                 >
                   <img
-                    src={effectiveUser?.avatar || "/assets/img/admin-avatar.jpg"}
-                    alt="Admin"
+                    src={
+                      effectiveUser?.avatar ||
+                      (isVendor
+                        ? "/assets/img/trendshop-avatar.jpg"
+                        : "/assets/img/admin-avatar.jpg")
+                    }
+                    alt={effectiveUser?.name || (isVendor ? "Trendshop" : "Admin")}
                     className="w-[26px] h-[26px] rounded-full object-cover shrink-0 ring-1 ring-black/10"
                   />
                   <span className="font-medium text-[14px] text-[#333]">
-                    {effectiveUser?.name || "Admin"}
+                    {effectiveUser?.name || (isVendor ? "Trendshop" : "Admin")}
                   </span>
                   <svg
                     width="10"
@@ -352,10 +412,10 @@ export default function Header({
                   </svg>
                 </button>
 
-                {/* Dropdown Menu Sesuai Foto User */}
+                {/* Dropdown Menu Sesuai Role (Vendor: 8 Menu Persis Screenshot, Admin: 9 Menu) */}
                 {adminDropdownOpen && (
                   <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-[#ebebeb] rounded-[3px] shadow-[0_4px_15px_rgba(0,0,0,0.08)] z-50 py-2">
-                    {adminProfileMenus.map((item) => {
+                    {activeProfileMenus.map((item) => {
                       const Icon = item.icon;
                       if (item.title === "Logout") {
                         return (
@@ -473,7 +533,7 @@ export default function Header({
           <div className="flex items-center space-x-7 shrink-0">
             {/* Cart */}
             <Link
-              href="/"
+              href="/cart"
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative group"
             >
               <div className="relative mr-1.5 flex items-center">
@@ -491,9 +551,11 @@ export default function Header({
                   <circle cx="18" cy="20" r="1.5" fill="currentColor" />
                   <path d="M2 3h3.5l2.2 11.2a1.5 1.5 0 0 0 1.5 1.2h9.5a1.5 1.5 0 0 0 1.5-1.2L22 6H6" />
                 </svg>
-                <span className="hidden group-hover:flex absolute -top-1.5 -right-2 bg-[#00a99d] text-white text-[10px] w-4 h-4 rounded-full items-center justify-center font-bold">
-                  0
-                </span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#d9534f] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-xs">
+                    {cartCount}
+                  </span>
+                )}
               </div>
               <span className="text-[14px] font-medium leading-[26px]">
                 Cart
@@ -502,7 +564,7 @@ export default function Header({
 
             {/* Wishlist */}
             <Link
-              href="/"
+              href="/wishlist"
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0"
             >
               <div className="mr-1.5 flex items-center">
@@ -527,7 +589,7 @@ export default function Header({
             {/* Sell Now Button */}
             {effectiveIsLoggedIn ? (
               <Link
-                href="/admin/dashboard"
+                href={isVendor ? "/vendor/dashboard" : "/admin/dashboard"}
                 className="bg-[#00a99d] hover:brightness-95 text-white text-[14px] font-medium px-5 py-2 rounded-[3px] transition-all cursor-pointer border-0 leading-[22px] inline-block text-center"
               >
                 Sell Now
@@ -710,8 +772,8 @@ export default function Header({
             </button>
 
             {/* Cart Icon */}
-            <button
-              type="button"
+            <Link
+              href="/cart"
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative"
               aria-label="Cart"
             >
@@ -729,10 +791,12 @@ export default function Header({
                 <circle cx="18" cy="20" r="1.5" fill="currentColor" />
                 <path d="M2 3h3.5l2.2 11.2a1.5 1.5 0 0 0 1.5 1.2h9.5a1.5 1.5 0 0 0 1.5-1.2L22 6H6" />
               </svg>
-              <span className="absolute -top-1 -right-1 bg-[#00a99d] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
-                0
-              </span>
-            </button>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#d9534f] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold shadow-xs">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
 
@@ -822,22 +886,27 @@ export default function Header({
                   <div className="p-3 bg-gray-50 rounded border border-gray-200 my-2">
                     <div className="flex items-center space-x-2.5 mb-2.5 pb-2.5 border-b border-gray-200">
                       <img
-                        src={effectiveUser?.avatar || "/assets/img/admin-avatar.jpg"}
-                        alt="Admin"
+                        src={
+                          effectiveUser?.avatar ||
+                          (isVendor
+                            ? "/assets/img/trendshop-avatar.jpg"
+                            : "/assets/img/admin-avatar.jpg")
+                        }
+                        alt={effectiveUser?.name || (isVendor ? "Trendshop" : "Admin")}
                         className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-black/10"
                       />
                       <div>
                         <div className="text-[14px] font-semibold text-gray-800">
-                          {effectiveUser?.name || "Admin"}
+                          {effectiveUser?.name || (isVendor ? "Trendshop" : "Admin")}
                         </div>
                         <div className="text-[11px] text-gray-500">
-                          Administrator
+                          {isVendor ? "Vendor" : "Administrator"}
                         </div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-1.5">
-                      {adminProfileMenus.map((item) => {
+                      {activeProfileMenus.map((item) => {
                         const Icon = item.icon;
                         if (item.title === "Logout") {
                           return (

@@ -31,7 +31,12 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
   const pathname = usePathname();
   const isProductRoute = Boolean(pathname?.includes("/products"));
   const [productsOpen, setProductsOpen] = useState(isProductRoute || false);
-  const isSalesRoute = Boolean(pathname?.includes("/sales") || pathname?.includes("/orders"));
+  const isSalesRoute = Boolean(
+    pathname?.includes("/sales") ||
+      pathname?.includes("/orders") ||
+      pathname?.includes("/sale/") ||
+      pathname?.includes("/sale")
+  );
   const [salesOpen, setSalesOpen] = useState(isSalesRoute || false);
   const [paymentsOpen, setPaymentsOpen] = useState(false);
 
@@ -116,15 +121,15 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
               </Link>
 
               <Link
-                href="/admin/dashboard/bulk-product-upload"
+                href="/dashboard/bulk_product_upload"
                 onClick={onClose}
                 className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
-                  pathname === "/admin/dashboard/bulk-product-upload"
+                  pathname?.includes("bulk")
                     ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
                     : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
                 }`}
               >
-                <UploadCloud className={`w-4 h-4 ${pathname === "/admin/dashboard/bulk-product-upload" ? "text-[#00a99d]" : "text-[#8c94a0]"}`} />
+                <UploadCloud className={`w-4 h-4 ${pathname?.includes("bulk") ? "text-[#00a99d]" : "text-[#8c94a0]"}`} />
                 <span>Bulk Product Upload</span>
               </Link>
 
@@ -337,18 +342,26 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
             </div>
             <div className="space-y-0.5">
               <Link
-                href="/admin/comments"
+                href="/dashboard/comments"
                 onClick={onClose}
-                className="flex items-center gap-3.5 px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname?.includes("/comments")
+                    ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
+                }`}
               >
                 <MessageSquare className="w-4 h-4 text-[#8c94a0]" />
                 <span>Comments</span>
               </Link>
 
               <Link
-                href="/admin/reviews"
+                href="/dashboard/reviews"
                 onClick={onClose}
-                className="flex items-center gap-3.5 px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname?.includes("/reviews")
+                    ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
+                }`}
               >
                 <Star className="w-4 h-4 text-[#8c94a0]" />
                 <span>Reviews</span>

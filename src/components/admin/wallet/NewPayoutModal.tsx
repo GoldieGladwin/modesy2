@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, DollarSign, Wallet, AlertCircle } from "lucide-react";
+import { X } from "lucide-react";
 import { PayoutAccountSettings } from "./types";
 
 interface NewPayoutModalProps {
@@ -20,7 +20,7 @@ export default function NewPayoutModal({
   onSubmitPayout,
 }: NewPayoutModalProps) {
   const [method, setMethod] = useState("PayPal");
-  const [amount, setAmount] = useState("100");
+  const [amount, setAmount] = useState("0.00");
   const [error, setError] = useState("");
 
   if (!isOpen) return null;
@@ -28,8 +28,8 @@ export default function NewPayoutModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = parseFloat(amount);
-    if (isNaN(parsed) || parsed <= 0) {
-      setError("Please enter a valid amount.");
+    if (isNaN(parsed) || parsed < 500) {
+      setError("Minimum payout amount for " + method + " is $500.");
       return;
     }
     if (parsed > availableBalance) {
@@ -41,113 +41,109 @@ export default function NewPayoutModal({
     onClose();
   };
 
-  const getRecipientAccountSummary = () => {
-    switch (method) {
-      case "PayPal":
-        return `PayPal Account: ${settings.paypalEmail || "Not configured"}`;
-      case "Bitcoin (BTC)":
-        return `BTC Address: ${settings.btcAddress || "Not configured"}`;
-      case "IBAN":
-        return `IBAN: ${settings.iban.ibanNumber || "Not configured"} (${settings.iban.bankName})`;
-      case "SWIFT":
-        return `SWIFT Code: ${settings.swift.swiftCode || "Not configured"} (${settings.swift.bankName})`;
-      default:
-        return "";
-    }
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-modal-backdrop">
-      <div className="bg-white rounded-sm shadow-xl max-w-md w-full overflow-hidden animate-modal-dialog border border-gray-200">
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide">
-            New Payout Request
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition p-1 cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-modal-backdrop">
+      <div className="bg-white rounded-[4px] shadow-2xl max-w-[500px] w-full overflow-hidden animate-modal-dialog border border-gray-200 relative p-6 sm:p-8">
+        {/* Close Button top-right */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition text-xl leading-none cursor-pointer p-1"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
 
-        {/* Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Available balance indicator */}
-          <div className="p-3 bg-teal-50/50 border border-teal-100 rounded-sm flex items-center justify-between text-xs">
-            <span className="text-gray-600 font-medium">Available Balance:</span>
-            <span className="font-bold text-[#00a99d] text-sm">
-              ${availableBalance.toFixed(2)} USD
-            </span>
-          </div>
+        {/* Modal Title (Centered) */}
+        <h3 className="text-[17px] font-semibold text-[#333333] text-center mb-6">
+          New Payout Request
+        </h3>
 
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-sm flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>{error}</span>
+            <div className="p-2.5 bg-red-50 border border-red-200 text-red-600 text-xs rounded">
+              {error}
             </div>
           )}
 
+          {/* Withdrawal Amount */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              Withdrawal Method*
+            <label className="block text-[13px] text-gray-700 mb-1.5 font-normal">
+              Withdrawal Amount
             </label>
-            <select
-              value={method}
-              onChange={(e) => setMethod(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-white border border-gray-300 rounded-sm focus:outline-none focus:border-[#00a99d] text-gray-800"
-            >
-              <option value="PayPal">PayPal</option>
-              <option value="Bitcoin (BTC)">Bitcoin (BTC)</option>
-              <option value="IBAN">IBAN</option>
-              <option value="SWIFT">SWIFT</option>
-            </select>
-          </div>
-
-          <div className="text-[11px] text-gray-500 bg-gray-50 p-2 rounded border border-gray-200">
-            {getRecipientAccountSummary()}
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              Withdrawal Amount (USD)*
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-500 font-bold text-xs">
+            <div className="flex rounded-[3px] shadow-2xs overflow-hidden border border-gray-300 focus-within:border-[#00a99d]">
+              <span className="inline-flex items-center px-3.5 bg-[#f8f9fa] border-r border-gray-300 text-gray-600 text-sm">
                 $
               </span>
               <input
                 type="number"
-                min="10"
-                max={availableBalance}
                 step="any"
-                required
+                min="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-xs bg-white border border-gray-300 rounded-sm focus:outline-none focus:border-[#00a99d] text-gray-800 font-semibold"
-                placeholder="100.00"
+                className="flex-1 px-3 py-2 text-sm text-gray-800 bg-white focus:outline-none"
+                placeholder="0.00"
+                required
               />
             </div>
-            <p className="text-[10px] text-gray-400 mt-1">Minimum withdrawal amount: $50.00 USD</p>
           </div>
 
-          {/* Buttons */}
-          <div className="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-sm transition cursor-pointer"
-            >
-              Cancel
-            </button>
+          {/* Withdrawal Method */}
+          <div>
+            <label className="block text-[13px] text-gray-700 mb-1.5 font-normal">
+              Withdrawal Method
+            </label>
+            <div className="relative">
+              <select
+                value={method}
+                onChange={(e) => setMethod(e.target.value)}
+                className="w-full px-3 py-2 text-sm text-gray-800 bg-white border border-gray-300 rounded-[3px] focus:outline-none focus:border-[#00a99d] transition cursor-pointer"
+              >
+                <option value="PayPal">PayPal</option>
+                <option value="Bitcoin (BTC)">Bitcoin (BTC)</option>
+                <option value="IBAN">IBAN</option>
+                <option value="SWIFT">SWIFT</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Submit Button (Aligned Right under Method) */}
+          <div className="flex justify-end pt-1">
             <button
               type="submit"
-              className="px-5 py-2 bg-[#00a99d] hover:bg-[#008f85] text-white text-xs font-semibold rounded-sm transition shadow-xs cursor-pointer"
+              className="px-6 py-2 bg-[#00a99d] hover:bg-[#008f85] text-white text-[13px] font-medium rounded-[3px] transition shadow-xs cursor-pointer"
             >
-              Submit Payout Request
+              Submit
             </button>
+          </div>
+
+          {/* Bottom Info Section */}
+          <div className="pt-4 mt-6 border-t border-gray-200/80 text-[12px] text-gray-700">
+            <div className="font-semibold text-gray-800 mb-1.5">
+              Minimum Payout Amounts
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-gray-600 mb-4">
+              <span>
+                PayPal: <strong className="text-gray-800 font-semibold">$500</strong>
+              </span>
+              <span>
+                Bitcoin (BTC): <strong className="text-gray-800 font-semibold">$500</strong>
+              </span>
+              <span>
+                IBAN: <strong className="text-gray-800 font-semibold">$500</strong>
+              </span>
+              <span>
+                SWIFT: <strong className="text-gray-800 font-semibold">$500</strong>
+              </span>
+            </div>
+
+            <div className="border-t border-gray-200/70 pt-3">
+              <span>Your Balance: </span>
+              <span className="font-bold text-[#27ae60]">
+                ${availableBalance.toFixed(2)}
+              </span>
+            </div>
           </div>
         </form>
       </div>

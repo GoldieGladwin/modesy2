@@ -32,14 +32,14 @@ export default function ProductTableRow({
   return (
     <tr className="border-b border-[#f4f4f4] hover:bg-[#fafafa]/80 transition-colors text-xs text-[#555] align-middle">
       {/* 1. Id */}
-      <td className="py-3 px-2.5 text-[#333] font-normal w-10">
+      <td className="py-3 px-3 text-[#555] font-normal w-10 text-center">
         {product.id}
       </td>
 
-      {/* 2. Product (Image + Title + SKU + Featured Badge) */}
-      <td className="py-3 px-2.5 min-w-[220px]">
+      {/* 2. Product (Image + Title + SKU + Discount/Featured Badge) */}
+      <td className="py-3 px-3 min-w-[220px]">
         <div className="flex items-start gap-3">
-          <div className="w-[58px] h-[58px] rounded-[3px] bg-[#f8f9fa] overflow-hidden shrink-0 border border-[#e2e8f0] flex items-center justify-center">
+          <div className="w-[50px] h-[50px] rounded-[3px] bg-[#f8f9fa] overflow-hidden shrink-0 border border-[#e2e8f0] flex items-center justify-center">
             {product.image && !imageFailed ? (
               <img
                 src={product.image}
@@ -48,23 +48,30 @@ export default function ProductTableRow({
                 onError={() => setImageFailed(true)}
               />
             ) : (
-              <ImageIcon className="w-6 h-6 text-[#cbd5e1]" strokeWidth={1.5} />
+              <ImageIcon className="w-5 h-5 text-[#cbd5e1]" strokeWidth={1.5} />
             )}
           </div>
           <div className="flex-1 min-w-0">
             <Link
               href={`/product/${product.id}`}
-              className="text-[#007bff] hover:text-[#0056b3] hover:underline font-medium leading-snug break-words transition-colors block"
+              className="text-[#333] hover:text-[#00a99d] font-normal leading-snug break-words transition-colors block text-xs"
             >
               {product.title}
             </Link>
             {product.sku && (
-              <div className="text-[11px] text-[#333] font-semibold mt-1">
-                SKU: {product.sku}
+              <div className="text-[11px] text-[#777] font-normal mt-0.5">
+                {product.sku.startsWith("SKU:") ? product.sku : `SKU: ${product.sku}`}
               </div>
             )}
+            {/* Discount Badge */}
+            {product.discount && (
+              <span className="inline-block mt-1 bg-[#f8b922] text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-[2px]">
+                {product.discount}
+              </span>
+            )}
+            {/* Featured Badge */}
             {product.isFeatured && (
-              <span className="inline-block mt-1 bg-[#00a99d] text-white text-[10px] font-semibold px-2 py-0.5 rounded-[3px]">
+              <span className="inline-block mt-1 bg-[#00a99d] text-white text-[10px] font-semibold px-2 py-0.5 rounded-[2px]">
                 Featured
               </span>
             )}
@@ -73,17 +80,17 @@ export default function ProductTableRow({
       </td>
 
       {/* 3. Product Type */}
-      <td className="py-3 px-2.5 whitespace-nowrap text-[#555]">
+      <td className="py-3 px-3 whitespace-nowrap text-[#555]">
         {product.productType}
       </td>
 
       {/* 4. Category */}
-      <td className="py-3 px-2.5 text-[#555]">
+      <td className="py-3 px-3 text-[#555]">
         {product.category}
       </td>
 
-      {/* 5. Purchased Plan (+ Promote or text) */}
-      <td className="py-3 px-2.5 whitespace-nowrap">
+      {/* 5. Purchased Plan (+ Promote button or text) */}
+      <td className="py-3 px-3 whitespace-nowrap">
         {product.purchasedPlan ? (
           <span className="text-xs text-[#555] font-normal">
             {product.purchasedPlan}
@@ -92,7 +99,7 @@ export default function ProductTableRow({
           <button
             type="button"
             onClick={() => onOpenPromote(product)}
-            className="bg-[#00a99d] hover:bg-[#008f85] text-white text-xs font-semibold px-3 py-1.5 rounded-[3px] inline-flex items-center gap-1 shadow-2xs transition cursor-pointer"
+            className="bg-[#20c997] hover:bg-[#1baa80] text-white text-xs font-semibold px-2.5 py-1 rounded-[3px] inline-flex items-center gap-1 shadow-2xs transition cursor-pointer"
           >
             + Promote
           </button>
@@ -100,37 +107,43 @@ export default function ProductTableRow({
       </td>
 
       {/* 6. Price */}
-      <td className="py-3 px-2.5 whitespace-nowrap text-[#333] font-normal">
+      <td className="py-3 px-3 whitespace-nowrap text-[#333] font-normal">
         {product.price}
       </td>
 
-      {/* 7. Stock/Status (Teal colored text) */}
-      <td className="py-3 px-2.5 whitespace-nowrap text-[#00a99d] font-normal">
-        {product.stock}
+      {/* 7. Stock/Status */}
+      <td className="py-3 px-3 whitespace-nowrap">
+        {product.stock.toLowerCase().includes("out") ? (
+          <span className="text-[#e74c3c] font-medium">{product.stock}</span>
+        ) : product.stock.includes("(") ? (
+          <>
+            <span className="text-[#00a99d]">
+              {product.stock.split("(")[0].trim()}{" "}
+            </span>
+            <span className="text-[#777]">
+              ({product.stock.split("(")[1]}
+            </span>
+          </>
+        ) : (
+          <span className="text-[#00a99d]">{product.stock}</span>
+        )}
       </td>
 
       {/* 8. Page Views */}
-      <td className="py-3 px-2.5 whitespace-nowrap text-[#555]">
+      <td className="py-3 px-3 whitespace-nowrap text-[#555]">
         {product.pageViews}
       </td>
 
-      {/* 9. Date (Date on line 1, Edited on line 2) */}
-      <td className="py-3 px-2.5 whitespace-nowrap leading-tight">
-        {dateParts.length > 1 ? (
-          <>
-            <div className="text-[#333]">{dateParts[0]} /</div>
-            <div className="text-[#333] mt-0.5">{dateParts[1]}</div>
-          </>
-        ) : (
-          <div className="text-[#333]">{product.date}</div>
-        )}
+      {/* 9. Date (Date / Time on line 1, Edited on line 2) */}
+      <td className="py-3 px-3 whitespace-nowrap leading-tight">
+        <div className="text-[#555]">{product.date}</div>
         {product.editedAgo && (
           <div className="text-[11px] text-[#888] mt-0.5">{product.editedAgo}</div>
         )}
       </td>
 
-      {/* 10. Options (Edit, Clone, Delete buttons grouped) */}
-      <td className="py-3 px-2.5 whitespace-nowrap text-center">
+      {/* 10. Options */}
+      <td className="py-3 px-3 whitespace-nowrap text-center">
         <ProductOptionsGroup
           product={product}
           onEdit={onEdit}

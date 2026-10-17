@@ -33,10 +33,10 @@ export default function SetPayoutAccountTab({
         <button
           type="button"
           onClick={() => setActiveMethod("paypal")}
-          className={`px-4 py-2 text-xs font-medium rounded-sm transition cursor-pointer ${
+          className={`px-4 py-2 text-[13px] font-medium rounded-[3px] transition cursor-pointer ${
             activeMethod === "paypal"
               ? "bg-[#00a99d] text-white"
-              : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              : "bg-[#f1f3f5] hover:bg-gray-200 text-[#495057]"
           }`}
         >
           PayPal
@@ -44,10 +44,10 @@ export default function SetPayoutAccountTab({
         <button
           type="button"
           onClick={() => setActiveMethod("bitcoin")}
-          className={`px-4 py-2 text-xs font-medium rounded-sm transition cursor-pointer ${
+          className={`px-4 py-2 text-[13px] font-medium rounded-[3px] transition cursor-pointer ${
             activeMethod === "bitcoin"
               ? "bg-[#00a99d] text-white"
-              : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              : "bg-[#f1f3f5] hover:bg-gray-200 text-[#495057]"
           }`}
         >
           Bitcoin (BTC)
@@ -55,10 +55,10 @@ export default function SetPayoutAccountTab({
         <button
           type="button"
           onClick={() => setActiveMethod("iban")}
-          className={`px-4 py-2 text-xs font-medium rounded-sm transition cursor-pointer ${
+          className={`px-4 py-2 text-[13px] font-medium rounded-[3px] transition cursor-pointer ${
             activeMethod === "iban"
               ? "bg-[#00a99d] text-white"
-              : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              : "bg-[#f1f3f5] hover:bg-gray-200 text-[#495057]"
           }`}
         >
           IBAN
@@ -66,10 +66,10 @@ export default function SetPayoutAccountTab({
         <button
           type="button"
           onClick={() => setActiveMethod("swift")}
-          className={`px-4 py-2 text-xs font-medium rounded-sm transition cursor-pointer ${
+          className={`px-4 py-2 text-[13px] font-medium rounded-[3px] transition cursor-pointer ${
             activeMethod === "swift"
               ? "bg-[#00a99d] text-white"
-              : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              : "bg-[#f1f3f5] hover:bg-gray-200 text-[#495057]"
           }`}
         >
           SWIFT

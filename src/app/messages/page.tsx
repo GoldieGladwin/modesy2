@@ -1,5 +1,11 @@
-import { redirect } from "next/navigation";
+import React from "react";
+import VendorMessagesView from "@/components/messages/VendorMessagesView";
 
-export default function MessagesPage() {
-  redirect("/admin/messages");
+export const metadata = {
+  title: "Messages - Modesy",
+  description: "Chat in real-time with customers and store contacts.",
+};
+
+export default function RootMessagesPage() {
+  return <VendorMessagesView />;
 }

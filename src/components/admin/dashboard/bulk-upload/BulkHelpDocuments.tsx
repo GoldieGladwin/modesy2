@@ -28,50 +28,51 @@ export default function BulkHelpDocuments() {
   const handleDownloadExample = () => {
     const csvContent =
       "title,category_id,price,stock,sku,short_description,description,image_url\n" +
-      '"Wireless Bluetooth Headphones","Electronics > Audio",59.99,100,"WB-HEAD-01","High-fidelity wireless audio headphones with noise cancel","Premium headphones with deep bass and 40h battery life.","https://images.unsplash.com/photo-1505740420928-5e560c06d30e"\n' +
-      '"Smart Fitness Tracker Watch","Electronics > Wearables",39.50,150,"FIT-WATCH-02","Waterproof smart tracker with heart-rate monitor","Tracks daily steps, calories burned, sleep cycles, and heart rate.","https://images.unsplash.com/photo-1523275335684-37898b6baf30"\n' +
-      '"Minimalist Leather Cardholder","Fashion > Accessories",19.00,80,"LTH-CARD-03","Genuine handcrafted slim leather wallet","Compact wallet made from full-grain leather holding up to 8 cards.","https://images.unsplash.com/photo-1627123424574-724758594e93"\n';
+      '"Animal colorful digital prints","Digital > Prints",29.00,100,"ANM-DIG-01","Vibrant animal digital art prints","High resolution downloadable prints suitable for wall art and decor.","https://images.unsplash.com/photo-1579783900882-c0d3dad7b119"\n' +
+      '"Summer fashion top lace","Fashion > Tops",45.00,80,"TOP-LACE-02","Elegant lightweight summer lace blouse","Breathable fabric with fine lace embroidery perfect for warm weather.","https://images.unsplash.com/photo-1515886657613-9f3515b0c78f"\n' +
+      '"Black midi skirt with white flowers","Fashion > Skirts",38.00,50,"SKT-FLW-03","Charming floral pattern A-line midi skirt","Soft lightweight drape with elastic waistband and charming floral accents.","https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa"\n' +
+      '"Light blue women shirt","Fashion > Shirts",34.50,120,"SHT-BLU-04","Classic tailored soft cotton shirt","Versatile casual and formal button-down shirt made of 100% breathable cotton.","https://images.unsplash.com/photo-1598554747436-c9293d6a588f"\n';
     downloadFile("product_upload_example.csv", csvContent);
   };
 
   return (
     <>
-      <div className="bg-white border border-[#ebebeb] rounded-[4px] p-6 sm:p-7 shadow-xs">
+      <div className="bg-white border border-[#ebebeb] rounded-[4px] p-6 shadow-xs">
         {/* Header */}
-        <div className="mb-6">
-          <h2 className="text-[17px] font-bold text-[#2d3748]">
+        <div className="mb-5">
+          <h2 className="text-[15px] font-semibold text-[#333]">
             Help Documents
           </h2>
-          <p className="text-sm text-[#718096] mt-1 leading-snug">
+          <p className="text-xs text-gray-500 mt-1">
             You can use these documents to generate your CSV file
           </p>
         </div>
 
         {/* Action Buttons (Stacked matching screenshot) */}
         <div className="space-y-3">
-          {/* 1. Download CSV Template Button */}
+          {/* 1. Download CSV Template Button (Emerald Green #20c997) */}
           <button
             type="button"
             onClick={handleDownloadTemplate}
-            className="w-full bg-[#10b981] hover:bg-[#059669] text-white text-sm font-medium py-2.5 px-4 rounded-[4px] shadow-xs transition duration-150 cursor-pointer text-center block select-none"
+            className="w-full bg-[#20c997] hover:bg-[#1baa80] text-white text-xs font-semibold py-2.5 px-4 rounded-[4px] shadow-2xs transition duration-150 cursor-pointer text-center block select-none"
           >
             Download CSV Template
           </button>
 
-          {/* 2. Download CSV Example Button */}
+          {/* 2. Download CSV Example Button (Bright Blue #328cf3) */}
           <button
             type="button"
             onClick={handleDownloadExample}
-            className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-sm font-medium py-2.5 px-4 rounded-[4px] shadow-xs transition duration-150 cursor-pointer text-center block select-none"
+            className="w-full bg-[#328cf3] hover:bg-[#257fe6] text-white text-xs font-semibold py-2.5 px-4 rounded-[4px] shadow-2xs transition duration-150 cursor-pointer text-center block select-none"
           >
             Download CSV Example
           </button>
 
-          {/* 3. Documentation Button */}
+          {/* 3. Documentation Button (Slate Gray #596573) */}
           <button
             type="button"
             onClick={() => setIsDocModalOpen(true)}
-            className="w-full bg-[#5a6268] hover:bg-[#4b5563] text-white text-sm font-medium py-2.5 px-4 rounded-[4px] shadow-xs transition duration-150 cursor-pointer text-center block select-none"
+            className="w-full bg-[#596573] hover:bg-[#4b5561] text-white text-xs font-semibold py-2.5 px-4 rounded-[4px] shadow-2xs transition duration-150 cursor-pointer text-center block select-none"
           >
             Documentation
           </button>

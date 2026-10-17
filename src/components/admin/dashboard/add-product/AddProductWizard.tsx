@@ -42,13 +42,21 @@ export default function AddProductWizard({ currentStep = 1 }: AddProductWizardPr
         {/* Step 2 */}
         <div className="flex flex-col items-center z-10">
           <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white transition-colors ${
-              currentStep >= 2 ? "bg-[#00a99d]" : "bg-[#cbd5e0]"
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
+              currentStep >= 2
+                ? "bg-[#00a99d] text-white font-bold"
+                : "bg-[#e9ecef] text-[#6c757d]"
             }`}
           >
             2
           </div>
-          <span className="text-xs font-medium text-[#718096] mt-2 whitespace-nowrap">
+          <span
+            className={`text-xs mt-2 whitespace-nowrap ${
+              currentStep >= 2
+                ? "font-medium text-[#2d3748]"
+                : "font-normal text-[#8c94a0]"
+            }`}
+          >
             Details
           </span>
         </div>

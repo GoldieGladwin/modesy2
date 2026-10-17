@@ -1,10 +1,4 @@
-import React from "react";
-import RefundDetailView from "@/components/admin/orders/RefundDetailView";
-
-export const metadata = {
-  title: "Refund Request Details - Modesy",
-  description: "View refund request discussion and product summary.",
-};
+import { redirect } from "next/navigation";
 
 export default async function RefundDetailUnderscorePage({
   params,
@@ -12,5 +6,6 @@ export default async function RefundDetailUnderscorePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <RefundDetailView refundId={id} />;
+  redirect(`/refund-requests/${id}`);
 }
+

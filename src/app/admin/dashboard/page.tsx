@@ -39,6 +39,7 @@ export default function AdminStoreDashboardPage() {
 
   // Data Latest Sales (persis Screenshot 3)
   const latestSales = [
+    { sale: "#10044", status: "Processing", payment: "Pending Payment", date: "2026-10-14 / 20:42" },
     { sale: "#10040", status: "Processing", payment: "Pending Payment", date: "2026-09-29 / 12:00" },
     { sale: "#10039", status: "Processing", payment: "Pending Payment", date: "2026-09-29 / 00:34" },
     { sale: "#10038", status: "Processing", payment: "Pending Payment", date: "2026-09-28 / 22:48" },
@@ -412,7 +413,7 @@ export default function AdminStoreDashboardPage() {
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#f4f4f4] flex justify-end bg-white rounded-b-[3px]">
               <Link
-                href="/admin/comments"
+                href="/dashboard/comments"
                 className="bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555] hover:text-[#222] border border-[#ddd] text-xs px-3 py-1 rounded-[3px] transition-colors"
               >
                 View All
@@ -493,7 +494,7 @@ export default function AdminStoreDashboardPage() {
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#f4f4f4] flex justify-end bg-white rounded-b-[3px]">
               <Link
-                href="/admin/reviews"
+                href="/dashboard/reviews"
                 className="bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555] hover:text-[#222] border border-[#ddd] text-xs px-3 py-1 rounded-[3px] transition-colors"
               >
                 View All
@@ -554,7 +555,7 @@ export default function AdminStoreDashboardPage() {
                         <td className="py-3 px-4 text-[#777]">{sale.date}</td>
                         <td className="py-3 px-5 text-right">
                           <Link
-                            href="/admin/orders"
+                            href={`/dashboard/sale/${sale.sale.replace('#', '')}`}
                             className="inline-block bg-[#00a99d] hover:bg-[#008f85] text-white text-[11px] px-2.5 py-1 rounded-[3px] font-medium transition-colors"
                           >
                             Details
@@ -570,7 +571,7 @@ export default function AdminStoreDashboardPage() {
             {/* Footer */}
             <div className="px-5 py-3 border-t border-[#f4f4f4] flex justify-end bg-white rounded-b-[3px]">
               <Link
-                href="/admin/orders"
+                href="/dashboard/sales"
                 className="bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555] hover:text-[#222] border border-[#ddd] text-xs px-3 py-1 rounded-[3px] transition-colors"
               >
                 View All

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   WalletTabType,
   EarningsRecord,
@@ -29,13 +30,43 @@ import ReportBankTransferModal from "./ReportBankTransferModal";
 import NewPayoutModal from "./NewPayoutModal";
 import InvoiceModal from "./InvoiceModal";
 import { CheckCircle2, ChevronRight } from "lucide-react";
+import ModesyHeader from "@/components/layout/guest/ModesyHeader";
+import ModesyFooter from "@/components/layout/guest/ModesyFooter";
 
-export default function WalletView() {
+interface WalletViewProps {
+  initialBalance?: number;
+  shopName?: string;
+}
+
+function resolveTab(t: string | null): WalletTabType {
+  if (t === "deposits") return "deposits";
+  if (t === "expenses") return "expenses";
+  if (t === "payouts") return "payouts";
+  if (t === "set-payout-account" || t === "payout-account") return "set-payout-account";
+  return "earnings";
+}
+
+function WalletViewContent({ initialBalance = 793.52, shopName = "Trendshop" }: WalletViewProps = {}) {
+  const searchParams = useSearchParams();
+  const queryTab = searchParams.get("tab");
+
   // Navigation
-  const [activeTab, setActiveTab] = useState<WalletTabType>("earnings");
+  const [activeTab, setActiveTab] = useState<WalletTabType>(() => resolveTab(queryTab));
+
+  useEffect(() => {
+    if (queryTab) {
+      setActiveTab(resolveTab(queryTab));
+    }
+  }, [queryTab]);
+
+  const handleTabChange = (newTab: WalletTabType) => {
+    setActiveTab(newTab);
+    const targetUrl = newTab === "earnings" ? window.location.pathname : `${window.location.pathname}?tab=${newTab}`;
+    window.history.pushState(null, "", targetUrl);
+  };
 
   // Wallet Financial State
-  const [balance, setBalance] = useState<number>(1130.85);
+  const [balance, setBalance] = useState<number>(initialBalance);
   const [earnings, setEarnings] = useState<EarningsRecord[]>(INITIAL_EARNINGS_DATA);
   const [deposits, setDeposits] = useState<DepositRecord[]>(INITIAL_DEPOSITS_DATA);
   const [expenses, setExpenses] = useState<ExpenseRecord[]>(INITIAL_EXPENSES_DATA);
@@ -105,7 +136,18 @@ export default function WalletView() {
   };
 
   return (
-    <div className="w-full pb-16">
+    <div className="min-h-screen bg-white flex flex-col font-sans text-gray-800 antialiased">
+      {/* Modesy Header */}
+      <ModesyHeader
+        currentUser={{
+          name: "Trendshop",
+          email: "trendshop@codingest.net",
+          avatar: "/assets/img/trendshop-avatar.jpg",
+          role: "vendor",
+        }}
+        cartCount={3}
+      />
+
       {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 bg-[#00a99d] text-white px-4 py-3 rounded-sm shadow-lg flex items-center gap-2.5 text-xs animate-modal-dialog">
@@ -114,18 +156,18 @@ export default function WalletView() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+      <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-6">
         {/* Breadcrumb */}
-        <nav className="text-xs text-gray-500 mb-4 flex items-center gap-1.5">
-          <Link href="/admin" className="hover:text-[#00a99d] transition">
+        <nav className="text-[12px] text-gray-500 mb-3 flex items-center gap-1.5 font-normal">
+          <Link href="/" className="text-gray-500 hover:text-[#00a99d] transition-colors">
             Home
           </Link>
           <span className="text-gray-400">/</span>
-          <span className="text-gray-700 font-medium">Wallet</span>
+          <span className="text-gray-600">Wallet</span>
         </nav>
 
         {/* Title */}
-        <h1 className="text-xl sm:text-2xl font-medium text-gray-800 mb-6">
+        <h1 className="text-[22px] font-bold text-[#222222] mb-6">
           Wallet
         </h1>
 
@@ -139,7 +181,7 @@ export default function WalletView() {
         </div>
 
         {/* Five Navigation Tabs */}
-        <WalletTabs activeTab={activeTab} onChangeTab={setActiveTab} />
+        <WalletTabs activeTab={activeTab} onChangeTab={handleTabChange} />
 
         {/* Tab Content Display */}
         <div>
@@ -187,7 +229,7 @@ export default function WalletView() {
             />
           )}
 
-          {activeTab === "payout-account" && (
+          {(activeTab === "set-payout-account" || activeTab === "payout-account") && (
             <SetPayoutAccountTab
               settings={payoutSettings}
               onSaveSettings={(updated) => {
@@ -197,7 +239,6 @@ export default function WalletView() {
             />
           )}
         </div>
-      </div>
 
       {/* Modals */}
       <AddFundsModal
@@ -226,6 +267,18 @@ export default function WalletView() {
         data={selectedInvoice}
         onClose={() => setSelectedInvoice(null)}
       />
+      </main>
+
+      {/* Modesy Footer */}
+      <ModesyFooter />
     </div>
+  );
+}
+
+export default function WalletView(props: WalletViewProps) {
+  return (
+    <Suspense fallback={null}>
+      <WalletViewContent {...props} />
+    </Suspense>
   );
 }

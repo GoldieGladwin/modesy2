@@ -29,6 +29,7 @@ export default function AdminPanelHomePage() {
 
   // 1. Latest Orders Data (persis screenshot)
   const latestOrders = [
+    { id: "#10044", total: "$82.50", status: "Processing", date: "2026-10-14 / 20:42" },
     { id: "#10041", total: "$60.20", status: "Processing", date: "2026-10-05 / 15:38" },
     { id: "#10040", total: "$138", status: "Processing", date: "2026-09-29 / 12:00" },
     { id: "#10039", total: "$94", status: "Processing", date: "2026-09-29 / 00:34" },
@@ -223,7 +224,7 @@ export default function AdminPanelHomePage() {
                         <td className="py-2.5 px-3 text-[#777]">{ord.date}</td>
                         <td className="py-2.5 px-4 text-right">
                           <Link
-                            href="/admin/admin-panel/orders"
+                            href={`/dashboard/sale/${ord.id.replace('#', '')}`}
                             className="inline-block bg-[#00a99d] hover:bg-[#008f85] text-white text-[11px] px-2.5 py-1 rounded-[3px] font-medium transition-colors"
                           >
                             Details
@@ -597,7 +598,7 @@ export default function AdminPanelHomePage() {
             {/* Footer */}
             <div className="px-4 py-2.5 border-t border-[#f4f4f4] flex justify-end bg-white rounded-b-[3px]">
               <Link
-                href="/admin/admin-panel/reviews"
+                href="/dashboard/reviews"
                 className="bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555] hover:text-[#222] border border-[#ddd] text-xs px-3 py-1 rounded-[3px] transition-colors"
               >
                 View All
@@ -668,7 +669,7 @@ export default function AdminPanelHomePage() {
             {/* Footer */}
             <div className="px-4 py-2.5 border-t border-[#f4f4f4] flex justify-end bg-white rounded-b-[3px]">
               <Link
-                href="/admin/admin-panel/comments"
+                href="/dashboard/comments"
                 className="bg-[#f4f4f4] hover:bg-[#eaeaea] text-[#555] hover:text-[#222] border border-[#ddd] text-xs px-3 py-1 rounded-[3px] transition-colors"
               >
                 View All

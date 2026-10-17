@@ -1,4 +1,4 @@
-export type WalletTabType = "earnings" | "deposits" | "expenses" | "payouts" | "payout-account";
+export type WalletTabType = "earnings" | "deposits" | "expenses" | "payouts" | "set-payout-account" | "payout-account";
 
 export type PayoutMethodType = "paypal" | "bitcoin" | "iban" | "swift";
 

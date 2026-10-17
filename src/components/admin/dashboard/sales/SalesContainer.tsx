@@ -1,29 +1,84 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import SalesFilterSection from "./SalesFilterSection";
 import SalesTable from "./SalesTable";
 import SalesPaginationBar from "./SalesPaginationBar";
 import { SaleFilterState, SaleItem } from "./types";
+import {
+  initialActiveSales,
+  initialCompletedSales,
+  initialCancelledSales,
+} from "./mockData";
 
 interface SalesContainerProps {
-  title: string;
-  initialItems: SaleItem[];
+  title?: string;
+  initialItems?: SaleItem[];
   showPaymentStatus?: boolean;
   emptyMessage?: string;
   pageSize?: number;
 }
 
-export default function SalesContainer({
-  title,
-  initialItems,
+function SalesContainerContent({
+  title = "Sales",
+  initialItems = initialActiveSales,
   showPaymentStatus = false,
   emptyMessage = "No records found!",
   pageSize = 15,
 }: SalesContainerProps) {
-  const [sales, setSales] = useState<SaleItem[]>(initialItems);
-  const [currentPage, setCurrentPage] = useState(1);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const st = searchParams?.get("st");
+  const pageParam = searchParams?.get("page");
+  const initialPage = pageParam ? parseInt(pageParam, 10) || 1 : 1;
+
+  // Determine effective title, items, and showPaymentStatus
+  let effectiveTitle = title;
+  let defaultItems = initialItems;
+  let effectiveShowPaymentStatus = showPaymentStatus;
+
+  if (st === "completed" || title === "Completed Sales") {
+    effectiveTitle = "Completed Sales";
+    defaultItems = initialCompletedSales;
+    effectiveShowPaymentStatus = false;
+  } else if (st === "cancelled" || title === "Cancelled Sales") {
+    effectiveTitle = "Cancelled Sales";
+    defaultItems = initialCancelledSales;
+    effectiveShowPaymentStatus = false;
+  } else if (st === "active") {
+    effectiveTitle = "Active Sales";
+    defaultItems = initialActiveSales;
+    effectiveShowPaymentStatus = true;
+  }
+
+  const [sales, setSales] = useState<SaleItem[]>(defaultItems);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [selectedSale, setSelectedSale] = useState<SaleItem | null>(null);
+
+  useEffect(() => {
+    if (pageParam) {
+      const p = parseInt(pageParam, 10);
+      if (!isNaN(p) && p !== currentPage) {
+        setCurrentPage(p);
+      }
+    }
+  }, [pageParam]);
+
+  useEffect(() => {
+    if (st === "completed" || title === "Completed Sales") {
+      setSales(initialCompletedSales);
+    } else if (st === "cancelled" || title === "Cancelled Sales") {
+      setSales(initialCancelledSales);
+    } else if (st === "active") {
+      setSales(initialActiveSales);
+    } else {
+      setSales(initialItems);
+    }
+    setCurrentPage(1);
+  }, [st, title, initialItems]);
 
   const [filter, setFilter] = useState<SaleFilterState>({
     paymentStatus: "All",
@@ -39,11 +94,112 @@ export default function SalesContainer({
   const handleApplyFilter = () => {
     setAppliedFilter({ ...filter });
     setCurrentPage(1);
+    if (searchParams?.get("page")) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("page");
+      const query = params.toString() ? `?${params.toString()}` : "";
+      router.push(`${pathname}${query}`, { scroll: false });
+    }
   };
 
-  const handleExport = (format: "csv" | "excel") => {
+  // Filter logic
+  const filtered = sales.filter((item) => {
+    if (
+      effectiveShowPaymentStatus &&
+      appliedFilter.paymentStatus !== "All" &&
+      item.paymentStatus !== appliedFilter.paymentStatus
+    ) {
+      return false;
+    }
+
+    if (appliedFilter.searchId.trim()) {
+      const q = appliedFilter.searchId.trim().toLowerCase().replace("#", "");
+      if (!item.id.toLowerCase().includes(q)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (page > 1) {
+      params.set("page", page.toString());
+    } else {
+      params.delete("page");
+    }
+    const query = params.toString() ? `?${params.toString()}` : "";
+    router.push(`${pathname}${query}`, { scroll: false });
+  };
+
+  const handleExport = (format: "csv" | "excel" | "xml") => {
+    const exportData = filtered.length > 0 ? filtered : sales;
+
+    if (format === "xml") {
+      let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<sales>\n';
+      exportData.forEach((s) => {
+        xml += "  <sale>\n";
+        xml += `    <id>${s.id}</id>\n`;
+        xml += `    <total>${s.total.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</total>\n`;
+        xml += `    <payment_status>${s.paymentStatus}</payment_status>\n`;
+        xml += `    <status>${s.status}</status>\n`;
+        xml += `    <date>${s.date}</date>\n`;
+        xml += "  </sale>\n";
+      });
+      xml += "</sales>";
+
+      const blob = new Blob([xml], {
+        type: "application/xml;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `sales_export_${new Date().toISOString().slice(0, 10)}.xml`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    if (format === "excel") {
+      const headers = ["Sale ID", "Total", "Payment Status", "Status", "Date"];
+      const rows = exportData.map((s) => [
+        `#${s.id}`,
+        s.total,
+        s.paymentStatus,
+        s.status,
+        s.date,
+      ]);
+      const content = [
+        headers.join("\t"),
+        ...rows.map((r) => r.join("\t")),
+      ].join("\n");
+      const blob = new Blob([content], {
+        type: "application/vnd.ms-excel;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `sales_export_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    // Default CSV
     const csvHeader = "Sale ID,Total,Payment Status,Status,Date\n";
-    const csvRows = sales
+    const csvRows = exportData
       .map(
         (s) =>
           `"#${s.id}","${s.total}","${s.paymentStatus}","${s.status}","${s.date}"`
@@ -70,26 +226,6 @@ export default function SalesContainer({
     setSelectedSale(sale);
   };
 
-  // Filter logic
-  const filtered = sales.filter((item) => {
-    if (
-      showPaymentStatus &&
-      appliedFilter.paymentStatus !== "All" &&
-      item.paymentStatus !== appliedFilter.paymentStatus
-    ) {
-      return false;
-    }
-
-    if (appliedFilter.searchId.trim()) {
-      const q = appliedFilter.searchId.trim().toLowerCase().replace("#", "");
-      if (!item.id.toLowerCase().includes(q)) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const displayedSales = filtered.slice(
@@ -98,16 +234,16 @@ export default function SalesContainer({
   );
 
   return (
-    <div className="bg-white border border-[#ebebeb] rounded-[4px] p-6 sm:p-7 shadow-xs">
+    <div className="bg-white border border-[#ebebeb] rounded-[3px] p-6 shadow-xs">
       {/* Title */}
-      <div className="mb-6">
-        <h1 className="text-[18px] font-bold text-[#2d3748]">{title}</h1>
+      <div className="mb-5">
+        <h1 className="text-[15px] font-semibold text-[#333]">{effectiveTitle}</h1>
       </div>
 
       {/* Filter Section */}
       <SalesFilterSection
         filter={filter}
-        showPaymentStatus={showPaymentStatus}
+        showPaymentStatus={effectiveShowPaymentStatus}
         onChange={handleFilterChange}
         onApplyFilter={handleApplyFilter}
         onExport={handleExport}
@@ -126,20 +262,26 @@ export default function SalesContainer({
           totalEntries={filtered.length}
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={(page) => setCurrentPage(page)}
+          onPageChange={handlePageChange}
         />
       )}
 
       {/* Details Modal */}
       {selectedSale && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-[6px] max-w-md w-full p-6 shadow-xl relative">
-            <h3 className="text-base font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100 flex items-center justify-between">
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setSelectedSale(null)}
+        >
+          <div
+            className="bg-white rounded-[4px] max-w-md w-full p-6 shadow-xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-sm font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100 flex items-center justify-between">
               <span>Sale Details #{selectedSale.id}</span>
               <button
                 type="button"
                 onClick={() => setSelectedSale(null)}
-                className="text-gray-400 hover:text-gray-600 text-lg cursor-pointer"
+                className="text-gray-400 hover:text-gray-600 text-base cursor-pointer"
               >
                 ✕
               </button>
@@ -179,5 +321,13 @@ export default function SalesContainer({
         </div>
       )}
     </div>
+  );
+}
+
+export default function SalesContainer(props: SalesContainerProps) {
+  return (
+    <Suspense fallback={<div className="p-6 text-xs text-gray-500">Loading sales...</div>}>
+      <SalesContainerContent {...props} />
+    </Suspense>
   );
 }

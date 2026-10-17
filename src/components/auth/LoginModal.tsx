@@ -65,10 +65,17 @@ export default function LoginModal({
       setIsLoading(false);
       setSuccess("Login successful!");
       if (onSuccess) {
-        const isAdmin = email.toLowerCase().includes("admin");
+        const isVendor =
+          email.toLowerCase().includes("trendshop") ||
+          email.toLowerCase().includes("vendor");
+        const isAdmin = !isVendor && email.toLowerCase().includes("admin");
         onSuccess({
           email,
-          name: isAdmin ? "Admin" : (email.split("@")[0] || "User"),
+          name: isVendor
+            ? "Trendshop"
+            : isAdmin
+            ? "Admin"
+            : email.split("@")[0] || "User",
         });
       }
       setTimeout(onClose, 800);
@@ -145,10 +152,20 @@ export default function LoginModal({
             <button
               type="button"
               onClick={() => {
+                setEmail("trendshop@codingest.net");
+                setPassword("1234");
+              }}
+              className="px-2 py-0.5 rounded bg-white border border-[#00a99d] text-[#00a99d] font-bold hover:bg-[#00a99d] hover:text-white transition"
+            >
+              Vendor
+            </button>
+            <button
+              type="button"
+              onClick={() => {
                 setEmail("admin@codingest.net");
                 setPassword("1234");
               }}
-              className="px-2 py-0.5 rounded bg-white border border-gray-200 text-[#00a99d] font-semibold hover:bg-[#00a99d] hover:text-white transition"
+              className="px-2 py-0.5 rounded bg-white border border-gray-200 text-gray-700 font-semibold hover:bg-gray-100 transition"
             >
               Admin
             </button>
@@ -158,7 +175,7 @@ export default function LoginModal({
                 setEmail("buyer@codingest.net");
                 setPassword("123456");
               }}
-              className="px-2 py-0.5 rounded bg-white border border-gray-200 text-gray-700 font-semibold hover:bg-gray-200 transition"
+              className="px-2 py-0.5 rounded bg-white border border-gray-200 text-gray-700 font-semibold hover:bg-gray-100 transition"
             >
               Buyer
             </button>

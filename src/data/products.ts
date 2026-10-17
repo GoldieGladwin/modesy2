@@ -26,6 +26,30 @@ export interface Product {
 
 export const jewelryProductsData: Product[] = [
   {
+    id: 41,
+    title: "Black midi skirt with white flowers",
+    seller: "Trendshop",
+    image: "/images/products/midi-skirt.webp",
+    secondaryImage: "/images/products/midi-skirt.webp",
+    images: ["/images/products/midi-skirt.webp"],
+    rating: 4,
+    favorites: 0,
+    price: "$48",
+    originalPrice: "$55",
+    discountPercent: "-11%",
+    isDiscounted: true,
+    isFeatured: true,
+    category: "Skirts",
+    brand: "Burberry",
+    sku: "B1M2S3W4F5L6-S",
+    status: "In Stock",
+    description:
+      "Featuring a soft black fabric adorned with delicate white floral patterns, this skirt brings a touch of romance to any outfit. Its flattering midi length falls gracefully below the knee, making it perfect for both casual and semi-formal occasions. With a comfortable waistband and a flowy silhouette, it's easy to pair with everything from a simple tee to a tailored blouse. Embrace effortless style with this versatile floral midi skirt that adds a hint of charm to every look.",
+    reviewsCount: 1,
+    commentsCount: 0,
+    viewsCount: 327,
+  },
+  {
     id: 1,
     title: "Women kipling bailey saddle handbag",
     seller: "Admin",
