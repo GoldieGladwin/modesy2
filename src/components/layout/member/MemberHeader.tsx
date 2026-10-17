@@ -2,14 +2,12 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { CATEGORIES } from "@/data/categories";
+import { usePathname } from "next/navigation";
+import { CATEGORIES, getCategorySlug } from "@/data/categories";
 import LocationModal from "@/components/modals/LocationModal";
 import {
   User,
   ShoppingBag,
-  FileText,
-  Download,
-  Mail,
   Settings,
   LogOut,
   ChevronDown,
@@ -18,9 +16,15 @@ import {
   Heart,
   Store,
   Layers,
+  Wallet,
+  Tag,
+  MessageSquare,
 } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 export default function MemberHeader() {
+  const { totalCartItems } = useCart();
+  const pathname = usePathname();
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
@@ -209,79 +213,73 @@ export default function MemberHeader() {
               <button
                 type="button"
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-1.5 text-[#333] hover:text-[#00a99d] font-medium text-[14px] cursor-pointer bg-transparent border-0 p-0"
+                className="flex items-center gap-2 text-[#333] hover:text-[#00a99d] font-medium text-[14px] cursor-pointer bg-transparent border-0 p-0"
               >
-                <div className="w-6 h-6 rounded-full bg-[#00a99d]/10 text-[#00a99d] flex items-center justify-center font-bold text-xs">
-                  M
-                </div>
-                <span>member</span>
+                <img
+                  src="/images/peter-jone-avatar.jpg"
+                  alt="Peter Jone"
+                  className="w-6 h-6 rounded-full object-cover ring-1 ring-black/10"
+                />
+                <span>Peter Jone</span>
                 <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
               </button>
 
               {userDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-[#ebebeb] rounded-sm shadow-lg z-50 py-2 text-[13px]">
-                  <div className="px-4 py-2 border-b border-gray-100 bg-gray-50/50">
-                    <p className="font-semibold text-gray-800">member</p>
-                    <p className="text-xs text-gray-500 truncate">member@codingest.com</p>
-                    <span className="inline-block mt-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded font-medium">
-                      Member
-                    </span>
-                  </div>
+                <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-[#ebebeb] rounded-sm shadow-md z-50 py-1.5 text-[13px]">
                   <Link
                     href="/member/profile"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d]"
+                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
-                    <User className="w-4 h-4 text-gray-400" />
+                    <User className="w-4 h-4 text-gray-400 stroke-[1.8]" />
                     <span>Profile</span>
+                  </Link>
+                  <Link
+                    href="/member/wallet"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
+                  >
+                    <Wallet className="w-4 h-4 text-gray-400 stroke-[1.8]" />
+                    <span>Wallet</span>
                   </Link>
                   <Link
                     href="/member/orders"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d]"
+                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
-                    <ShoppingBag className="w-4 h-4 text-gray-400" />
+                    <ShoppingBag className="w-4 h-4 text-gray-400 stroke-[1.8]" />
                     <span>Orders</span>
                   </Link>
                   <Link
-                    href="/member/quote-requests"
+                    href="/member/my-coupons"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d]"
+                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
-                    <FileText className="w-4 h-4 text-gray-400" />
-                    <span>Quote Requests</span>
-                  </Link>
-                  <Link
-                    href="/member/downloads"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d]"
-                  >
-                    <Download className="w-4 h-4 text-gray-400" />
-                    <span>Downloads</span>
+                    <Tag className="w-4 h-4 text-gray-400 stroke-[1.8]" />
+                    <span>My Coupons</span>
                   </Link>
                   <Link
                     href="/member/messages"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d]"
+                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
-                    <Mail className="w-4 h-4 text-gray-400" />
+                    <MessageSquare className="w-4 h-4 text-gray-400 stroke-[1.8]" />
                     <span>Messages</span>
                   </Link>
                   <Link
                     href="/member/settings"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d]"
+                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
-                    <Settings className="w-4 h-4 text-gray-400" />
-                    <span>Settings</span>
+                    <Settings className="w-4 h-4 text-gray-400 stroke-[1.8]" />
+                    <span>Profile Settings</span>
                   </Link>
-                  <div className="border-t border-gray-100 my-1"></div>
                   <Link
                     href="/guest"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-red-600 hover:bg-red-50"
+                    className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
-                    <LogOut className="w-4 h-4 text-red-500" />
+                    <LogOut className="w-4 h-4 text-gray-400 stroke-[1.8]" />
                     <span>Logout</span>
                   </Link>
                 </div>
@@ -334,9 +332,11 @@ export default function MemberHeader() {
             >
               <div className="relative mr-1.5 flex items-center">
                 <ShoppingCart className="w-6 h-6" />
-                <span className="absolute -top-1.5 -right-2 bg-[#00a99d] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                  0
-                </span>
+                {totalCartItems > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#00a99d] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold">
+                    {totalCartItems}
+                  </span>
+                )}
               </div>
               <span className="text-[14px] font-medium">Cart</span>
             </Link>
@@ -369,7 +369,11 @@ export default function MemberHeader() {
         <div className="max-w-[1320px] mx-auto px-4">
           <nav className="flex items-center space-x-1 overflow-x-auto">
             {CATEGORIES.map((category) => {
+              const categorySlug = getCategorySlug(category);
               const isHovered = hoveredCategoryId === category.id;
+              const isActive =
+                pathname === `/member/category/${categorySlug}` ||
+                pathname === `/category/${categorySlug}`;
               return (
                 <div
                   key={category.id}
@@ -377,15 +381,17 @@ export default function MemberHeader() {
                   onMouseEnter={() => setHoveredCategoryId(category.id)}
                 >
                   <Link
-                    href={`/guest/products`}
+                    href={`/member/category/${categorySlug}`}
                     className={`group relative px-3.5 py-[14px] text-[14px] font-medium whitespace-nowrap transition-colors block ${
-                      isHovered ? "text-[#00a99d]" : "text-[#222222] hover:text-[#00a99d]"
+                      isHovered || isActive
+                        ? "text-[#00a99d]"
+                        : "text-[#222222] hover:text-[#00a99d]"
                     }`}
                   >
                     <span>{category.title}</span>
                     <span
                       className={`absolute bottom-0 left-0 right-0 h-[2px] bg-[#00a99d] transition-opacity ${
-                        isHovered ? "opacity-100" : "opacity-0"
+                        isHovered || isActive ? "opacity-100" : "opacity-0"
                       }`}
                     />
                   </Link>
@@ -406,15 +412,18 @@ export default function MemberHeader() {
               <div className="flex-1 flex flex-wrap gap-x-12 gap-y-6">
                 {activeCategory.subcategories.map((sub, idx) => (
                   <div key={idx} className="min-w-[150px] max-w-[200px]">
-                    <h4 className="font-bold text-[#222] text-[14px] mb-2.5 cursor-pointer hover:text-[#00a99d] transition-colors leading-[22px]">
+                    <Link
+                      href={`/member/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(sub.title)}`}
+                      className="font-bold text-[#222] text-[14px] mb-2.5 cursor-pointer hover:text-[#00a99d] transition-colors leading-[22px] block"
+                    >
                       {sub.title}
-                    </h4>
+                    </Link>
                     {sub.items.length > 0 && (
                       <ul className="space-y-1.5 list-none p-0 m-0">
                         {sub.items.map((item, itemIdx) => (
                           <li key={itemIdx}>
                             <Link
-                              href="/guest/products"
+                              href={`/member/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(sub.title)}&item=${encodeURIComponent(item)}`}
                               className="text-[13px] text-[#555] hover:text-[#00a99d] transition-colors cursor-pointer text-left block leading-[20px]"
                             >
                               {item}
@@ -430,9 +439,10 @@ export default function MemberHeader() {
               {activeCategory.images && activeCategory.images.length > 0 && (
                 <div className="flex items-center gap-4 shrink-0">
                   {activeCategory.images.map((img, imgIdx) => (
-                    <div
+                    <Link
+                      href={`/member/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(img.label)}`}
                       key={imgIdx}
-                      className="w-[140px] h-[190px] relative rounded overflow-hidden group cursor-pointer shadow-sm border border-gray-100"
+                      className="w-[140px] h-[190px] relative rounded overflow-hidden group cursor-pointer shadow-sm border border-gray-100 block"
                     >
                       <img
                         src={img.image}
@@ -444,7 +454,7 @@ export default function MemberHeader() {
                           {img.label}
                         </span>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -459,11 +469,20 @@ export default function MemberHeader() {
           <img src="/assets/img/logo.svg" alt="Modesy" className="h-8 object-contain" />
         </Link>
         <div className="flex items-center gap-3">
-          <Link href="/member/cart" className="text-gray-700">
+          <Link href="/member/cart" className="text-gray-700 relative">
             <ShoppingCart className="w-5 h-5" />
+            {totalCartItems > 0 && (
+              <span className="absolute -top-1.5 -right-2 bg-[#00a99d] text-white text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold">
+                {totalCartItems}
+              </span>
+            )}
           </Link>
-          <Link href="/member/profile" className="w-7 h-7 rounded-full bg-[#00a99d] text-white flex items-center justify-center text-xs font-bold">
-            M
+          <Link href="/member/profile" className="w-7 h-7 rounded-full overflow-hidden border border-gray-200 block">
+            <img
+              src="/images/peter-jone-avatar.jpg"
+              alt="Peter Jone"
+              className="w-full h-full object-cover"
+            />
           </Link>
         </div>
       </div>

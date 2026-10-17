@@ -445,3 +445,54 @@ export const CATEGORIES: CategoryItem[] = [
     "images": []
   }
 ];
+
+export const CATEGORY_SLUG_MAP: Record<string, string> = {
+  "1": "clothing",
+  "2": "shoes",
+  "3": "home-living",
+  "4": "jewelry-accessories",
+  "5": "toys-entertainment",
+  "6": "graphics-photos",
+  "7": "video-audio",
+  "8": "web-templates-code",
+};
+
+export const SLUG_TO_CATEGORY_ID: Record<string, string> = {
+  "clothing": "1",
+  "shoes": "2",
+  "home-living": "3",
+  "jewelry-accessories": "4",
+  "toys-entertainment": "5",
+  "graphics-photos": "6",
+  "video-audio": "7",
+  "web-templates-code": "8",
+  // Aliases
+  "womens-clothing": "1",
+  "mens-clothing": "1",
+  "furniture": "3",
+  "accessories": "4",
+  "graphics": "6",
+  "painting": "3",
+  "boots": "2",
+  "pillows": "3",
+  "handbags": "4",
+  "toys": "5",
+};
+
+export function getCategorySlug(category: CategoryItem): string {
+  return CATEGORY_SLUG_MAP[category.id] || category.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+export function getCategoryBySlug(slug: string): CategoryItem | undefined {
+  if (!slug) return undefined;
+  const normalized = decodeURIComponent(slug).toLowerCase().trim();
+  const matchedId = SLUG_TO_CATEGORY_ID[normalized];
+  if (matchedId) {
+    return CATEGORIES.find((c) => c.id === matchedId);
+  }
+  return CATEGORIES.find(
+    (c) =>
+      c.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") ===
+      normalized
+  );
+}

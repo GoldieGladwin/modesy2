@@ -1,4 +1,5 @@
 export type QuoteStatus =
+  | "All"
   | "New Quote Request"
   | "Closed"
   | "Pending Payment"
@@ -11,8 +12,9 @@ export interface QuoteRequestItem {
   quoteNumber: string;
   productTitle: string;
   productImage: string;
+  color?: string;
+  sku?: string;
   quantity: number;
-  seller: string;
   buyer: string;
   status: QuoteStatus;
   sellersBid?: string;
@@ -21,7 +23,6 @@ export interface QuoteRequestItem {
 }
 
 export interface QuoteFilterState {
-  pageSize: number;
   status: string;
   search: string;
 }

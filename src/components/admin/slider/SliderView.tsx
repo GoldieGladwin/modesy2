@@ -12,11 +12,13 @@ import {
   Plus,
   Image as ImageIcon,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 import CustomRadio from "./CustomRadio";
 import { SliderItem, SliderSettings } from "./types";
 import {
   SLIDER_LANGUAGES,
   SLIDER_ANIMATIONS,
+  INITIAL_SLIDER_ITEMS,
   getStoredSliderItems,
   saveStoredSliderItems,
   deleteStoredSliderItem,
@@ -26,8 +28,11 @@ import {
 } from "./sliderData";
 
 export default function SliderView() {
-  // Slider Items State
-  const [sliderItems, setSliderItems] = useState<SliderItem[]>([]);
+  const pathname = usePathname();
+  const isModerator = pathname?.startsWith("/moderator");
+
+  // Slider Items State (default to INITIAL_SLIDER_ITEMS so it's never empty)
+  const [sliderItems, setSliderItems] = useState<SliderItem[]>(INITIAL_SLIDER_ITEMS);
   const [pageSize, setPageSize] = useState<number>(15);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filterLanguage, setFilterLanguage] = useState<string>("All");
@@ -56,10 +61,8 @@ export default function SliderView() {
   const [formAnimTitle, setFormAnimTitle] = useState<string>("fadeInUp");
   const [formAnimDesc, setFormAnimDesc] = useState<string>("fadeInUp");
   const [formAnimBtn, setFormAnimBtn] = useState<string>("fadeInUp");
-  const [formImage, setFormImage] = useState<string>("/images/slider/slider-1.webp");
-  const [formImageMobile, setFormImageMobile] = useState<string>(
-    "/images/slider/slider-1-mobile.webp"
-  );
+  const [formImage, setFormImage] = useState<string>("");
+  const [formImageMobile, setFormImageMobile] = useState<string>("");
 
   // Slider Settings State
   const [settings, setSettings] = useState<SliderSettings>(getStoredSliderSettings());
@@ -125,12 +128,15 @@ export default function SliderView() {
     setFormAnimTitle("fadeInUp");
     setFormAnimDesc("fadeInUp");
     setFormAnimBtn("fadeInUp");
-    setFormImage("/images/slider/slider-1.webp");
-    setFormImageMobile("/images/slider/slider-1-mobile.webp");
+    setFormImage("");
+    setFormImageMobile("");
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const finalImage = formImage || "/images/slider/slider-1.webp";
+    const finalImageMobile = formImageMobile || "/images/slider/slider-1-mobile.webp";
 
     if (editingItem) {
       const updated: SliderItem = {
@@ -147,8 +153,8 @@ export default function SliderView() {
         animationTitle: formAnimTitle,
         animationDescription: formAnimDesc,
         animationButton: formAnimBtn,
-        image: formImage,
-        imageMobile: formImageMobile,
+        image: finalImage,
+        imageMobile: finalImageMobile,
       };
 
       const result = saveSingleSliderItem(updated);
@@ -176,8 +182,8 @@ export default function SliderView() {
         animationTitle: formAnimTitle,
         animationDescription: formAnimDesc,
         animationButton: formAnimBtn,
-        image: formImage,
-        imageMobile: formImageMobile,
+        image: finalImage,
+        imageMobile: finalImageMobile,
       };
 
       const result = saveSingleSliderItem(newItem);
@@ -939,13 +945,17 @@ export default function SliderView() {
 
                             {openDropdownId === item.id && (
                               <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-[3px] shadow-lg py-1 z-30 animate-in fade-in zoom-in-95 duration-100">
-                                <Link
-                                  href={`/admin/admin-panel/slider/edit/${item.id}`}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenDropdownId(null);
+                                    handleStartEdit(item);
+                                  }}
                                   className="w-full text-left px-3.5 py-1.5 text-[12px] text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors cursor-pointer"
                                 >
                                   <Edit className="w-3.5 h-3.5 text-gray-500" />
                                   <span>Edit</span>
-                                </Link>
+                                </button>
                                 <button
                                   type="button"
                                   onClick={() => {

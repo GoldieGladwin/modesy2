@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   SPECIAL_OFFERS,
   PROMO_BANNERS,
 } from "@/data/specialOffers";
+import { useCart } from "@/context/CartContext";
 
 export default function SpecialOffers() {
+  const { addToCart } = useCart();
   const baseCount = SPECIAL_OFFERS.length;
   // 3 duplicate sets of products for seamless infinite loop
   const extendedProducts = [
@@ -248,13 +251,23 @@ export default function SpecialOffers() {
                       </span>
                     )}
 
-                    {/* Main Product Image */}
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover/card:scale-105"
-                      draggable={false}
-                    />
+                    {/* Main Product Image Container with Link */}
+                    <Link
+                      href={`/product/${product.id}`}
+                      className="block w-full h-full relative cursor-pointer"
+                      onClick={(e) => {
+                        if (Math.abs(dragOffset) > 5) {
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      <img
+                        src={product.image}
+                        alt={product.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover/card:scale-105"
+                        draggable={false}
+                      />
+                    </Link>
 
                     {/* Floating Quick Action Overlay (Wishlist & Cart) */}
                     <div className="absolute right-2 top-2 flex flex-col space-y-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 z-10">
@@ -277,7 +290,19 @@ export default function SpecialOffers() {
                       <button
                         type="button"
                         aria-label="Add to cart"
-                        className="w-7 h-7 bg-white rounded-full shadow flex items-center justify-center text-[#666] hover:text-[#00a99d] transition-colors border-0 cursor-pointer"
+                        title="Add to cart"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          addToCart({
+                            id: product.id,
+                            title: product.title,
+                            price: product.price,
+                            image: product.image,
+                            seller: product.seller,
+                          }, 1);
+                        }}
+                        className="w-7 h-7 bg-white rounded-full shadow flex items-center justify-center text-[#666] hover:text-[#00a99d] transition-colors border-0 cursor-pointer hover:scale-105"
                       >
                         <svg
                           width="14"
@@ -298,10 +323,20 @@ export default function SpecialOffers() {
                   {/* Product Info */}
                   <div className="p-3 flex flex-col flex-1 justify-between bg-white">
                     <div>
-                      {/* Title */}
-                      <h4 className="text-[13px] font-normal text-[#222222] line-clamp-2 h-[38px] leading-[19px] hover:text-[#00a99d] transition-colors cursor-pointer mb-1">
-                        {product.title}
-                      </h4>
+                      {/* Title with Link */}
+                      <Link
+                        href={`/product/${product.id}`}
+                        className="block"
+                        onClick={(e) => {
+                          if (Math.abs(dragOffset) > 5) {
+                            e.preventDefault();
+                          }
+                        }}
+                      >
+                        <h4 className="text-[13px] font-normal text-[#222222] line-clamp-2 h-[38px] leading-[19px] hover:text-[#00a99d] transition-colors cursor-pointer mb-1">
+                          {product.title}
+                        </h4>
+                      </Link>
 
                       {/* Seller */}
                       <div className="text-[12px] text-[#7b808a] truncate mb-2">

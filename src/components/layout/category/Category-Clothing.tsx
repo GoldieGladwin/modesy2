@@ -1,13 +1,8 @@
+"use client";
+
 import React from "react";
-import ProductCard from "../../ui/ProductCard";
+import CategoryPageView from "@/components/category/CategoryPageView";
 
 export default function CategoryClothing() {
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">Clothing</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {[1, 2, 3, 4, 5, 6].map(i => <ProductCard key={i} title="Clothing Item " seller="Modesy" currentPrice="$20.00" />)}
-      </div>
-    </div>
-  );
+  return <CategoryPageView slug="clothing" role="guest" />;
 }

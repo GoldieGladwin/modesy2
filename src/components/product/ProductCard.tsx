@@ -4,12 +4,14 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Star, Heart, ShoppingCart } from "lucide-react";
 import { Product } from "@/data/products";
+import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { addToCart } = useCart();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isImageHovered, setIsImageHovered] = useState(false);
   const hasMultipleImages = Boolean(product.secondaryImage);
@@ -71,7 +73,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              alert(`Added "${product.title}" to cart!`);
+              addToCart({
+                id: product.id,
+                title: product.title,
+                price: product.price,
+                image: product.image,
+                seller: product.seller,
+                sku: product.sku,
+              }, 1);
             }}
             className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700 hover:text-[#00a99d] hover:border-[#00a99d] hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
             title="Add to cart"

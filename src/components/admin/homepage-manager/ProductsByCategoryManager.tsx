@@ -118,9 +118,15 @@ export default function ProductsByCategoryManager({ onNotify }: Props) {
               </span>
 
               <div className="flex items-center gap-2 shrink-0">
-                {/* Matrix / Layout grid icon */}
-                <div className="text-gray-400 p-1">
-                  <LayoutGrid className="w-4 h-4 text-gray-500" />
+                {/* 3x3 Grid icon matching Screenshot 1 */}
+                <div className="p-1 flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-[#0084ff]"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                  >
+                    <path d="M1 1h3.5v3.5H1V1zm5.25 0h3.5v3.5h-3.5V1zm5.25 0H15v3.5h-3.5V1zM1 6.25h3.5v3.5H1v-3.5zm5.25 0h3.5v3.5h-3.5v-3.5zm5.25 0H15v3.5h-3.5v-3.5zM1 11.5h3.5V15H1v-3.5zm5.25 0h3.5V15h-3.5v-3.5zm5.25 0H15V15h-3.5v-3.5z" />
+                  </svg>
                 </div>
                 <input
                   type="number"

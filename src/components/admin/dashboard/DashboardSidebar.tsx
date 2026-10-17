@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -38,7 +38,14 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
       pathname?.includes("/sale")
   );
   const [salesOpen, setSalesOpen] = useState(isSalesRoute || false);
-  const [paymentsOpen, setPaymentsOpen] = useState(false);
+  const isPaymentsRoute = Boolean(pathname?.includes("/payments"));
+  const [paymentsOpen, setPaymentsOpen] = useState(isPaymentsRoute || false);
+
+  useEffect(() => {
+    if (isPaymentsRoute) setPaymentsOpen(true);
+    if (isProductRoute) setProductsOpen(true);
+    if (isSalesRoute) setSalesOpen(true);
+  }, [isPaymentsRoute, isProductRoute, isSalesRoute]);
 
   const isDashboardActive = pathname === "/admin/dashboard";
 
@@ -240,16 +247,24 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
               <Link
                 href="/admin/dashboard/quote-requests"
                 onClick={onClose}
-                className="flex items-center gap-3.5 px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname === "/admin/dashboard/quote-requests" || pathname === "/admin/admin-panel/quote-requests"
+                    ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
+                }`}
               >
                 <Tag className="w-4 h-4 text-[#8c94a0]" />
                 <span>Quote Requests</span>
               </Link>
 
               <Link
-                href="/admin/my-coupons"
+                href="/admin/dashboard/coupons"
                 onClick={onClose}
-                className="flex items-center gap-3.5 px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname === "/admin/dashboard/coupons" || pathname === "/admin/my-coupons"
+                    ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
+                }`}
               >
                 <Ticket className="w-4 h-4 text-[#8c94a0]" />
                 <span>Coupons</span>
@@ -257,12 +272,22 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
 
               {/* Refund Requests (Badge hijau toska '1') */}
               <Link
-                href="/admin/admin-panel/refund-requests"
+                href="/admin/dashboard/refund-requests"
                 onClick={onClose}
-                className="flex items-center justify-between px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors"
+                className={`flex items-center justify-between px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname === "/admin/dashboard/refund-requests"
+                    ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
+                }`}
               >
                 <div className="flex items-center gap-3.5">
-                  <Flag className="w-4 h-4 text-[#8c94a0]" />
+                  <Flag
+                    className={`w-4 h-4 ${
+                      pathname === "/admin/dashboard/refund-requests"
+                        ? "text-[#00a99d]"
+                        : "text-[#8c94a0]"
+                    }`}
+                  />
                   <span>Refund Requests</span>
                 </div>
                 <span className="bg-[#00a99d] text-white text-[11px] font-bold px-2 py-0.5 rounded-[3px]">
@@ -274,9 +299,19 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
               <Link
                 href="/admin/dashboard/cash-on-delivery"
                 onClick={onClose}
-                className="flex items-center gap-3.5 px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname === "/admin/dashboard/cash-on-delivery"
+                    ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
+                }`}
               >
-                <Banknote className="w-4 h-4 text-[#8c94a0]" />
+                <Banknote
+                  className={`w-4 h-4 ${
+                    pathname === "/admin/dashboard/cash-on-delivery"
+                      ? "text-[#00a99d]"
+                      : "text-[#8c94a0]"
+                  }`}
+                />
                 <span>Cash on Delivery</span>
               </Link>
             </div>
@@ -293,41 +328,54 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
               <button
                 type="button"
                 onClick={() => setPaymentsOpen(!paymentsOpen)}
-                className="w-full flex items-center justify-between px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors cursor-pointer"
+                className={`w-full flex items-center justify-between px-6 py-2.5 text-[14px] transition-colors cursor-pointer ${
+                  isPaymentsRoute
+                    ? "text-[#333] font-semibold"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50"
+                }`}
               >
                 <div className="flex items-center gap-3.5">
-                  <CreditCard className="w-4 h-4 text-[#8c94a0]" />
+                  <CreditCard
+                    className={`w-4 h-4 ${
+                      isPaymentsRoute ? "text-[#00a99d]" : "text-[#8c94a0]"
+                    }`}
+                  />
                   <span>Payments</span>
                 </div>
                 {paymentsOpen ? (
-                  <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-[#555]" />
                 ) : (
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
                 )}
               </button>
               {paymentsOpen && (
-                <div className="pl-13 pr-4 py-1.5 space-y-1 bg-gray-50/50">
-                  <Link
-                    href="/admin/wallet"
-                    onClick={onClose}
-                    className="block py-1 text-xs text-[#666] hover:text-[#00a99d]"
-                  >
-                    Wallet
-                  </Link>
-                  <Link
-                    href="/admin/earnings"
-                    onClick={onClose}
-                    className="block py-1 text-xs text-[#666] hover:text-[#00a99d]"
-                  >
-                    Earnings
-                  </Link>
-                  <Link
-                    href="/admin/payouts"
-                    onClick={onClose}
-                    className="block py-1 text-xs text-[#666] hover:text-[#00a99d]"
-                  >
-                    Payouts
-                  </Link>
+                <div className="py-1 space-y-0.5">
+                  {[
+                    {
+                      title: "Membership Payments",
+                      href: "/admin/dashboard/payments/membership-payments",
+                    },
+                    {
+                      title: "Promotion Payments",
+                      href: "/admin/dashboard/payments/promotion-payments",
+                    },
+                  ].map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={onClose}
+                        className={`block pl-[54px] pr-6 py-2 text-[13.5px] transition-colors ${
+                          isActive
+                            ? "text-[#00a99d] font-semibold"
+                            : "text-[#556270] hover:text-[#00a99d]"
+                        }`}
+                      >
+                        {item.title}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -346,11 +394,21 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
                 onClick={onClose}
                 className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
                   pathname?.includes("/comments")
+                href="/admin/dashboard/comments"
+                onClick={onClose}
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname === "/admin/dashboard/comments" || pathname === "/admin/comments"
                     ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
                     : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
                 }`}
               >
-                <MessageSquare className="w-4 h-4 text-[#8c94a0]" />
+                <MessageSquare
+                  className={`w-4 h-4 ${
+                    pathname === "/admin/dashboard/comments" || pathname === "/admin/comments"
+                      ? "text-[#00a99d]"
+                      : "text-[#8c94a0]"
+                  }`}
+                />
                 <span>Comments</span>
               </Link>
 
@@ -359,11 +417,21 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
                 onClick={onClose}
                 className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
                   pathname?.includes("/reviews")
+                href="/admin/dashboard/reviews"
+                onClick={onClose}
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname === "/admin/dashboard/reviews" || pathname === "/admin/reviews"
                     ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
                     : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
                 }`}
               >
-                <Star className="w-4 h-4 text-[#8c94a0]" />
+                <Star
+                  className={`w-4 h-4 ${
+                    pathname === "/admin/dashboard/reviews" || pathname === "/admin/reviews"
+                      ? "text-[#00a99d]"
+                      : "text-[#8c94a0]"
+                  }`}
+                />
                 <span>Reviews</span>
               </Link>
             </div>
@@ -380,27 +448,57 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
               <Link
                 href="/admin/dashboard/shop-settings"
                 onClick={onClose}
-                className="flex items-center gap-3.5 px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname === "/admin/dashboard/shop-settings" || pathname === "/admin/shop-settings"
+                    ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
+                }`}
               >
-                <Settings className="w-4 h-4 text-[#8c94a0]" />
+                <Settings
+                  className={`w-4 h-4 ${
+                    pathname === "/admin/dashboard/shop-settings" || pathname === "/admin/shop-settings"
+                      ? "text-[#00a99d]"
+                      : "text-[#8c94a0]"
+                  }`}
+                />
                 <span>Shop Settings</span>
               </Link>
 
               <Link
                 href="/admin/dashboard/shop-policies"
                 onClick={onClose}
-                className="flex items-center gap-3.5 px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname === "/admin/dashboard/shop-policies" || pathname === "/admin/shop-policies"
+                    ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
+                }`}
               >
-                <FileText className="w-4 h-4 text-[#8c94a0]" />
+                <FileText
+                  className={`w-4 h-4 ${
+                    pathname === "/admin/dashboard/shop-policies" || pathname === "/admin/shop-policies"
+                      ? "text-[#00a99d]"
+                      : "text-[#8c94a0]"
+                  }`}
+                />
                 <span>Shop Policies</span>
               </Link>
 
               <Link
                 href="/admin/dashboard/shipping-settings"
                 onClick={onClose}
-                className="flex items-center gap-3.5 px-6 py-2.5 text-[14px] text-[#555] hover:text-[#00a99d] hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-3.5 px-6 py-2.5 text-[14px] transition-colors ${
+                  pathname === "/admin/dashboard/shipping-settings" || pathname === "/admin/shipping-settings"
+                    ? "bg-[#f4f5f7] text-[#333] font-semibold border-l-4 border-[#00a99d]"
+                    : "text-[#555] hover:text-[#00a99d] hover:bg-gray-50 font-normal"
+                }`}
               >
-                <Truck className="w-4 h-4 text-[#8c94a0]" />
+                <Truck
+                  className={`w-4 h-4 ${
+                    pathname === "/admin/dashboard/shipping-settings" || pathname === "/admin/shipping-settings"
+                      ? "text-[#00a99d]"
+                      : "text-[#8c94a0]"
+                  }`}
+                />
                 <span>Shipping Settings</span>
               </Link>
             </div>
