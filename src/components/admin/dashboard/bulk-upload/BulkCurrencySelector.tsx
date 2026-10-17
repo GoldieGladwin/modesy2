@@ -26,20 +26,20 @@ export default function BulkCurrencySelector({
   ];
 
   return (
-    <div className="space-y-2">
-      <label className="block text-[14px] font-semibold text-[#333]">
+    <div>
+      <label className="block text-[12px] font-semibold text-[#333] mb-1.5">
         Currency
       </label>
       <div className="relative">
         <select
           value={value}
           onChange={(e) => onChange(e.target.value as BulkCurrency)}
-          className={`w-full h-[42px] px-3.5 py-2.5 border rounded-[3px] text-sm bg-white appearance-none outline-none cursor-pointer transition-colors ${
+          className={`w-full h-[38px] px-3.5 pr-8 border rounded-[4px] text-xs bg-white appearance-none outline-none cursor-pointer transition-colors ${
             value ? "text-[#333]" : "text-[#777]"
           } ${
             error
               ? "border-[#f05023]"
-              : "border-[#e2e8f0] focus:border-[#00a99d]"
+              : "border-[#d2d6de] focus:border-[#00a99d]"
           }`}
         >
           <option value="">Select</option>
@@ -49,8 +49,8 @@ export default function BulkCurrencySelector({
             </option>
           ))}
         </select>
-        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600">
-          <ChevronDown className="w-4 h-4" />
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+          <ChevronDown className="w-3.5 h-3.5" />
         </div>
       </div>
     </div>

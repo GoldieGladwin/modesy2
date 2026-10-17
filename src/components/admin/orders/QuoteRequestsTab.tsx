@@ -34,16 +34,16 @@ export default function QuoteRequestsTab({
   };
 
   return (
-    <div className="flex-1 min-w-0">
+    <div className="flex-1 min-w-0 font-sans">
       {/* Toast Alert */}
       {feedbackMsg && (
-        <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded flex items-center gap-2 animate-in fade-in duration-150">
-          <Check className="w-4 h-4 text-emerald-600" />
+        <div className="fixed top-6 right-6 z-50 p-4 bg-emerald-600 text-white text-xs font-medium rounded shadow-lg flex items-center gap-2 animate-in slide-in-from-top-3 duration-200">
+          <Check className="w-4 h-4" />
           <span>{feedbackMsg}</span>
         </div>
       )}
 
-      {/* Quote Requests List matching Screenshot */}
+      {/* Quote Requests List matching Screenshot 2 */}
       <div className="space-y-4">
         {quotes.map((quote) => (
           <div
@@ -62,51 +62,70 @@ export default function QuoteRequestsTab({
                     className="object-cover"
                   />
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 space-y-1">
                   <div className="font-bold text-gray-900 text-xs sm:text-[13px] leading-tight">
                     Quote: #{quote.id}
                   </div>
-                  <div className="text-gray-700 text-xs font-normal truncate mt-1 hover:text-[#00a99d] cursor-pointer">
+                  <div className="text-gray-700 text-xs font-normal truncate hover:text-[#00a99d] cursor-pointer">
                     {quote.productTitle}
                   </div>
-                  <div className="text-gray-500 text-xs mt-1">
+                  {quote.color && (
+                    <div className="text-gray-500 text-xs">
+                      Color: {quote.color}
+                    </div>
+                  )}
+                  <div className="text-gray-500 text-xs">
                     Quantity: {quote.quantity}
                   </div>
                 </div>
               </div>
 
-              {/* Status Badge */}
-              <div className="shrink-0 min-w-[140px] flex items-center">
-                {quote.status === 'New Quote Request' ? (
-                  <span className="inline-block px-3 py-1 rounded-[3px] text-xs font-semibold bg-[#e8f4fd] text-[#1890ff]">
-                    New Quote Request
-                  </span>
-                ) : (
-                  <span className="inline-block px-3 py-1 rounded-[3px] text-xs font-semibold bg-[#fffbe6] text-[#faad14]">
-                    Pending Quote
-                  </span>
+              {/* Status Badge & Info */}
+              <div className="shrink-0 min-w-[130px] flex flex-col justify-center space-y-1.5">
+                <div>
+                  {quote.status === 'New Quote Request' ? (
+                    <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#e8f4fd] text-[#1890ff] border border-[#bce8f1]">
+                      New Quote Request
+                    </span>
+                  ) : quote.status === 'Completed' ? (
+                    <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#dff0d8] text-[#3c763d] border border-[#d6e9c6]">
+                      Completed
+                    </span>
+                  ) : (
+                    <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#fffbe6] text-[#faad14] border border-[#ffe58f]">
+                      Pending Quote
+                    </span>
+                  )}
+                </div>
+                {quote.status === 'New Quote Request' && (
+                  <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                    <Clock className="w-3.5 h-3.5 stroke-[1.8] text-gray-400" />
+                    <span>{quote.timeAgo}</span>
+                  </div>
                 )}
               </div>
 
-              {/* Seller's Bid & Date */}
-              <div className="shrink-0 min-w-[150px] flex flex-col justify-center">
+              {/* Seller's Bid & Date (for bids) */}
+              <div className="shrink-0 min-w-[140px] flex flex-col justify-center space-y-1">
                 {quote.sellerBid !== undefined && (
-                  <div className="text-xs sm:text-[13px] font-bold text-gray-900 mb-1">
+                  <div className="text-xs sm:text-[13px] font-bold text-gray-900">
                     Seller&apos;s Bid: {formatPrice(quote.sellerBid)}
                   </div>
                 )}
-                <div className="flex items-center gap-1.5 text-gray-500 text-xs">
-                  <Clock className="w-3.5 h-3.5 stroke-[1.8] text-gray-400" />
-                  <span>{quote.timeAgo}</span>
-                </div>
+                {quote.status !== 'New Quote Request' && (
+                  <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                    <Clock className="w-3.5 h-3.5 stroke-[1.8] text-gray-400" />
+                    <span>{quote.timeAgo}</span>
+                  </div>
+                )}
               </div>
 
-              {/* Action Button: Delete Quote matching screenshot */}
+              {/* Action Button: Delete Quote matching Screenshot 2 */}
               <div className="shrink-0">
                 <button
                   type="button"
                   onClick={() => setConfirmDeleteId(quote.id)}
-                  className="w-full sm:w-[130px] md:w-[140px] px-3.5 py-2 bg-[#e9ecef] hover:bg-[#dee2e6] hover:text-red-600 text-[#495057] text-xs font-semibold rounded-[3px] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="w-full sm:w-[130px] md:w-[140px] px-3.5 py-1.5 bg-[#e9ecef] hover:bg-[#dee2e6] hover:text-red-600 text-[#495057] text-xs font-semibold rounded-[3px] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <X className="w-3.5 h-3.5 stroke-[2.2]" />
                   <span>Delete Quote</span>

@@ -1,11 +1,10 @@
-export type BulkAction = "" | "add_new" | "update_existing";
+export type BulkAction = "" | "add" | "edit";
 
 export type BulkListingType =
   | ""
-  | "sell_on_site"
-  | "ordinary_listing"
-  | "quote_request"
-  | "license_keys";
+  | "sell"
+  | "ordinary"
+  | "quote";
 
 export type BulkCurrency =
   | ""

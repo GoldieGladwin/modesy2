@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
-import { ShoppingBasket, Tag, DownloadCloud, RotateCcw } from 'lucide-react';
+import Link from 'next/link';
+import { ShoppingBasket, Tag, DownloadCloud, CreditCard } from 'lucide-react';
 import { OrderTab } from './types';
 
 interface OrdersSidebarProps {
   activeTab: OrderTab;
-  onTabChange: (tab: OrderTab) => void;
+  onTabChange?: (tab: OrderTab) => void;
   ordersCount?: number;
   quotesCount?: number;
   downloadsCount?: number;
@@ -21,22 +22,26 @@ export default function OrdersSidebar({
     {
       id: 'orders' as OrderTab,
       label: 'Orders',
+      href: '/orders',
       icon: ShoppingBasket,
     },
     {
       id: 'quote-requests' as OrderTab,
       label: 'Quote Requests',
+      href: '/quote-requests',
       icon: Tag,
     },
     {
       id: 'downloads' as OrderTab,
       label: 'Downloads',
+      href: '/downloads',
       icon: DownloadCloud,
     },
     {
       id: 'refund-requests' as OrderTab,
       label: 'Refund Requests',
-      icon: RotateCcw,
+      href: '/refund-requests',
+      icon: CreditCard,
     },
   ];
 
@@ -48,10 +53,14 @@ export default function OrdersSidebar({
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
-              <button
+              <Link
                 key={item.id}
-                type="button"
-                onClick={() => onTabChange(item.id)}
+                href={item.href}
+                onClick={(e) => {
+                  if (onTabChange) {
+                    onTabChange(item.id);
+                  }
+                }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs sm:text-[13px] font-medium rounded transition-colors text-left cursor-pointer ${
                   isActive
                     ? 'bg-[#ebedf0] text-gray-900 font-semibold'
@@ -64,7 +73,7 @@ export default function OrdersSidebar({
                   }`}
                 />
                 <span className="truncate">{item.label}</span>
-              </button>
+              </Link>
             );
           })}
         </nav>

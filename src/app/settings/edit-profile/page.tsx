@@ -1,0 +1,11 @@
+import React from "react";
+import VendorProfileSettingsView from "@/components/settings/VendorProfileSettingsView";
+
+export const metadata = {
+  title: "Update Profile - Modesy",
+  description: "Update your profile settings, contact information, and security credentials.",
+};
+
+export default function SettingsEditProfileHyphenPage() {
+  return <VendorProfileSettingsView initialTab="profile" />;
+}

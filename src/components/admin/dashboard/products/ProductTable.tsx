@@ -27,17 +27,17 @@ export default function ProductTable({
     <div className="w-full overflow-x-auto border-t border-[#f0f0f0]">
       <table className="w-full text-left border-collapse text-xs">
         <thead>
-          <tr className="border-b border-[#e2e8f0] bg-white text-[#333] font-bold">
-            <th className="py-3 px-2.5 w-10 font-bold">Id</th>
-            <th className="py-3 px-2.5 min-w-[220px] font-bold">Product</th>
-            <th className="py-3 px-2.5 w-24 font-bold">Product Type</th>
-            <th className="py-3 px-2.5 w-28 font-bold">Category</th>
-            <th className="py-3 px-2.5 w-32 font-bold">Purchased Plan</th>
-            <th className="py-3 px-2.5 w-16 font-bold">Price</th>
-            <th className="py-3 px-2.5 w-28 font-bold">Stock/Status</th>
-            <th className="py-3 px-2.5 w-20 font-bold">Page Views</th>
-            <th className="py-3 px-2.5 w-32 font-bold">Date</th>
-            <th className="py-3 px-2.5 w-24 font-bold text-center">Options</th>
+          <tr className="border-b border-[#e2e8f0] bg-white text-[#333] font-semibold">
+            <th className="py-3 px-3 w-10 text-center font-semibold">Id</th>
+            <th className="py-3 px-3 min-w-[220px] font-semibold">Product</th>
+            <th className="py-3 px-3 w-24 font-semibold whitespace-nowrap">Product Type</th>
+            <th className="py-3 px-3 w-28 font-semibold">Category</th>
+            <th className="py-3 px-3 w-32 font-semibold whitespace-nowrap">Purchased Plan</th>
+            <th className="py-3 px-3 w-16 font-semibold">Price</th>
+            <th className="py-3 px-3 w-28 font-semibold whitespace-nowrap">Stock/Status</th>
+            <th className="py-3 px-3 w-20 font-semibold whitespace-nowrap">Page Views</th>
+            <th className="py-3 px-3 w-36 font-semibold">Date</th>
+            <th className="py-3 px-3 w-24 font-semibold text-center">Options</th>
           </tr>
         </thead>
         <tbody>

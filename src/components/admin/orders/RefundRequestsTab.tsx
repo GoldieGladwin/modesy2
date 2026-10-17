@@ -15,7 +15,6 @@ export default function RefundRequestsTab({
   refundRequests: initialRefunds,
 }: RefundRequestsTabProps) {
   const [refunds, setRefunds] = useState<RefundRequest[]>(initialRefunds);
-  const [activeRefund, setActiveRefund] = useState<RefundRequest | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -62,10 +61,10 @@ export default function RefundRequestsTab({
       productTitle: matchedProduct.name,
       productImage: matchedProduct.image,
       total: matchedProduct.price,
-      status: 'Pending',
+      status: 'Processing',
       date: 'Just now',
       reason: refundReason.trim(),
-      adminNote: 'Your request has been received and is currently under review by our support team.',
+      adminNote: 'Your request has been received and is currently under review.',
     };
 
     setRefunds([newRefund, ...refunds]);
@@ -78,26 +77,36 @@ export default function RefundRequestsTab({
 
   const getStatusBadge = (status: RefundRequest['status']) => {
     switch (status) {
+      case 'Processing':
+        return (
+          <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#f0f2f5] text-[#495057] border border-gray-200">
+            Processing
+          </span>
+        );
       case 'Pending':
         return (
-          <span className="inline-block px-3 py-1 rounded-[3px] text-xs font-semibold bg-[#fffbe6] text-[#faad14]">
+          <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#fffbe6] text-[#faad14] border border-[#ffe58f]">
             Pending
           </span>
         );
       case 'Approved':
         return (
-          <span className="inline-block px-3 py-1 rounded-[3px] text-xs font-semibold bg-[#dff0d8] text-[#3c763d]">
+          <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#dff0d8] text-[#3c763d] border border-[#d6e9c6]">
             Approved
           </span>
         );
       case 'Declined':
         return (
-          <span className="inline-block px-3 py-1 rounded-[3px] text-xs font-semibold bg-[#f2dede] text-[#a94442]">
+          <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-[#f2dede] text-[#a94442] border border-[#ebccd1]">
             Declined
           </span>
         );
       default:
-        return null;
+        return (
+          <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-700">
+            {status}
+          </span>
+        );
     }
   };
 
@@ -111,7 +120,7 @@ export default function RefundRequestsTab({
         </div>
       )}
 
-      {/* Top Action Row: Submit a Refund Request Button matching Screenshot */}
+      {/* Top Action Row: Submit a Refund Request Button matching Screenshot 4 */}
       <div className="flex justify-end mb-4">
         <button
           type="button"
@@ -152,28 +161,25 @@ export default function RefundRequestsTab({
                   <div className="text-gray-700 text-xs font-normal truncate mt-1">
                     {refund.productTitle}
                   </div>
-                  <div className="text-gray-500 text-xs mt-1">
-                    Refund Amount: <span className="font-bold text-gray-900">${refund.total.toFixed(2)}</span>
-                  </div>
                 </div>
               </div>
 
               {/* Status Badge */}
-              <div className="shrink-0 min-w-[130px] flex items-center">
+              <div className="shrink-0 min-w-[110px] flex items-center">
                 {getStatusBadge(refund.status)}
               </div>
 
-              {/* Date matching screenshot */}
-              <div className="shrink-0 min-w-[140px] flex items-center gap-1.5 text-gray-500 text-xs">
+              {/* Date matching Screenshot 4 */}
+              <div className="shrink-0 min-w-[130px] flex items-center gap-1.5 text-gray-500 text-xs">
                 <Clock className="w-3.5 h-3.5 stroke-[1.8] text-gray-400" />
                 <span>{refund.date}</span>
               </div>
 
-              {/* Details Action Button */}
+              {/* Details Action Button matching Screenshot 4 */}
               <div className="shrink-0">
                 <Link
                   href={`/refund-requests/${refund.id}`}
-                  className="px-3.5 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-gray-700 text-xs font-medium rounded-[3px] transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  className="px-3.5 py-1.5 bg-[#e9ecef] hover:bg-[#dee2e6] text-[#495057] text-xs font-semibold rounded-[3px] transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <Info className="w-3.5 h-3.5 text-gray-500 stroke-[2]" />
                   <span>Details</span>
@@ -190,7 +196,7 @@ export default function RefundRequestsTab({
         )}
       </div>
 
-      {/* Modal: Submit a Refund Request matching Screenshot exactly */}
+      {/* Modal: Submit a Refund Request matching Screenshot */}
       {showSubmitModal && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white rounded-[4px] shadow-2xl max-w-[540px] w-full p-8 relative animate-in fade-in zoom-in-95 duration-150">
@@ -206,7 +212,7 @@ export default function RefundRequestsTab({
               <X className="w-4 h-4 stroke-[2]" />
             </button>
 
-            {/* Modal Title centered matching screenshot */}
+            {/* Modal Title centered */}
             <h3 className="text-base font-bold text-gray-900 text-center mb-6">
               Submit a Refund Request
             </h3>
@@ -263,7 +269,7 @@ export default function RefundRequestsTab({
                 />
               </div>
 
-              {/* Submit Button right-aligned matching screenshot */}
+              {/* Submit Button */}
               <div className="flex justify-end pt-2">
                 <button
                   type="submit"
@@ -273,69 +279,6 @@ export default function RefundRequestsTab({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: View Details */}
-      {activeRefund && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[4px] shadow-2xl max-w-md w-full p-6 text-gray-800 animate-in fade-in duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
-              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-[#00a99d]" />
-                Refund Request #{activeRefund.id} Details
-              </h3>
-              <button
-                type="button"
-                onClick={() => setActiveRefund(null)}
-                className="text-gray-400 hover:text-gray-600 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="space-y-4 text-xs">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 relative rounded border overflow-hidden shrink-0 bg-gray-50">
-                  <Image
-                    src={activeRefund.productImage}
-                    alt={activeRefund.productTitle}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">{activeRefund.productTitle}</h4>
-                  <p className="text-gray-500">Order: #{activeRefund.orderId}</p>
-                  <p className="text-gray-900 font-bold mt-0.5">Amount: ${activeRefund.total.toFixed(2)}</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="font-semibold text-gray-700 block mb-1">Reason for Refund:</label>
-                <p className="bg-gray-50 p-3 rounded text-gray-700 border border-gray-100 leading-relaxed">
-                  {activeRefund.reason}
-                </p>
-              </div>
-
-              {activeRefund.adminNote && (
-                <div>
-                  <label className="font-semibold text-gray-700 block mb-1">Response / Note:</label>
-                  <p className="bg-emerald-50 p-3 rounded text-emerald-800 border border-emerald-100 leading-relaxed">
-                    {activeRefund.adminNote}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setActiveRefund(null)}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
           </div>
         </div>
       )}

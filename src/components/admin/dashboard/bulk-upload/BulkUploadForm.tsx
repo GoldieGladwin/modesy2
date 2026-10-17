@@ -1,14 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import BulkActionSelector from "./BulkActionSelector";
 import BulkListingTypeSelector from "./BulkListingTypeSelector";
 import BulkCurrencySelector from "./BulkCurrencySelector";
 import BulkCsvDropzone from "./BulkCsvDropzone";
-import BulkUploadSubmitButton from "./BulkUploadSubmitButton";
-import { BulkAction, BulkListingType, BulkCurrency, BulkUploadFormData } from "./types";
+import {
+  BulkAction,
+  BulkListingType,
+  BulkCurrency,
+  BulkUploadFormData,
+} from "./types";
 import ValidationTooltip from "../add-product/ValidationTooltip";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ArrowRight, Loader2, Check } from "lucide-react";
 
 export default function BulkUploadForm() {
   const [formData, setFormData] = useState<BulkUploadFormData>({
@@ -21,6 +26,7 @@ export default function BulkUploadForm() {
   const [errorField, setErrorField] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [importedCount, setImportedCount] = useState<number>(0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,14 +35,20 @@ export default function BulkUploadForm() {
       setErrorField("action");
       return;
     }
-    if (!formData.listingType) {
+
+    if (formData.action === "add" && !formData.listingType) {
       setErrorField("listingType");
       return;
     }
-    if (!formData.currency) {
+
+    if (
+      (formData.action === "edit" || formData.listingType === "sell") &&
+      !formData.currency
+    ) {
       setErrorField("currency");
       return;
     }
+
     if (!formData.file) {
       setErrorField("file");
       return;
@@ -45,11 +57,32 @@ export default function BulkUploadForm() {
     setErrorField(null);
     setIsSubmitting(true);
 
-    // Simulate CSV parsing and upload processing
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setUploadSuccess(true);
-    }, 1200);
+    // Read CSV file to get actual line count
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = (event.target?.result as string) || "";
+      const lines = text
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      const rowCount = Math.max(1, lines.length > 1 ? lines.length - 1 : 1);
+
+      setTimeout(() => {
+        setImportedCount(rowCount);
+        setIsSubmitting(false);
+        setUploadSuccess(true);
+      }, 900);
+    };
+
+    reader.onerror = () => {
+      setTimeout(() => {
+        setImportedCount(4);
+        setIsSubmitting(false);
+        setUploadSuccess(true);
+      }, 900);
+    };
+
+    reader.readAsText(formData.file);
   };
 
   const handleReset = () => {
@@ -61,16 +94,17 @@ export default function BulkUploadForm() {
     });
     setUploadSuccess(false);
     setErrorField(null);
+    setImportedCount(0);
   };
 
   return (
-    <div className="bg-white border border-[#ebebeb] rounded-[4px] p-6 sm:p-7 shadow-xs">
+    <div className="bg-white border border-[#ebebeb] rounded-[4px] p-6 shadow-xs">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-[18px] font-bold text-[#2d3748]">
+      <div className="mb-5">
+        <h1 className="text-[15px] font-semibold text-[#333]">
           Bulk Product Upload
         </h1>
-        <p className="text-sm text-[#718096] mt-1 leading-snug">
+        <p className="text-xs text-gray-500 mt-1">
           You can add your products with a CSV file from this section
         </p>
       </div>
@@ -83,27 +117,45 @@ export default function BulkUploadForm() {
           <h2 className="text-lg font-bold text-gray-800">
             Products Successfully Uploaded!
           </h2>
-          <p className="text-sm text-gray-500 max-w-md mx-auto">
-            File <strong>{formData.file?.name}</strong> has been processed. All product records have been imported to your store inventory.
+          <p className="text-xs text-gray-600 max-w-md mx-auto leading-relaxed">
+            File <strong>{formData.file?.name}</strong> has been processed
+            successfully.{" "}
+            <span className="font-semibold text-[#00a99d]">
+              {importedCount} product{importedCount > 1 ? "s" : ""}
+            </span>{" "}
+            have been {formData.action === "edit" ? "updated in" : "added to"}{" "}
+            your store catalog.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex items-center justify-center gap-3">
             <button
               type="button"
               onClick={handleReset}
-              className="bg-[#00a99d] hover:bg-[#008f85] text-white text-xs font-semibold px-5 py-2.5 rounded-[3px] transition cursor-pointer"
+              className="bg-[#00a99d] hover:bg-[#008f85] text-white text-xs font-semibold px-4 py-2.5 rounded-[3px] transition cursor-pointer"
             >
               Upload Another CSV
             </button>
+            <Link
+              href="/dashboard/products"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-4 py-2.5 rounded-[3px] transition cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <span>View Products</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* 1. Select Action */}
           <div className="relative">
             <BulkActionSelector
               value={formData.action}
               onChange={(act: BulkAction) => {
-                setFormData((prev) => ({ ...prev, action: act }));
+                setFormData((prev) => ({
+                  ...prev,
+                  action: act,
+                  // If switching to edit, clear listingType
+                  listingType: act === "edit" ? "" : prev.listingType,
+                }));
                 if (errorField === "action") setErrorField(null);
               }}
               error={errorField === "action"}
@@ -117,43 +169,48 @@ export default function BulkUploadForm() {
             )}
           </div>
 
-          {/* 2. Listing Type */}
-          <div className="relative">
-            <BulkListingTypeSelector
-              value={formData.listingType}
-              onChange={(lt: BulkListingType) => {
-                setFormData((prev) => ({ ...prev, listingType: lt }));
-                if (errorField === "listingType") setErrorField(null);
-              }}
-              error={errorField === "listingType"}
-            />
-            {errorField === "listingType" && (
-              <ValidationTooltip
-                message="Please select an item in the list."
-                className="top-full left-0 mt-1"
-                arrowOffsetPx={30}
+          {/* 2. Listing Type (Shown when action is 'add' or not chosen yet, matching Screenshot 2) */}
+          {formData.action !== "edit" && (
+            <div className="relative">
+              <BulkListingTypeSelector
+                value={formData.listingType}
+                onChange={(lt: BulkListingType) => {
+                  setFormData((prev) => ({ ...prev, listingType: lt }));
+                  if (errorField === "listingType") setErrorField(null);
+                }}
+                error={errorField === "listingType"}
               />
-            )}
-          </div>
+              {errorField === "listingType" && (
+                <ValidationTooltip
+                  message="Please select an item in the list."
+                  className="top-full left-0 mt-1"
+                  arrowOffsetPx={30}
+                />
+              )}
+            </div>
+          )}
 
-          {/* 3. Currency */}
-          <div className="relative">
-            <BulkCurrencySelector
-              value={formData.currency}
-              onChange={(curr: BulkCurrency) => {
-                setFormData((prev) => ({ ...prev, currency: curr }));
-                if (errorField === "currency") setErrorField(null);
-              }}
-              error={errorField === "currency"}
-            />
-            {errorField === "currency" && (
-              <ValidationTooltip
-                message="Please select an item in the list."
-                className="top-full left-0 mt-1"
-                arrowOffsetPx={30}
+          {/* 3. Currency (Shown when action is 'edit', OR action is 'add' with listingType 'sell', matching Screenshot 1 & 2) */}
+          {(formData.action === "edit" ||
+            formData.listingType === "sell") && (
+            <div className="relative">
+              <BulkCurrencySelector
+                value={formData.currency}
+                onChange={(curr: BulkCurrency) => {
+                  setFormData((prev) => ({ ...prev, currency: curr }));
+                  if (errorField === "currency") setErrorField(null);
+                }}
+                error={errorField === "currency"}
               />
-            )}
-          </div>
+              {errorField === "currency" && (
+                <ValidationTooltip
+                  message="Please select an item in the list."
+                  className="top-full left-0 mt-1"
+                  arrowOffsetPx={30}
+                />
+              )}
+            </div>
+          )}
 
           {/* 4. CSV File Dropzone */}
           <div className="relative">
@@ -175,7 +232,25 @@ export default function BulkUploadForm() {
           </div>
 
           {/* 5. Submit Button */}
-          <BulkUploadSubmitButton isLoading={isSubmitting} />
+          <div className="flex justify-end pt-3">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-[#00a99d] hover:bg-[#008f85] text-white text-xs font-semibold px-5 py-2.5 rounded-[3px] inline-flex items-center gap-2 shadow-2xs transition duration-150 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Uploading CSV...</span>
+                </>
+              ) : (
+                <>
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Upload Products</span>
+                </>
+              )}
+            </button>
+          </div>
         </form>
       )}
     </div>

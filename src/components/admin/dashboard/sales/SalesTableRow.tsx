@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Info } from "lucide-react";
 import { SaleItem } from "./types";
 
@@ -56,14 +57,13 @@ export default function SalesTableRow({
 
       {/* 6. Options */}
       <td className="py-3.5 px-3 whitespace-nowrap">
-        <button
-          type="button"
-          onClick={() => onViewDetails(sale)}
+        <Link
+          href={`/dashboard/sale/${sale.id}`}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#e2e5f1] hover:bg-[#d5d9e8] text-[#4a5568] text-xs font-medium rounded-[3px] transition cursor-pointer"
         >
           <Info className="w-3.5 h-3.5 text-[#4a5568]" />
           <span>Details</span>
-        </button>
+        </Link>
       </td>
     </tr>
   );

@@ -10,6 +10,23 @@ export interface OrderItem {
   image: string;
   seller: string;
   status: string;
+  sku?: string;
+  color?: string;
+  size?: string;
+  updatedAgo?: string;
+}
+
+export interface AddressInfo {
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
 }
 
 export interface Order {
@@ -20,15 +37,10 @@ export interface Order {
   currency?: string;
   paymentMethod?: string;
   paymentStatus?: string;
+  updatedAgo?: string;
   items?: OrderItem[];
-  shippingAddress?: {
-    name: string;
-    address: string;
-    city: string;
-    state?: string;
-    country: string;
-    phone: string;
-  };
+  shippingAddress?: AddressInfo;
+  billingAddress?: AddressInfo;
 }
 
 export interface QuoteRequest {
@@ -36,10 +48,11 @@ export interface QuoteRequest {
   productTitle: string;
   productImage: string;
   quantity: number;
-  status: 'New Quote Request' | 'Pending Quote' | 'Accepted' | 'Declined';
+  status: 'New Quote Request' | 'Pending Quote' | 'Completed' | 'Accepted' | 'Declined';
   sellerBid?: number;
   timeAgo: string;
   seller: string;
+  color?: string;
 }
 
 export interface DownloadItem {
@@ -60,8 +73,10 @@ export interface RefundRequest {
   productTitle: string;
   productImage: string;
   total: number;
-  status: 'Pending' | 'Approved' | 'Declined';
+  status: 'Pending' | 'Approved' | 'Declined' | 'Processing';
   date: string;
-  reason: string;
+  reason?: string;
   adminNote?: string;
+  seller?: string;
 }
+

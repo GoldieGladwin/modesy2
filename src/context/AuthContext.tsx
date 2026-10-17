@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 export interface User {
   name: string;
   email: string;
-  role: "admin" | "user";
+  role: "admin" | "vendor" | "user";
   avatar?: string;
 }
 
@@ -42,6 +42,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (typeof window !== "undefined") {
+      const isExplicitLogout = sessionStorage.getItem("modesy_explicit_logout") === "true";
+      if (
+        !isExplicitLogout &&
+        (window.location.pathname.startsWith("/vendor") ||
+          window.location.pathname.startsWith("/dashboard"))
+      ) {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        let parsed: User | null = null;
+        try {
+          if (stored) parsed = JSON.parse(stored);
+        } catch (e) {
+          console.error(e);
+        }
+        if (!parsed || parsed.role !== "vendor") {
+          const vendorUser: User = {
+            name: "Trendshop",
+            email: "trendshop@codingest.net",
+            role: "vendor",
+            avatar: "/assets/img/trendshop-avatar.jpg",
+          };
+          setUser(vendorUser);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(vendorUser));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+
       const params = new URLSearchParams(window.location.search);
       if (params.get("login") === "true" || params.get("action") === "login") {
         setIsLoginModalOpen(true);
@@ -52,15 +81,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = (userData?: Partial<User>) => {
-    const adminUser: User = {
-      name: userData?.name || "Admin",
-      email: userData?.email || "admin@codingest.net",
-      role: (userData?.role as "admin" | "user") || "admin",
-      avatar: userData?.avatar || "/assets/img/admin-avatar.jpg",
-    };
-    setUser(adminUser);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(adminUser));
+      sessionStorage.removeItem("modesy_explicit_logout");
+    } catch (e) {}
+    const email = userData?.email || "trendshop@codingest.net";
+    const isVendor =
+      userData?.role === "vendor" ||
+      email.toLowerCase().includes("trendshop") ||
+      email.toLowerCase().includes("vendor");
+    const isAdmin =
+      !isVendor &&
+      (userData?.role === "admin" ||
+        email.toLowerCase().includes("admin"));
+
+    const resolvedRole: "admin" | "vendor" | "user" = isVendor
+      ? "vendor"
+      : isAdmin
+      ? "admin"
+      : (userData?.role as "admin" | "vendor" | "user") || "user";
+
+    const authenticatedUser: User = {
+      name:
+        userData?.name ||
+        (isVendor ? "Trendshop" : isAdmin ? "Admin" : email.split("@")[0] || "User"),
+      email: email,
+      role: resolvedRole,
+      avatar:
+        userData?.avatar ||
+        (isVendor
+          ? "/assets/img/trendshop-avatar.jpg"
+          : isAdmin
+          ? "/assets/img/admin-avatar.jpg"
+          : "/assets/img/admin-avatar.jpg"),
+    };
+    setUser(authenticatedUser);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(authenticatedUser));
     } catch (e) {
       console.error("Failed to store user", e);
     }
@@ -70,13 +126,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     try {
       localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.setItem("modesy_explicit_logout", "true");
     } catch (e) {
       console.error("Failed to clear user", e);
     }
-    // If in admin area, route back to guest
-    if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) {
-      router.push("/guest");
-    }
+    router.push("/");
   };
 
   const openLoginModal = () => setIsLoginModalOpen(true);
@@ -99,14 +153,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isOpen={isLoginModalOpen}
         onClose={closeLoginModal}
         onSuccess={(loggedUser) => {
+          const email = loggedUser.email.toLowerCase();
+          const isVendor =
+            email.includes("trendshop") ||
+            email.includes("vendor");
           const isAdmin =
-            loggedUser.email.toLowerCase().includes("admin") ||
-            loggedUser.email === "admin@codingest.net";
+            !isVendor &&
+            (email.includes("admin") || email === "admin@codingest.net");
+
           login({
             email: loggedUser.email,
-            name: isAdmin ? "Admin" : loggedUser.name || "User",
-            role: isAdmin ? "admin" : "user",
-            avatar: "/assets/img/admin-avatar.jpg",
+            name: isVendor
+              ? "Trendshop"
+              : isAdmin
+              ? "Admin"
+              : loggedUser.name || "User",
+            role: isVendor ? "vendor" : isAdmin ? "admin" : "user",
+            avatar: isVendor
+              ? "/assets/img/trendshop-avatar.jpg"
+              : "/assets/img/admin-avatar.jpg",
           });
         }}
       />

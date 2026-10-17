@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import ProductFilterBar from "./ProductFilterBar";
 import ProductTable from "./ProductTable";
 import ProductPagination from "./ProductPagination";
+import ProductDeleteModal from "@/components/admin/dashboard/products/ProductDeleteModal";
 import { ProductFilterState, ProductItem } from "./types";
 import { initialFeaturedProducts } from "./mockData";
 
@@ -61,11 +62,20 @@ export default function FeaturedProductsView() {
     return true;
   });
 
+  const [deleteProductTarget, setDeleteProductTarget] = useState<ProductItem | null>(null);
+
   const handleDelete = (id: number) => {
     const target = products.find((p) => p.id === id);
-    if (confirm(`Are you sure you want to delete "${target?.title}"?`)) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-      showNotification(`Product "${target?.title}" deleted successfully.`);
+    if (target) {
+      setDeleteProductTarget(target);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteProductTarget) {
+      setProducts((prev) => prev.filter((p) => p.id !== deleteProductTarget.id));
+      showNotification(`Product "${deleteProductTarget.title}" deleted successfully.`);
+      setDeleteProductTarget(null);
     }
   };
 
@@ -149,6 +159,14 @@ export default function FeaturedProductsView() {
         pageSize={filter.pageSize}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ProductDeleteModal
+        product={deleteProductTarget as any}
+        isOpen={Boolean(deleteProductTarget)}
+        onClose={() => setDeleteProductTarget(null)}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

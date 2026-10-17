@@ -98,7 +98,7 @@ export default function OrdersTab({ orders, onViewDetails }: OrdersTabProps) {
               {/* Action Button */}
               <div className="shrink-0">
                 <Link
-                  href={`/admin/orders/${order.id}`}
+                  href={`/orders/${order.id}`}
                   className="px-3.5 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 text-gray-700 text-xs font-medium rounded-[3px] transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Info className="w-3.5 h-3.5 text-gray-500 stroke-[2]" />

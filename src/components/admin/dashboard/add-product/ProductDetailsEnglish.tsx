@@ -70,7 +70,22 @@ export default function ProductDetailsEnglish({
   };
 
   const handleToolbarFormat = (command: string) => {
-    document.execCommand(command, false);
+    if (command.startsWith("insertImage:")) {
+      const url = command.replace("insertImage:", "");
+      document.execCommand("insertImage", false, url);
+    } else if (command.startsWith("insertVideo:")) {
+      const url = command.replace("insertVideo:", "");
+      document.execCommand(
+        "insertHTML",
+        false,
+        `<iframe src="${url}" width="420" height="260" frameborder="0" allowfullscreen></iframe>`
+      );
+    } else if (command.startsWith("createLink:")) {
+      const url = command.replace("createLink:", "");
+      document.execCommand("createLink", false, url);
+    } else {
+      document.execCommand(command, false);
+    }
   };
 
   return (
