@@ -53,7 +53,7 @@ export default function EditBannerView({ banner, onBack, onSave }: Props) {
         <div
           className={`w-4 h-4 rounded-full flex items-center justify-center transition-all duration-200 ${
             isChecked
-              ? "bg-[#5046e5] text-white ring-2 ring-[#5046e5]/20"
+              ? "bg-[#605ca8] text-white ring-2 ring-[#605ca8]/20"
               : "border-2 border-gray-300 bg-white hover:border-gray-400"
           }`}
         >

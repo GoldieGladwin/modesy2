@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import {
   Menu,
   ChevronDown,
@@ -22,6 +22,11 @@ import {
 export default function EditSliderItemView() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const isModerator = pathname?.startsWith("/moderator");
+  const sliderUrl = isModerator
+    ? "/moderator/admin-panel/slider"
+    : "/admin/admin-panel/slider";
 
   // Extract ID from params (either id or slug)
   const rawId = (params?.id as string) || (params?.slug as string) || "";
@@ -127,7 +132,7 @@ export default function EditSliderItemView() {
     triggerToast("Slider item updated successfully!");
 
     setTimeout(() => {
-      router.push("/admin/admin-panel/slider");
+      router.push(sliderUrl);
     }, 1200);
   };
 
@@ -150,7 +155,7 @@ export default function EditSliderItemView() {
           <span className="font-mono text-red-600 font-semibold">{itemId}</span>
         </p>
         <Link
-          href="/admin/admin-panel/slider"
+          href={sliderUrl}
           className="px-4 py-2 bg-[#00a65a] hover:bg-[#008d4c] text-white text-xs rounded-[3px] inline-flex items-center gap-1.5 transition-colors"
         >
           <Menu className="w-4 h-4" />
@@ -178,7 +183,7 @@ export default function EditSliderItemView() {
             Update Slider Item
           </h1>
           <Link
-            href="/admin/admin-panel/slider"
+            href={sliderUrl}
             className="px-3.5 py-1.5 bg-[#00a65a] hover:bg-[#008d4c] text-white text-[12.5px] rounded-[3px] inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs font-normal"
           >
             <Menu className="w-3.5 h-3.5" />

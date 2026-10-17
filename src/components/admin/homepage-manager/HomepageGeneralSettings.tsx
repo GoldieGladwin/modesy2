@@ -41,25 +41,25 @@ export default function HomepageGeneralSettings({ onNotify }: Props) {
     return (
       <label
         onClick={onSelect}
-        className="inline-flex items-center gap-2 cursor-pointer select-none text-xs text-gray-700"
+        className="inline-flex items-center gap-2.5 cursor-pointer select-none text-xs text-gray-700"
       >
         <div
           className={`w-4 h-4 rounded-full flex items-center justify-center transition ${
             selected
-              ? "bg-[#5046e5] text-white"
+              ? "bg-[#605ca8] text-white"
               : "border-2 border-gray-300 bg-white hover:border-gray-400"
           }`}
         >
           {selected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
         </div>
-        <span>{label}</span>
+        <span className="text-gray-800">{label}</span>
       </label>
     );
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-sm p-6 shadow-none max-w-xl">
-      <h2 className="text-base font-semibold text-gray-700 mb-6">Settings</h2>
+    <div className="bg-white border border-gray-200 rounded-xs p-6 shadow-none max-w-xl">
+      <h2 className="text-[15px] font-semibold text-gray-700 mb-6">Settings</h2>
 
       <form onSubmit={handleSave} className="space-y-5 text-xs">
         {/* 1. Featured Categories */}
@@ -67,7 +67,7 @@ export default function HomepageGeneralSettings({ onNotify }: Props) {
           <label className="block font-semibold text-gray-700 mb-2">
             Featured Categories
           </label>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-24">
             <CustomRadio
               name="featuredCategories"
               value="Show"
@@ -90,7 +90,7 @@ export default function HomepageGeneralSettings({ onNotify }: Props) {
           <label className="block font-semibold text-gray-700 mb-2">
             Featured Products
           </label>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-24">
             <CustomRadio
               name="featuredProducts"
               value="Show"
@@ -113,7 +113,7 @@ export default function HomepageGeneralSettings({ onNotify }: Props) {
           <label className="block font-semibold text-gray-700 mb-2">
             Latest Products
           </label>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-24">
             <CustomRadio
               name="latestProducts"
               value="Show"
@@ -136,7 +136,7 @@ export default function HomepageGeneralSettings({ onNotify }: Props) {
           <label className="block font-semibold text-gray-700 mb-2">
             Blog Slider
           </label>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-24">
             <CustomRadio
               name="blogSlider"
               value="Show"
@@ -159,7 +159,7 @@ export default function HomepageGeneralSettings({ onNotify }: Props) {
           <label className="block font-semibold text-gray-700 mb-2">
             Products per Row on Homepage
           </label>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-20">
             <CustomRadio
               name="productsPerRow"
               value="5 Products"
@@ -189,7 +189,7 @@ export default function HomepageGeneralSettings({ onNotify }: Props) {
             onChange={(e) =>
               setSettings({ ...settings, featuredProductsCount: Number(e.target.value) })
             }
-            className="w-full border border-gray-300 rounded-xs px-3 py-2 text-xs text-gray-700 focus:outline-none focus:border-[#0084ff]"
+            className="w-56 border border-gray-300 rounded-xs px-3 py-1.5 text-xs text-gray-700 focus:outline-none focus:border-[#0084ff]"
           />
         </div>
 
@@ -205,7 +205,7 @@ export default function HomepageGeneralSettings({ onNotify }: Props) {
             onChange={(e) =>
               setSettings({ ...settings, latestProductsCount: Number(e.target.value) })
             }
-            className="w-full border border-gray-300 rounded-xs px-3 py-2 text-xs text-gray-700 focus:outline-none focus:border-[#0084ff]"
+            className="w-56 border border-gray-300 rounded-xs px-3 py-1.5 text-xs text-gray-700 focus:outline-none focus:border-[#0084ff]"
           />
         </div>
 
@@ -213,7 +213,7 @@ export default function HomepageGeneralSettings({ onNotify }: Props) {
         <div className="pt-2 flex justify-end">
           <button
             type="submit"
-            className="px-5 py-2 bg-[#0084ff] hover:bg-[#0073e6] text-white text-xs font-medium rounded-xs transition shadow-none"
+            className="px-5 py-2 bg-[#0084ff] hover:bg-[#0073e6] text-white text-xs font-medium rounded-xs transition shadow-none cursor-pointer active:scale-95"
           >
             Save Changes
           </button>
