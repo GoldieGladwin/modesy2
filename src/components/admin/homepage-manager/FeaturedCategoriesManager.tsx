@@ -19,8 +19,6 @@ const INITIAL_FEATURED_CATEGORIES: FeaturedCategoryItem[] = [
   { id: "8", name: "Graphics & Photos / Graphics", order: 1 },
   { id: "9", name: "Home & Living / Painting", order: 1 },
   { id: "10", name: "Shoes / Women's Shoes / Boots", order: 1 },
-  { id: "11", name: "Home & Living / Home Decor / Decorative Pillows", order: 1 },
-  { id: "12", name: "Jewelry & Accessories / Bags & Purses / Handbags", order: 1 },
 ];
 
 export default function FeaturedCategoriesManager({ onNotify }: Props) {
