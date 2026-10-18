@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import {
   WalletTabType,
   EarningsRecord,
@@ -32,10 +32,20 @@ import InvoiceModal from "./InvoiceModal";
 import { CheckCircle2, ChevronRight } from "lucide-react";
 import ModesyHeader from "@/components/layout/guest/ModesyHeader";
 import ModesyFooter from "@/components/layout/guest/ModesyFooter";
+import { useAuth } from "@/context/AuthContext";
+import {
+  getWalletData,
+  addWalletDeposit,
+  reportBankTransfer,
+  requestPayout,
+  savePayoutSettings,
+  WALLET_CHANGE_EVENT,
+} from "@/lib/supabase/wallet";
 
 interface WalletViewProps {
   initialBalance?: number;
   shopName?: string;
+  hideHeaderFooter?: boolean;
 }
 
 function resolveTab(t: string | null): WalletTabType {
@@ -46,9 +56,31 @@ function resolveTab(t: string | null): WalletTabType {
   return "earnings";
 }
 
-function WalletViewContent({ initialBalance = 793.52, shopName = "Trendshop" }: WalletViewProps = {}) {
+function WalletViewContent({
+  initialBalance = 793.52,
+  shopName = "Trendshop",
+  hideHeaderFooter,
+}: WalletViewProps = {}) {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const queryTab = searchParams.get("tab");
+
+  const shouldHideHeaderFooter =
+    hideHeaderFooter ||
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/moderator") ||
+    pathname?.startsWith("/member");
+
+  const homeLink = pathname?.startsWith("/admin")
+    ? "/admin"
+    : pathname?.startsWith("/vendor")
+    ? "/vendor"
+    : pathname?.startsWith("/moderator")
+    ? "/moderator"
+    : pathname?.startsWith("/member")
+    ? "/member"
+    : "/";
 
   // Navigation
   const [activeTab, setActiveTab] = useState<WalletTabType>(() => resolveTab(queryTab));
@@ -73,6 +105,39 @@ function WalletViewContent({ initialBalance = 793.52, shopName = "Trendshop" }: 
   const [payouts, setPayouts] = useState<PayoutRequestRecord[]>(INITIAL_PAYOUTS_DATA);
   const [payoutSettings, setPayoutSettings] = useState<PayoutAccountSettings>(INITIAL_PAYOUT_SETTINGS);
 
+  // Load persistent wallet data on mount and listen to changes
+  useEffect(() => {
+    let isMounted = true;
+    const activeRole = user?.role || "vendor";
+    getWalletData(user?.id, activeRole).then((data) => {
+      if (isMounted) {
+        setBalance(data.balance);
+        setDeposits(data.deposits);
+        setExpenses(data.expenses);
+        setEarnings(data.earnings);
+        setPayouts(data.payouts);
+        setPayoutSettings(data.payoutSettings);
+      }
+    });
+
+    const onWalletChange = (e: any) => {
+      if (e.detail) {
+        setBalance(e.detail.balance);
+        setDeposits(e.detail.deposits);
+        setExpenses(e.detail.expenses);
+        setEarnings(e.detail.earnings);
+        setPayouts(e.detail.payouts);
+        setPayoutSettings(e.detail.payoutSettings);
+      }
+    };
+
+    window.addEventListener(WALLET_CHANGE_EVENT, onWalletChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener(WALLET_CHANGE_EVENT, onWalletChange);
+    };
+  }, [user?.id, user?.role]);
+
   // Modals state
   const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
   const [selectedPendingDeposit, setSelectedPendingDeposit] = useState<DepositRecord | null>(null);
@@ -96,57 +161,53 @@ function WalletViewContent({ initialBalance = 793.52, shopName = "Trendshop" }: 
     }, 4000);
   };
 
-  // Add Funds Handler
-  const handleAddFunds = (amount: number, method: string) => {
-    setBalance((prev) => prev + amount);
-    const newDep: DepositRecord = {
-      id: `dep-${Date.now()}`,
-      paymentId: `pi_wlt_${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-      paymentMethod: method,
-      amount: amount,
-      currency: "USD",
-      status: "Completed",
-      date: new Date().toISOString().slice(0, 10) + " / " + new Date().toTimeString().slice(0, 5),
-    };
-    setDeposits((prev) => [newDep, ...prev]);
-    showToast(`Successfully added $${amount.toFixed(2)} USD to your wallet via ${method}!`);
+  // Add Funds Handler (Persists immediately to DB / LocalStorage)
+  const handleAddFunds = async (amount: number, method: string) => {
+    const res = await addWalletDeposit(
+      { amount, paymentMethod: method },
+      user?.id,
+      user?.role || "vendor"
+    );
+    if (res.success) {
+      setBalance(res.newBalance);
+      setDeposits((prev) => [res.deposit, ...prev]);
+      showToast(`Successfully added $${amount.toFixed(2)} USD to your wallet via ${method}!`);
+    }
   };
 
   // Report Bank Transfer Handler
-  const handleReportBankTransfer = (depositId: string, referenceNo: string, note: string) => {
-    setDeposits((prev) =>
-      prev.map((d) => (d.id === depositId ? { ...d, status: "Completed" } : d))
-    );
-    showToast(`Bank transfer report (${referenceNo}) has been submitted for review!`);
+  const handleReportBankTransfer = async (depositId: string, referenceNo: string, note: string) => {
+    const res = await reportBankTransfer(depositId, referenceNo, note, user?.id, user?.role || "vendor");
+    if (res.success) {
+      setBalance(res.newBalance);
+      setDeposits((prev) =>
+        prev.map((d) => (d.id === depositId ? { ...d, status: "Completed", isReported: true } : d))
+      );
+      showToast(`Bank transfer report (${referenceNo}) has been submitted for review!`);
+    }
   };
 
   // New Payout Request Handler
-  const handleNewPayoutRequest = (method: string, amount: number) => {
-    setBalance((prev) => Math.max(0, prev - amount));
-    const newReq: PayoutRequestRecord = {
-      id: `pay-${Date.now()}`,
-      withdrawalMethod: method,
-      withdrawalAmount: amount,
-      currency: "USD",
-      status: "Pending",
-      date: new Date().toISOString().slice(0, 10) + " / " + new Date().toTimeString().slice(0, 5),
-    };
-    setPayouts((prev) => [newReq, ...prev]);
-    showToast(`Payout request for $${amount.toFixed(2)} USD via ${method} has been placed.`);
+  const handleNewPayoutRequest = async (method: string, amount: number) => {
+    const res = await requestPayout({ amount, method }, user?.id, user?.role || "vendor");
+    if (res.success && res.payout) {
+      setBalance(res.newBalance);
+      setPayouts((prev) => [res.payout!, ...prev]);
+      showToast(`Payout request for $${amount.toFixed(2)} USD via ${method} has been placed.`);
+    } else if (res.error) {
+      showToast(res.error);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-gray-800 antialiased">
-      {/* Modesy Header */}
-      <ModesyHeader
-        currentUser={{
-          name: "Trendshop",
-          email: "trendshop@codingest.net",
-          avatar: "/assets/img/trendshop-avatar.jpg",
-          role: "vendor",
-        }}
-        cartCount={3}
-      />
+    <div className={`${shouldHideHeaderFooter ? "w-full" : "min-h-screen"} bg-[#f8f9fa] flex flex-col font-sans text-gray-800 antialiased`}>
+      {/* Modesy Header (only when not inside layout) */}
+      {!shouldHideHeaderFooter && (
+        <ModesyHeader
+          currentUser={user || undefined}
+          cartCount={3}
+        />
+      )}
 
       {/* Toast Alert */}
       {toastMessage && (
@@ -159,7 +220,7 @@ function WalletViewContent({ initialBalance = 793.52, shopName = "Trendshop" }: 
       <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-6">
         {/* Breadcrumb */}
         <nav className="text-[12px] text-gray-500 mb-3 flex items-center gap-1.5 font-normal">
-          <Link href="/" className="text-gray-500 hover:text-[#00a99d] transition-colors">
+          <Link href={homeLink} className="text-gray-500 hover:text-[#00a99d] transition-colors">
             Home
           </Link>
           <span className="text-gray-400">/</span>
@@ -232,8 +293,9 @@ function WalletViewContent({ initialBalance = 793.52, shopName = "Trendshop" }: 
           {(activeTab === "set-payout-account" || activeTab === "payout-account") && (
             <SetPayoutAccountTab
               settings={payoutSettings}
-              onSaveSettings={(updated) => {
+              onSaveSettings={async (updated) => {
                 setPayoutSettings(updated);
+                await savePayoutSettings(updated, user?.id, user?.role || "vendor");
                 showToast("Payout account settings saved successfully!");
               }}
             />
@@ -269,8 +331,8 @@ function WalletViewContent({ initialBalance = 793.52, shopName = "Trendshop" }: 
       />
       </main>
 
-      {/* Modesy Footer */}
-      <ModesyFooter />
+      {/* Modesy Footer (only when not inside layout) */}
+      {!shouldHideHeaderFooter && <ModesyFooter />}
     </div>
   );
 }

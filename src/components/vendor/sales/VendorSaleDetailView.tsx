@@ -71,7 +71,7 @@ export default function VendorSaleDetailView({ saleId = "10044" }: VendorSaleDet
             <div className="space-y-1 text-xs">
               <h2 className="font-semibold text-gray-800 text-[13px]">Peter Jane</h2>
               <p className="text-gray-600 font-normal">876 5766 6578</p>
-              <p className="text-gray-600 font-normal">member@codingest.net</p>
+              <p className="text-gray-600 font-normal">member@gmail.com</p>
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function VendorSaleDetailView({ saleId = "10044" }: VendorSaleDet
               </div>
               <div className="flex">
                 <span className="w-32 text-gray-600 font-normal">Email</span>
-                <span className="text-gray-800 font-normal">test@codingest.net</span>
+                <span className="text-gray-800 font-normal">test@gmail.com</span>
               </div>
               <div className="flex">
                 <span className="w-32 text-gray-600 font-normal">Phone Number</span>
@@ -139,7 +139,7 @@ export default function VendorSaleDetailView({ saleId = "10044" }: VendorSaleDet
               </div>
               <div className="flex">
                 <span className="w-32 text-gray-600 font-normal">Email</span>
-                <span className="text-gray-800 font-normal">test@codingest.net</span>
+                <span className="text-gray-800 font-normal">test@gmail.com</span>
               </div>
               <div className="flex">
                 <span className="w-32 text-gray-600 font-normal">Phone Number</span>

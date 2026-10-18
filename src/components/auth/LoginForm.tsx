@@ -5,7 +5,7 @@ import Link from "next/link";
 
 interface LoginFormProps {
   onSwitchToRegister?: () => void;
-  onSuccess?: (user: { email: string; name: string }) => void;
+  onSuccess?: (user: { email: string; name: string; password?: string }) => void;
   isModal?: boolean;
 }
 
@@ -14,8 +14,8 @@ export default function LoginForm({
   onSuccess,
   isModal = false,
 }: LoginFormProps) {
-  const [email, setEmail] = useState("admin@codingest.net");
-  const [password, setPassword] = useState("1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,50 +38,22 @@ export default function LoginForm({
       setIsLoading(false);
       setSuccess("Login berhasil! Mengalihkan...");
       if (onSuccess) {
-        onSuccess({ email, name: email.split("@")[0] });
+        onSuccess({ email, name: email.split("@")[0], password });
       }
-    }, 1000);
-  };
-
-  const fillDemo = (type: "admin" | "user") => {
-    if (type === "admin") {
-      setEmail("admin@codingest.net");
-      setPassword("123456");
-    } else {
-      setEmail("buyer@example.com");
-      setPassword("password123");
-    }
-    setError(null);
+    }, 600);
   };
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between pb-3 mb-5 border-b border-gray-100">
+      <div className="pb-3 mb-5 border-b border-gray-100">
         <h2 className="text-xl font-bold text-gray-800 tracking-tight">Login</h2>
-        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-          <span>Demo:</span>
-          <button
-            type="button"
-            onClick={() => fillDemo("admin")}
-            className="px-2 py-0.5 rounded bg-gray-100 hover:bg-[#00a99d]/10 hover:text-[#00a99d] transition font-medium text-[11px]"
-          >
-            Admin
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemo("user")}
-            className="px-2 py-0.5 rounded bg-gray-100 hover:bg-[#00a99d]/10 hover:text-[#00a99d] transition font-medium text-[11px]"
-          >
-            Buyer
-          </button>
-        </div>
       </div>
 
       {/* Social Login Button */}
       <div className="mb-4">
         <button
           type="button"
-          onClick={() => alert("Fitur Login Google (Demo)")}
+          onClick={() => alert("Fitur Login Google")}
           className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded border border-gray-300 shadow-sm transition-all hover:shadow"
         >
           <svg width="20" height="20" viewBox="0 0 128 128">

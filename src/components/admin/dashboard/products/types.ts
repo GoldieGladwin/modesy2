@@ -1,5 +1,6 @@
 export interface ProductItem {
   id: number;
+  uuid?: string;
   title: string;
   sku?: string;
   image?: string;

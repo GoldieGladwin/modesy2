@@ -261,7 +261,7 @@ export const INITIAL_PAYOUTS_DATA: PayoutRequestRecord[] = [
 ];
 
 export const INITIAL_PAYOUT_SETTINGS: PayoutAccountSettings = {
-  paypalEmail: "test@codingest.net",
+  paypalEmail: "test@gmail.com",
   btcAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
   iban: {
     fullName: "Admin Modesy",

@@ -80,7 +80,7 @@ export default function VendorProfileSettingsView({
 
   // Profile form state matching Screenshot 1 & 2
   const [profileForm, setProfileForm] = useState({
-    email: 'trendshop@codingest.net',
+    email: 'trendshop@gmail.com',
     slug: 'daniel-jones',
     firstName: 'Daniel',
     lastName: 'Jones',
@@ -112,7 +112,7 @@ export default function VendorProfileSettingsView({
       firstName: 'Daniel',
       lastName: 'Jones',
       address: 'Kirchgasse 64 Wiesbaden 65183 Wiesbaden/Berlin/Germany',
-      email: 'test@codingest.net',
+      email: 'test@gmail.com',
       phone: '+49 123 45 67 89',
     },
     {
@@ -122,7 +122,7 @@ export default function VendorProfileSettingsView({
       firstName: 'Daniel',
       lastName: 'Jones',
       address: 'Kirchgasse 64 Wiesbaden 65183 Wiesbaden/Berlin/Germany',
-      email: 'test@codingest.net',
+      email: 'test@gmail.com',
       phone: '+49 123 45 67 89',
     },
     {
@@ -132,7 +132,7 @@ export default function VendorProfileSettingsView({
       firstName: 'Daniel',
       lastName: 'Jones',
       address: 'Schutzenstrasse 12 Landstuhl 353434 Landstuhl/Berlin/Germany',
-      email: 'test@codingest.net',
+      email: 'test@gmail.com',
       phone: '+49 123 45 67 89',
     },
   ]);
@@ -222,7 +222,7 @@ export default function VendorProfileSettingsView({
       title: '',
       firstName: 'Daniel',
       lastName: 'Jones',
-      email: 'test@codingest.net',
+      email: 'test@gmail.com',
       phone: '+49 123 45 67 89',
       country: 'Germany',
       state: 'Berlin',
@@ -345,7 +345,7 @@ export default function VendorProfileSettingsView({
       <ModesyHeader
         currentUser={{
           name: 'Trendshop',
-          email: 'trendshop@codingest.net',
+          email: 'trendshop@gmail.com',
           avatar: '/assets/img/trendshop-avatar.jpg',
           role: 'vendor',
         }}

@@ -3,18 +3,53 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Folder, Clock, ChevronLeft, ChevronRight } from "lucide-react";
-import { blogPostsData } from "@/data/blogs";
+import { getBlogPosts, DbBlogPost } from "@/lib/supabase/blogs";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 export default function BlogSection() {
-  const baseCount = blogPostsData.length;
-  // Duplicate 3 sets for smooth infinite repeating slider
-  const extendedPosts = [
-    ...blogPostsData,
-    ...blogPostsData,
-    ...blogPostsData,
-  ];
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [currentIndex, setCurrentIndex] = useState(baseCount);
+  useEffect(() => {
+    async function loadPosts() {
+      if (isSupabaseConfigured()) {
+        try {
+          const { data } = await getBlogPosts({ limit: 12 });
+          if (data && data.length > 0) {
+            const mapped = data.map((post) => ({
+              id: post.id,
+              slug: post.slug,
+              categorySlug: post.blog_categories?.slug || "fashion",
+              category: post.blog_categories?.name || "Fashion",
+              title: post.title,
+              image: post.image_url || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1000&auto=format&fit=crop&q=80",
+              time: "2 months ago",
+              description: post.summary || post.content.slice(0, 100),
+            }));
+            setPosts(mapped);
+            setCurrentIndex(mapped.length);
+          }
+        } catch (e) {
+          console.error("Error loading blog posts:", e);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    }
+    loadPosts();
+  }, []);
+
+  const baseCount = posts.length;
+  // Duplicate 3 sets for smooth infinite repeating slider
+  const extendedPosts = posts.length > 0 ? [
+    ...posts,
+    ...posts,
+    ...posts,
+  ] : [];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [isMoving, setIsMoving] = useState(false);
   const [itemsPerView, setItemsPerView] = useState(4);
@@ -61,6 +96,7 @@ export default function BlogSection() {
   // Seamless reset for infinite loop
   const handleTransitionEnd = () => {
     setIsMoving(false);
+    if (baseCount === 0) return;
     if (currentIndex >= baseCount * 2) {
       setIsTransitioning(false);
       setCurrentIndex((prev) => prev - baseCount);
@@ -163,7 +199,19 @@ export default function BlogSection() {
         </Link>
       </div>
 
-      {/* Blog Cards Container with Carousel Controls */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white border border-gray-200 rounded-[4px] p-2.5 animate-pulse space-y-2.5">
+              <div className="aspect-[16/10] bg-gray-100 rounded-[3px]" />
+              <div className="h-4 bg-gray-200 rounded w-3/4 mt-2" />
+              <div className="h-3 bg-gray-100 rounded w-1/2" />
+              <div className="h-3 bg-gray-100 rounded w-full" />
+            </div>
+          ))}
+        </div>
+      ) : posts.length === 0 ? null : (
+      /* Blog Cards Container with Carousel Controls */
       <div
         className="relative group select-none"
         onMouseEnter={() => setIsHovered(true)}
@@ -285,6 +333,7 @@ export default function BlogSection() {
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+      )}
     </section>
   );
 }

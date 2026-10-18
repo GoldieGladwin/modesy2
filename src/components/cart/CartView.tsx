@@ -163,7 +163,7 @@ export default function CartView() {
       <ModesyHeader
         currentUser={{
           name: "Trendshop",
-          email: "trendshop@codingest.net",
+          email: "trendshop@gmail.com",
           avatar: "/assets/img/trendshop-avatar.jpg",
           role: "vendor",
         }}

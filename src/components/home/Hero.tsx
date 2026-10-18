@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getSliders } from "@/lib/supabase/sliders";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 export interface HeroSlide {
   id: string | number;
@@ -16,7 +18,7 @@ export interface HeroSlide {
   buttonTextColor?: string;
 }
 
-// Data slide persis sesuai tampilan Modesy
+// Data slide fallback persis sesuai tampilan Modesy
 const DEFAULT_SLIDES: HeroSlide[] = [
   {
     id: 1,
@@ -48,11 +50,46 @@ interface HeroProps {
 }
 
 export default function Hero({
-  slides = DEFAULT_SLIDES,
+  slides: initialSlides,
   autoPlayInterval = 5500,
   showArrows = true,
   className = "",
 }: HeroProps) {
+  const [slides, setSlides] = useState<HeroSlide[]>(initialSlides || []);
+
+  useEffect(() => {
+    if (initialSlides && initialSlides.length > 0) return;
+    async function loadSliders() {
+      if (isSupabaseConfigured()) {
+        try {
+          const { data } = await getSliders();
+          if (data && data.length > 0) {
+            const mapped: HeroSlide[] = data.map((s, idx) => ({
+              id: s.id,
+              title: s.title || (idx === 0 ? "Find Backpacks That Best Suit You" : "Buy Nice and Unique Clothes"),
+              description: idx === 0 
+                ? "Timeless, modern, and feminine pieces made with quality materials and craftsmanship"
+                : "Discover quality premium basics and trendy essentials at surprisingly affordable prices",
+              buttonText: idx === 0 ? "Buy Now" : "Explore Now",
+              buttonLink: s.link_url || "/category/clothing",
+              imageDesktop: s.image_url,
+              imageMobile: s.image_url,
+            }));
+            setSlides(mapped);
+          } else {
+            setSlides(DEFAULT_SLIDES);
+          }
+        } catch (e) {
+          console.error("Error loading sliders:", e);
+          setSlides(DEFAULT_SLIDES);
+        }
+      } else {
+        setSlides(DEFAULT_SLIDES);
+      }
+    }
+    loadSliders();
+  }, [initialSlides]);
+
   // Infinite loop track: kloning slide terakhir di awal (index 0) dan slide pertama di akhir (index 3)
   const extendedSlides = useMemo(() => {
     if (slides.length <= 1) return slides;

@@ -51,7 +51,7 @@ export const ShippingAddressView: React.FC = () => {
       city: "",
       state: "",
       country: "United States",
-      email: "test@codingest.net",
+      email: "test@gmail.com",
       phone: "+1-202-555-0190",
     });
     setIsModalOpen(true);

@@ -87,7 +87,7 @@ export const initialDraftProducts: ProductItem[] = [
   },
   {
     id: 83,
-    title: "trendshop@codingest.net",
+    title: "trendshop@gmail.com",
     image: "",
     productType: "Digital",
     category: "Web Templates & Code",

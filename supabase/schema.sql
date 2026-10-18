@@ -15,7 +15,12 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 2. ENUM TYPES
 -- ==============================================================================
 DO $$ BEGIN
-    CREATE TYPE public.user_role AS ENUM ('admin', 'vendor', 'customer', 'moderator');
+    CREATE TYPE public.user_role AS ENUM ('admin', 'vendor', 'member', 'moderator');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+-- Ensure 'member' value is present if enum already exists
+DO $$ BEGIN
+    ALTER TYPE public.user_role ADD VALUE IF NOT EXISTS 'member';
 EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 DO $$ BEGIN
@@ -107,7 +112,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     first_name TEXT,
     last_name TEXT,
     phone TEXT,
-    role public.user_role NOT NULL DEFAULT 'customer',
+    role public.user_role NOT NULL DEFAULT 'member',
     avatar_url TEXT,
     cover_url TEXT,
     wallet_balance NUMERIC(12, 2) NOT NULL DEFAULT 0.00 CHECK (wallet_balance >= 0),
@@ -137,7 +142,7 @@ BEGIN
         NEW.id,
         NEW.email,
         COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
-        COALESCE((NEW.raw_user_meta_data->>'role')::public.user_role, 'customer'::public.user_role),
+        COALESCE((NEW.raw_user_meta_data->>'role')::public.user_role, 'member'::public.user_role),
         COALESCE((NEW.raw_user_meta_data->>'is_vendor')::boolean, false)
     )
     ON CONFLICT (id) DO NOTHING;
@@ -337,7 +342,7 @@ CREATE TABLE IF NOT EXISTS public.custom_field_categories (
 CREATE TABLE IF NOT EXISTS public.products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     vendor_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    category_id UUID NOT NULL REFERENCES public.categories(id) ON DELETE RESTRICT,
+    category_id UUID REFERENCES public.categories(id) ON DELETE SET NULL,
     brand_id UUID REFERENCES public.brands(id) ON DELETE SET NULL,
     title TEXT NOT NULL,
     slug TEXT NOT NULL UNIQUE,
@@ -643,6 +648,95 @@ CREATE TRIGGER update_payouts_modtime
     BEFORE UPDATE ON public.payouts
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
+-- Wallet Deposits (Add Funds, Bank Transfers, Online Gateways)
+CREATE TABLE IF NOT EXISTS public.wallet_deposits (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    payment_id TEXT NOT NULL,
+    payment_method TEXT NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+    status TEXT NOT NULL DEFAULT 'Completed', -- 'Completed', 'Pending Payment', 'Failed'
+    is_reported BOOLEAN NOT NULL DEFAULT false,
+    report_reference_no TEXT,
+    report_note TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Wallet Expenses (Payments made with wallet balance)
+CREATE TABLE IF NOT EXISTS public.wallet_expenses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    expense_title TEXT NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+    currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+    reference_type TEXT, -- 'order', 'membership', 'ad_promotion', 'commission'
+    reference_id UUID,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Payout Account Settings (Withdrawal accounts: PayPal, Bank Transfer, Bitcoin)
+CREATE TABLE IF NOT EXISTS public.payout_account_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL UNIQUE REFERENCES public.profiles(id) ON DELETE CASCADE,
+    payout_method TEXT NOT NULL DEFAULT 'paypal',
+    paypal_email TEXT,
+    iban TEXT,
+    bank_name TEXT,
+    bank_branch_city TEXT,
+    swift_code TEXT,
+    account_holder_name TEXT,
+    routing_number TEXT,
+    bitcoin_address TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+DROP TRIGGER IF EXISTS update_payout_settings_modtime ON public.payout_account_settings;
+CREATE TRIGGER update_payout_settings_modtime
+    BEFORE UPDATE ON public.payout_account_settings
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Automated Trigger: Update profile wallet_balance when Completed deposit is inserted
+CREATE OR REPLACE FUNCTION public.handle_wallet_deposit()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'Completed' THEN
+        UPDATE public.profiles
+        SET wallet_balance = wallet_balance + NEW.amount
+        WHERE id = NEW.user_id;
+
+        INSERT INTO public.wallet_transactions (user_id, amount, transaction_type, reference_type, description)
+        VALUES (NEW.user_id, NEW.amount, 'credit', 'topup', 'Wallet deposit via ' || NEW.payment_method);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_wallet_deposit_created ON public.wallet_deposits;
+CREATE TRIGGER on_wallet_deposit_created
+    AFTER INSERT ON public.wallet_deposits
+    FOR EACH ROW EXECUTE FUNCTION public.handle_wallet_deposit();
+
+-- Automated Trigger: Deduct profile wallet_balance when a payout withdrawal is requested
+CREATE OR REPLACE FUNCTION public.handle_payout_request()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE public.profiles
+    SET wallet_balance = GREATEST(0, wallet_balance - NEW.amount)
+    WHERE id = NEW.vendor_id;
+
+    INSERT INTO public.wallet_transactions (user_id, amount, transaction_type, reference_type, description)
+    VALUES (NEW.vendor_id, NEW.amount, 'debit', 'payout', 'Payout withdrawal request via ' || NEW.payout_method::text);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_payout_requested ON public.payouts;
+CREATE TRIGGER on_payout_requested
+    AFTER INSERT ON public.payouts
+    FOR EACH ROW EXECUTE FUNCTION public.handle_payout_request();
+
 -- Affiliate Program (Referral Tracking & Commission)
 CREATE TABLE IF NOT EXISTS public.affiliate_referrals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -727,24 +821,50 @@ CREATE TABLE IF NOT EXISTS public.email_blacklist (
 CREATE TABLE IF NOT EXISTS public.product_reviews (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     order_item_id UUID REFERENCES public.order_items(id) ON DELETE SET NULL,
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    review TEXT,
     review_text TEXT,
     is_approved BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Kolom kompatibilitas untuk review dan review_text
+ALTER TABLE public.product_reviews ADD COLUMN IF NOT EXISTS review TEXT;
+ALTER TABLE public.product_reviews ADD COLUMN IF NOT EXISTS review_text TEXT;
+
+-- View alias: Memastikan query ke 'public.reviews' maupun 'public.product_reviews' keduanya berhasil
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'reviews' AND table_type = 'BASE TABLE'
+    ) THEN
+        CREATE OR REPLACE VIEW public.reviews AS SELECT * FROM public.product_reviews;
+    END IF;
+END $$;
+
 CREATE TABLE IF NOT EXISTS public.comments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES public.products(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     parent_id UUID REFERENCES public.comments(id) ON DELETE CASCADE,
-    target_type TEXT NOT NULL CHECK (target_type IN ('product', 'blog')),
-    target_id UUID NOT NULL,
-    comment_text TEXT NOT NULL,
+    target_type TEXT NOT NULL DEFAULT 'product' CHECK (target_type IN ('product', 'blog')),
+    target_id UUID,
+    name TEXT,
+    email TEXT,
+    comment TEXT,
+    comment_text TEXT,
     is_approved BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Kolom kompatibilitas untuk comments
+ALTER TABLE public.comments ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES public.products(id) ON DELETE CASCADE;
+ALTER TABLE public.comments ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE public.comments ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE public.comments ADD COLUMN IF NOT EXISTS comment TEXT;
+ALTER TABLE public.comments ADD COLUMN IF NOT EXISTS comment_text TEXT;
 
 CREATE TABLE IF NOT EXISTS public.chat_threads (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -816,8 +936,11 @@ CREATE TABLE IF NOT EXISTS public.blog_categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     slug TEXT NOT NULL UNIQUE,
+    order_index INT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE public.blog_categories ADD COLUMN IF NOT EXISTS order_index INT DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS public.blog_posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -952,6 +1075,9 @@ ALTER TABLE public.digital_sales_downloads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quote_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.refund_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wallet_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wallet_deposits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wallet_expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payout_account_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.seller_earnings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payouts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.affiliate_referrals ENABLE ROW LEVEL SECURITY;
@@ -1146,14 +1272,29 @@ CREATE POLICY "Users can manage own refund requests" ON public.refund_requests F
 DROP POLICY IF EXISTS "Users can view own wallet transactions" ON public.wallet_transactions;
 CREATE POLICY "Users can view own wallet transactions" ON public.wallet_transactions FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can manage own wallet deposits" ON public.wallet_deposits;
+CREATE POLICY "Users can manage own wallet deposits" ON public.wallet_deposits FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own wallet expenses" ON public.wallet_expenses;
+CREATE POLICY "Users can manage own wallet expenses" ON public.wallet_expenses FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own payout settings" ON public.payout_account_settings;
+CREATE POLICY "Users can manage own payout settings" ON public.payout_account_settings FOR ALL USING (auth.uid() = user_id);
+
 DROP POLICY IF EXISTS "Users can view own coupon usages" ON public.coupon_usages;
 CREATE POLICY "Users can view own coupon usages" ON public.coupon_usages FOR SELECT USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can create and edit own reviews" ON public.product_reviews;
-CREATE POLICY "Users can create and edit own reviews" ON public.product_reviews FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can create and edit own reviews" ON public.product_reviews FOR ALL USING (auth.uid() = user_id OR auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Public can submit reviews" ON public.product_reviews;
+CREATE POLICY "Public can submit reviews" ON public.product_reviews FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Users can create and edit own comments" ON public.comments;
-CREATE POLICY "Users can create and edit own comments" ON public.comments FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can create and edit own comments" ON public.comments FOR ALL USING (auth.uid() = user_id OR auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Public can submit comments" ON public.comments;
+CREATE POLICY "Public can submit comments" ON public.comments FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Users can view their chat threads" ON public.chat_threads;
 CREATE POLICY "Users can view their chat threads" ON public.chat_threads FOR SELECT USING (
@@ -1233,6 +1374,152 @@ CREATE POLICY "Users view own affiliate referrals" ON public.affiliate_referrals
 DROP POLICY IF EXISTS "Users view own affiliate commissions" ON public.affiliate_commissions;
 CREATE POLICY "Users view own affiliate commissions" ON public.affiliate_commissions FOR SELECT USING (auth.uid() = referrer_id);
 
+-- ------------------------------------------------------------------------------
+-- D. ADMIN & MODERATOR POLICIES (Full CRUD access across marketplace)
+-- ------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE id = auth.uid() AND role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+CREATE OR REPLACE FUNCTION public.is_admin_or_moderator()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE id = auth.uid() AND role IN ('admin', 'moderator')
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Admin/Mod catalog management (Categories, Brands, Tags, Custom Fields)
+DROP POLICY IF EXISTS "Admins manage categories" ON public.categories;
+CREATE POLICY "Admins manage categories" ON public.categories FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage brands" ON public.brands;
+CREATE POLICY "Admins manage brands" ON public.brands FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage tags" ON public.tags;
+CREATE POLICY "Admins manage tags" ON public.tags FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage custom fields" ON public.custom_fields;
+CREATE POLICY "Admins manage custom fields" ON public.custom_fields FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage custom field options" ON public.custom_field_options;
+CREATE POLICY "Admins manage custom field options" ON public.custom_field_options FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage custom field categories" ON public.custom_field_categories;
+CREATE POLICY "Admins manage custom field categories" ON public.custom_field_categories FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+-- Admin/Mod product management (approve, edit, feature, delete any product)
+DROP POLICY IF EXISTS "Admins manage all products" ON public.products;
+CREATE POLICY "Admins manage all products" ON public.products FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage all product images" ON public.product_images;
+CREATE POLICY "Admins manage all product images" ON public.product_images FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage all product variations" ON public.product_variations;
+CREATE POLICY "Admins manage all product variations" ON public.product_variations FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage all digital product files" ON public.digital_product_files;
+CREATE POLICY "Admins manage all digital product files" ON public.digital_product_files FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+-- Admin/Mod marketing, sliders, CMS pages & blogs
+DROP POLICY IF EXISTS "Admins manage sliders" ON public.sliders;
+CREATE POLICY "Admins manage sliders" ON public.sliders FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage ad spaces" ON public.ad_spaces;
+CREATE POLICY "Admins manage ad spaces" ON public.ad_spaces FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage blog categories" ON public.blog_categories;
+CREATE POLICY "Admins manage blog categories" ON public.blog_categories FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage blog posts" ON public.blog_posts;
+CREATE POLICY "Admins manage blog posts" ON public.blog_posts FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage pages" ON public.pages;
+CREATE POLICY "Admins manage pages" ON public.pages FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+-- Admin/Mod orders, reviews, comments & tickets
+DROP POLICY IF EXISTS "Admins manage all orders" ON public.orders;
+CREATE POLICY "Admins manage all orders" ON public.orders FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage all order items" ON public.order_items;
+CREATE POLICY "Admins manage all order items" ON public.order_items FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage all reviews" ON public.product_reviews;
+CREATE POLICY "Admins manage all reviews" ON public.product_reviews FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage all comments" ON public.comments;
+CREATE POLICY "Admins manage all comments" ON public.comments FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage abuse reports" ON public.abuse_reports;
+CREATE POLICY "Admins manage abuse reports" ON public.abuse_reports FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage support tickets" ON public.support_tickets;
+CREATE POLICY "Admins manage support tickets" ON public.support_tickets FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage support ticket messages" ON public.support_ticket_messages;
+CREATE POLICY "Admins manage support ticket messages" ON public.support_ticket_messages FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+DROP POLICY IF EXISTS "Admins manage contact messages" ON public.contact_messages;
+CREATE POLICY "Admins manage contact messages" ON public.contact_messages FOR ALL USING (public.is_admin_or_moderator()) WITH CHECK (public.is_admin_or_moderator());
+
+-- Admin-only settings, profiles, membership & financial management
+DROP POLICY IF EXISTS "Admins manage all profiles" ON public.profiles;
+CREATE POLICY "Admins manage all profiles" ON public.profiles FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage system settings" ON public.system_settings;
+CREATE POLICY "Admins manage system settings" ON public.system_settings FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage membership plans" ON public.membership_plans;
+CREATE POLICY "Admins manage membership plans" ON public.membership_plans FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage promotion plans" ON public.promotion_plans;
+CREATE POLICY "Admins manage promotion plans" ON public.promotion_plans FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage all payouts" ON public.payouts;
+CREATE POLICY "Admins manage all payouts" ON public.payouts FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage shipping settings" ON public.shipping_zones;
+CREATE POLICY "Admins manage shipping settings" ON public.shipping_zones FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage shipping methods" ON public.shipping_methods;
+CREATE POLICY "Admins manage shipping methods" ON public.shipping_methods FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- ------------------------------------------------------------------------------
+-- E. STORAGE BUCKETS CONFIGURATION (Product images, avatars, sliders)
+-- ------------------------------------------------------------------------------
+INSERT INTO storage.buckets (id, name, public)
+VALUES 
+    ('product-images', 'product-images', true),
+    ('avatars', 'avatars', true),
+    ('sliders', 'sliders', true),
+    ('digital-files', 'digital-files', false)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Public can view product images" ON storage.objects;
+CREATE POLICY "Public can view product images" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
+
+DROP POLICY IF EXISTS "Public can view avatars" ON storage.objects;
+CREATE POLICY "Public can view avatars" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+
+DROP POLICY IF EXISTS "Public can view sliders" ON storage.objects;
+CREATE POLICY "Public can view sliders" ON storage.objects FOR SELECT USING (bucket_id = 'sliders');
+
+DROP POLICY IF EXISTS "Authenticated can upload product images" ON storage.objects;
+CREATE POLICY "Authenticated can upload product images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated can upload avatars" ON storage.objects;
+CREATE POLICY "Authenticated can upload avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated can upload sliders" ON storage.objects;
+CREATE POLICY "Authenticated can upload sliders" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'sliders' AND auth.role() = 'authenticated');
 
 -- ==============================================================================
 -- 20. INITIAL DEFAULT DATA (CURRENCY, SYSTEM SETTINGS & SAMPLE MEMBERSHIP)

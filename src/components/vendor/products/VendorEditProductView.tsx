@@ -26,6 +26,7 @@ import AiContentGeneratorModal from "./AiContentGeneratorModal";
 import { CATEGORIES } from "@/data/categories";
 import { initialDashboardProducts } from "@/components/admin/dashboard/products/mockData";
 import { ProductItem } from "@/components/admin/dashboard/products/types";
+import { updateProduct } from "@/lib/supabase/products";
 
 export interface EditProductImage {
   id: string;
@@ -127,7 +128,12 @@ export default function VendorEditProductView({
   );
   const [discountPrice, setDiscountPrice] = useState<string>("34");
   const [sku, setSku] = useState<string>(initialProduct.sku || "C1W2S3C4V5R6");
-  const [stock, setStock] = useState<string>("500");
+  const [stock, setStock] = useState<string>(
+    initialProduct.stock?.match(/\d+/)?.[0] || "500"
+  );
+  const [isUnlimitedStock, setIsUnlimitedStock] = useState<boolean>(
+    initialProduct.stock?.toLowerCase().includes("unlimited") || false
+  );
   const [shippingCost, setShippingCost] = useState<string>("0");
   const [deliveryTime, setDeliveryTime] = useState<string>("1-3 Business Days");
 
@@ -223,7 +229,26 @@ export default function VendorEditProductView({
     }
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
+    try {
+      const numericPrice = parseFloat(price.replace(/[^0-9.]/g, "")) || 0;
+      const imageUrls = images.map((i) => i.url);
+
+      if (typeof productId === "string" && productId.includes("-")) {
+        await updateProduct({
+          id: productId,
+          title,
+          short_description: shortDescription,
+          description,
+          price: numericPrice,
+          sku,
+          stock: isUnlimitedStock ? 9999 : parseInt(stock, 10) || 10,
+          images: imageUrls,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to update product in Supabase:", err);
+    }
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);
@@ -857,9 +882,20 @@ export default function VendorEditProductView({
 
             {/* Stock & Shipping Section */}
             <div className="bg-[#fafbfc] border border-gray-200 rounded-[3px] p-5 space-y-4">
-              <div className="flex items-center gap-2 font-bold text-xs text-gray-800">
-                <Package className="w-4 h-4 text-[#00a99d]" />
-                <span>Inventory &amp; Shipping</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-bold text-xs text-gray-800">
+                  <Package className="w-4 h-4 text-[#00a99d]" />
+                  <span>Inventory &amp; Shipping</span>
+                </div>
+                <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={isUnlimitedStock}
+                    onChange={(e) => setIsUnlimitedStock(e.target.checked)}
+                    className="accent-[#00a99d] rounded cursor-pointer"
+                  />
+                  <span>Unlimited Stock</span>
+                </label>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -869,10 +905,15 @@ export default function VendorEditProductView({
                   </label>
                   <input
                     type="number"
-                    value={stock}
+                    disabled={isUnlimitedStock}
+                    value={isUnlimitedStock ? "" : stock}
                     onChange={(e) => setStock(e.target.value)}
-                    placeholder="500"
-                    className="w-full px-3 py-1.5 border border-gray-300 rounded text-xs outline-none focus:border-[#00a99d] bg-white"
+                    placeholder={isUnlimitedStock ? "Unlimited" : "500"}
+                    className={`w-full px-3 py-1.5 border border-gray-300 rounded text-xs outline-none focus:border-[#00a99d] transition-colors ${
+                      isUnlimitedStock
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                        : "bg-white"
+                    }`}
                   />
                 </div>
 

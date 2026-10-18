@@ -1,7 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import {
+  getWalletData,
+  addWalletDeposit,
+  savePayoutSettings,
+  WALLET_CHANGE_EVENT,
+} from "@/lib/supabase/wallet";
 import {
   CreditCard,
   Check,
@@ -44,10 +51,11 @@ interface DepositItem {
 }
 
 export default function ModeratorWalletPage() {
+  const { user } = useAuth();
   // Page view: "wallet" (main balance & tabs) or "checkout" (add funds payment flow)
   const [view, setView] = useState<"wallet" | "checkout">("wallet");
   const [activeTab, setActiveTab] = useState<WalletTab>("deposits");
-  const [balance, setBalance] = useState<number>(0);
+  const [balance, setBalance] = useState<number>(150);
   const [deposits, setDeposits] = useState<DepositItem[]>([]);
   const [depositAmount, setDepositAmount] = useState<number>(500);
 
@@ -58,7 +66,7 @@ export default function ModeratorWalletPage() {
 
   // Payout settings states
   const [payoutMethod, setPayoutMethod] = useState<"paypal" | "bank" | "swift">("paypal");
-  const [payoutPaypalEmail, setPayoutPaypalEmail] = useState("roger.novak@example.com");
+  const [payoutPaypalEmail, setPayoutPaypalEmail] = useState("moderator@gmail.com");
   const [payoutBankName, setPayoutBankName] = useState("");
   const [payoutAccountNumber, setPayoutAccountNumber] = useState("");
   const [payoutSwiftCode, setPayoutSwiftCode] = useState("");
@@ -88,6 +96,51 @@ export default function ModeratorWalletPage() {
   const [privacyAgreed, setPrivacyAgreed] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Load persistent wallet data on mount and listen to changes
+  useEffect(() => {
+    let isMounted = true;
+    getWalletData(user?.id, "moderator").then((data) => {
+      if (isMounted) {
+        setBalance(data.balance);
+        setDeposits(
+          data.deposits.map((d) => ({
+            id: d.id,
+            paymentId: d.paymentId,
+            paymentMethod: d.paymentMethod,
+            amount: d.amount,
+            currency: d.currency,
+            date: d.date,
+          }))
+        );
+        if (data.payoutSettings?.paypalEmail) {
+          setPayoutPaypalEmail(data.payoutSettings.paypalEmail);
+        }
+      }
+    });
+
+    const onWalletChange = (e: any) => {
+      if (e.detail) {
+        setBalance(e.detail.balance);
+        setDeposits(
+          e.detail.deposits.map((d: any) => ({
+            id: d.id,
+            paymentId: d.paymentId,
+            paymentMethod: d.paymentMethod,
+            amount: d.amount,
+            currency: d.currency,
+            date: d.date,
+          }))
+        );
+      }
+    };
+
+    window.addEventListener(WALLET_CHANGE_EVENT, onWalletChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener(WALLET_CHANGE_EVENT, onWalletChange);
+    };
+  }, [user?.id]);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4000);
@@ -113,26 +166,37 @@ export default function ModeratorWalletPage() {
     setView("checkout");
   };
 
-  const handlePaySuccess = (e: React.FormEvent) => {
+  const handlePaySuccess = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
+    const res = await addWalletDeposit(
+      {
+        amount: depositAmount,
+        paymentMethod: selectedMethod.toUpperCase(),
+        isReported: true,
+      },
+      user?.id,
+      "moderator"
+    );
+
     setTimeout(() => {
       setIsProcessing(false);
-      const newDeposit: DepositItem = {
-        id: Date.now().toString(),
-        paymentId: `PAY-${Math.floor(100000 + Math.random() * 900000)}`,
-        paymentMethod: selectedMethod.toUpperCase(),
-        amount: depositAmount,
-        currency: "USD",
-        date: "Oct 17, 2026",
-      };
-
-      setDeposits((prev) => [newDeposit, ...prev]);
-      setBalance((prev) => prev + depositAmount);
-      setView("wallet");
-      showToast(`Successfully deposited $${depositAmount} USD into your wallet!`);
-    }, 1200);
+      if (res.success) {
+        setBalance(res.newBalance);
+        const newDeposit: DepositItem = {
+          id: res.deposit.id,
+          paymentId: res.deposit.paymentId,
+          paymentMethod: res.deposit.paymentMethod,
+          amount: res.deposit.amount,
+          currency: res.deposit.currency,
+          date: res.deposit.date,
+        };
+        setDeposits((prev) => [newDeposit, ...prev]);
+        setView("wallet");
+        showToast(`Successfully deposited $${depositAmount} USD into your wallet!`);
+      }
+    }, 800);
   };
 
   return (

@@ -5,7 +5,7 @@ import React, { useState } from "react";
 interface RegisterFormProps {
   onOpenLoginModal?: () => void;
   onSwitchToLogin?: () => void;
-  onSuccess?: (user: { email: string; name: string }) => void;
+  onSuccess?: (user: { email: string; name: string; password?: string }) => void;
   isModal?: boolean;
 }
 
@@ -83,6 +83,7 @@ export default function RegisterForm({
         onSuccess({
           email: formData.email,
           name: `${formData.firstName} ${formData.lastName}`,
+          password: formData.password,
         });
       }
     }, 1000);
@@ -99,7 +100,7 @@ export default function RegisterForm({
       <div className="mb-4">
         <button
           type="button"
-          onClick={() => alert("Fitur Login Google (Demo)")}
+          onClick={() => alert("Fitur Login Google")}
           className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium rounded border border-gray-300 shadow-xs transition cursor-pointer"
         >
           <svg width="20" height="20" viewBox="0 0 128 128">

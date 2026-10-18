@@ -4,13 +4,16 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { List, Check } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { RefundRequest } from './types';
 import { mockRefundRequestsList } from './mockData';
 import ModesyHeader from '@/components/layout/guest/ModesyHeader';
 import ModesyFooter from '@/components/layout/guest/ModesyFooter';
+import { useAuth } from '@/context/AuthContext';
 
 interface RefundDetailViewProps {
   refundId: string;
+  hideHeaderFooter?: boolean;
 }
 
 interface Message {
@@ -21,7 +24,31 @@ interface Message {
   text: string;
 }
 
-export default function RefundDetailView({ refundId }: RefundDetailViewProps) {
+export default function RefundDetailView({ refundId, hideHeaderFooter }: RefundDetailViewProps) {
+  const { user } = useAuth();
+  const pathname = usePathname();
+
+  const shouldHideHeaderFooter =
+    hideHeaderFooter ||
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/moderator') ||
+    pathname?.startsWith('/member');
+
+  const homeLink = pathname?.startsWith('/admin')
+    ? '/admin'
+    : pathname?.startsWith('/vendor')
+    ? '/vendor'
+    : pathname?.startsWith('/moderator')
+    ? '/moderator'
+    : pathname?.startsWith('/member')
+    ? '/member'
+    : '/';
+
+  const refundsLink = pathname?.startsWith('/admin')
+    ? '/admin/orders?tab=refund-requests'
+    : pathname?.startsWith('/vendor')
+    ? '/vendor/orders?tab=refund-requests'
+    : '/refund-requests';
   const matchedRefund =
     mockRefundRequestsList.find((r) => r.id === refundId || r.orderId === refundId) ||
     mockRefundRequestsList[0];
@@ -74,17 +101,14 @@ export default function RefundDetailView({ refundId }: RefundDetailViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-gray-800 antialiased">
-      {/* Modesy Header */}
-      <ModesyHeader
-        currentUser={{
-          name: 'Trendshop',
-          email: 'trendshop@codingest.net',
-          avatar: '/assets/img/trendshop-avatar.jpg',
-          role: 'vendor',
-        }}
-        cartCount={3}
-      />
+    <div className={`${shouldHideHeaderFooter ? "w-full" : "min-h-screen"} bg-white flex flex-col font-sans text-gray-800 antialiased`}>
+      {/* Modesy Header (only when not inside layout) */}
+      {!shouldHideHeaderFooter && (
+        <ModesyHeader
+          currentUser={user || undefined}
+          cartCount={3}
+        />
+      )}
 
       <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-6 text-gray-800">
         {/* Toast Alert */}
@@ -97,11 +121,11 @@ export default function RefundDetailView({ refundId }: RefundDetailViewProps) {
 
         {/* Breadcrumb matching Screenshot 5: Home / Refund Requests / Refund */}
         <nav className="text-[12px] text-gray-500 mb-4 flex items-center gap-1.5 font-normal">
-          <Link href="/" className="hover:text-[#00a99d] transition-colors">
+          <Link href={homeLink} className="hover:text-[#00a99d] transition-colors">
             Home
           </Link>
           <span className="text-gray-400">/</span>
-          <Link href="/refund-requests" className="hover:text-[#00a99d] transition-colors">
+          <Link href={refundsLink} className="hover:text-[#00a99d] transition-colors">
             Refund Requests
           </Link>
           <span className="text-gray-400">/</span>
@@ -212,8 +236,8 @@ export default function RefundDetailView({ refundId }: RefundDetailViewProps) {
         </div>
       </main>
 
-      {/* Modesy Footer */}
-      <ModesyFooter />
+      {/* Modesy Footer (only when not inside layout) */}
+      {!shouldHideHeaderFooter && <ModesyFooter />}
     </div>
   );
 }

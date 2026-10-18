@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Star, Heart, ShoppingBag, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { getProducts } from "@/lib/supabase/products";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 export interface ClothingProduct {
   id: number;
@@ -187,22 +189,81 @@ const N = CLOTHING_PRODUCTS.length; // 11 produk
 
 export default function ClothingSection() {
   const { addToCart } = useCart();
-  const [wishlistState, setWishlistState] = useState<{ [key: number]: boolean }>({});
+  const [clothingList, setClothingList] = useState<ClothingProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [wishlistState, setWishlistState] = useState<{ [key: string | number]: boolean }>({});
   const [visibleCount, setVisibleCount] = useState(6);
-  const [currentIndex, setCurrentIndex] = useState(N); // Mulai dari set tengah (index 11)
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [withAnimation, setWithAnimation] = useState(true);
 
   const isTransitioningRef = useRef(false);
   const autoUnlockTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    async function loadClothing() {
+      if (isSupabaseConfigured()) {
+        try {
+          let { data } = await getProducts({ categorySlug: "clothing", status: "active", limit: 20 });
+          if (!data || data.length === 0) {
+            const fallback = await getProducts({ status: "active", limit: 20 });
+            data = fallback.data;
+          }
+          if (data && data.length > 0) {
+            const mapped: ClothingProduct[] = data.map((p) => {
+              const sortedImages = p.product_images
+                ? [...p.product_images].sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+                : [];
+              const primary =
+                sortedImages.find((img) => img.is_primary)?.image_url ||
+                sortedImages[0]?.image_url ||
+                "/images/products/midi-skirt.webp";
+              const secondary = sortedImages[1]?.image_url || primary;
+
+              const isQuote = p.listing_type === "ordinary_listing" || Number(p.price) === 0;
+              const priceNum = Math.round(Number(p.price));
+              const disc = Number(p.discount_rate) || 0;
+              const oldPriceNum = disc > 0 && !isQuote ? Math.round(priceNum / (1 - disc / 100)) : undefined;
+
+              return {
+                id: (p.slug || p.id) as any,
+                title: p.title,
+                seller: p.profiles?.username || "Trendshop",
+                image: primary,
+                fallbackImage: primary,
+                hoverImage: secondary,
+                fallbackHoverImage: secondary,
+                rating: Number(p.rating_avg) || 5,
+                likes: 0,
+                price: isQuote ? undefined : priceNum,
+                oldPrice: oldPriceNum,
+                isQuote,
+                link: `/product/${p.slug || p.id}`,
+              };
+            });
+            setClothingList(mapped);
+            setCurrentIndex(mapped.length);
+          }
+        } catch (e) {
+          console.error("Error loading clothing:", e);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    }
+    loadClothing();
+  }, []);
+
   // Buffer 3 set produk agar scrolling benar-benar unlimited & bolak-balik tanpa batas
   const extendedProducts = useMemo(() => {
+    if (clothingList.length === 0) return [];
     return [
-      ...CLOTHING_PRODUCTS.map((p, idx) => ({ ...p, uniqueKey: `prev-${p.id}-${idx}` })),
-      ...CLOTHING_PRODUCTS.map((p, idx) => ({ ...p, uniqueKey: `current-${p.id}-${idx}` })),
-      ...CLOTHING_PRODUCTS.map((p, idx) => ({ ...p, uniqueKey: `next-${p.id}-${idx}` })),
+      ...clothingList.map((p, idx) => ({ ...p, uniqueKey: `prev-${p.id}-${idx}` })),
+      ...clothingList.map((p, idx) => ({ ...p, uniqueKey: `current-${p.id}-${idx}` })),
+      ...clothingList.map((p, idx) => ({ ...p, uniqueKey: `next-${p.id}-${idx}` })),
     ];
-  }, []);
+  }, [clothingList]);
 
   // Update jumlah kartu tampak sesuai ukuran layar
   useEffect(() => {
@@ -273,12 +334,14 @@ export default function ClothingSection() {
   // Saat transisi selesai, reset silent jika sudah mencapai clone batas agar unlimited
   const handleTransitionEnd = () => {
     isTransitioningRef.current = false;
-    if (currentIndex >= 2 * N) {
+    const len = clothingList.length;
+    if (len === 0) return;
+    if (currentIndex >= 2 * len) {
       setWithAnimation(false);
-      setCurrentIndex((prev) => prev - N);
-    } else if (currentIndex < N) {
+      setCurrentIndex((prev) => prev - len);
+    } else if (currentIndex < len) {
       setWithAnimation(false);
-      setCurrentIndex((prev) => prev + N);
+      setCurrentIndex((prev) => prev + len);
     }
   };
 
@@ -302,7 +365,23 @@ export default function ClothingSection() {
           </Link>
         </div>
 
-        {/* Carousel Produk Clothing dengan Navigasi 1-Card & Infinite Loop */}
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5 lg:gap-6 py-2">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-lg p-2.5 animate-pulse space-y-2.5">
+                <div className="aspect-square bg-gray-100 rounded-md" />
+                <div className="h-4 bg-gray-200 rounded w-3/4 mt-2" />
+                <div className="h-3 bg-gray-100 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 rounded w-1/3 mt-2" />
+              </div>
+            ))}
+          </div>
+        ) : clothingList.length === 0 ? (
+          <div className="text-center py-10 text-gray-400 bg-white border border-gray-200 rounded-lg text-sm">
+            No clothing products found in database.
+          </div>
+        ) : (
+        /* Carousel Produk Clothing dengan Navigasi 1-Card & Infinite Loop */
         <div className="relative group/carousel">
           {/* Tombol Scroll Kiri (<): Mengambang di atas gambar kartu sebelah kiri, selalu aktif untuk bolak-balik unlimited */}
           <button
@@ -465,7 +544,7 @@ export default function ClothingSection() {
                             {/* Jumlah Likes / Hati */}
                             <div className="flex items-center gap-1 text-gray-400 font-medium">
                               <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
-                              <span>{product.likes + (isLiked ? 1 : 0)}</span>
+                              <span>{(Number(product.likes) || 0) + (isLiked ? 1 : 0)}</span>
                             </div>
                           </div>
                         </div>
@@ -503,6 +582,7 @@ export default function ClothingSection() {
             </div>
           </div>
         </div>
+        )}
       </div>
     </section>
   );

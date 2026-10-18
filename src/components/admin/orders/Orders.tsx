@@ -18,15 +18,34 @@ import RefundRequestsTab from './RefundRequestsTab';
 import OrderDetailsModal from './OrderDetailsModal';
 import ModesyHeader from '@/components/layout/guest/ModesyHeader';
 import ModesyFooter from '@/components/layout/guest/ModesyFooter';
+import { useAuth } from '@/context/AuthContext';
 
 interface OrdersProps {
   initialTab?: OrderTab;
+  hideHeaderFooter?: boolean;
 }
 
-function OrdersContent({ initialTab = 'orders' }: OrdersProps) {
+function OrdersContent({ initialTab = 'orders', hideHeaderFooter }: OrdersProps) {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+
+  const shouldHideHeaderFooter =
+    hideHeaderFooter ||
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/moderator') ||
+    pathname?.startsWith('/member');
+
+  const homeLink = pathname?.startsWith('/admin')
+    ? '/admin'
+    : pathname?.startsWith('/vendor')
+    ? '/vendor'
+    : pathname?.startsWith('/moderator')
+    ? '/moderator'
+    : pathname?.startsWith('/member')
+    ? '/member'
+    : '/';
 
   const tabParam = searchParams.get('tab') as OrderTab | null;
 
@@ -81,22 +100,19 @@ function OrdersContent({ initialTab = 'orders' }: OrdersProps) {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-gray-800 antialiased">
-      {/* Modesy Header */}
-      <ModesyHeader
-        currentUser={{
-          name: "Trendshop",
-          email: "trendshop@codingest.net",
-          avatar: "/assets/img/trendshop-avatar.jpg",
-          role: "vendor",
-        }}
-        cartCount={3}
-      />
+    <div className={`${shouldHideHeaderFooter ? "w-full" : "min-h-screen"} bg-white flex flex-col font-sans text-gray-800 antialiased`}>
+      {/* Modesy Header (only when not inside layout) */}
+      {!shouldHideHeaderFooter && (
+        <ModesyHeader
+          currentUser={user || undefined}
+          cartCount={3}
+        />
+      )}
 
       <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-6 text-gray-800">
         {/* Breadcrumb matching Screenshot */}
         <nav className="text-[12px] text-gray-500 mb-3 flex items-center gap-1.5 font-normal">
-          <Link href="/" className="text-gray-500 hover:text-[#00a99d] transition-colors">
+          <Link href={homeLink} className="text-gray-500 hover:text-[#00a99d] transition-colors">
             Home
           </Link>
           <span className="text-gray-400">/</span>
@@ -152,13 +168,13 @@ function OrdersContent({ initialTab = 'orders' }: OrdersProps) {
         />
       </main>
 
-      {/* Modesy Footer */}
-      <ModesyFooter />
+      {/* Modesy Footer (only when not inside layout) */}
+      {!shouldHideHeaderFooter && <ModesyFooter />}
     </div>
   );
 }
 
-export default function Orders({ initialTab = 'orders' }: OrdersProps) {
+export default function Orders(props: OrdersProps) {
   return (
     <Suspense
       fallback={
@@ -167,7 +183,7 @@ export default function Orders({ initialTab = 'orders' }: OrdersProps) {
         </div>
       }
     >
-      <OrdersContent initialTab={initialTab} />
+      <OrdersContent {...props} />
     </Suspense>
   );
 }

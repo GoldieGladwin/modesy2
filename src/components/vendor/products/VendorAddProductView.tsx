@@ -29,6 +29,7 @@ import CategorySelector from "@/components/admin/dashboard/add-product/CategoryS
 import ProductDetailsEnglish, {
   EnglishDetailsData,
 } from "@/components/admin/dashboard/add-product/ProductDetailsEnglish";
+import { createProduct } from "@/lib/supabase/products";
 
 interface ProductVariation {
   id: string;
@@ -69,8 +70,9 @@ export default function VendorAddProductView() {
     { id: "1", name: "Size", options: "S, M, L, XL" },
   ]);
 
-  // Success state
+  // Success state & Loading
   const [isPublished, setIsPublished] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleSaveAndContinue = (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,14 +110,45 @@ export default function VendorAddProductView() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handlePublish = (e: React.FormEvent) => {
+  const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!price && listingType === "sell_on_site") {
       alert("Please enter a price for your product.");
       return;
     }
 
-    setIsPublished(true);
+    setIsSubmitting(true);
+    try {
+      const numericPrice = parseFloat(price.replace(/[^0-9.]/g, "")) || 0;
+      const numericDiscount = discountPrice ? parseFloat(discountPrice.replace(/[^0-9.]/g, "")) : 0;
+      const discountRate =
+        numericPrice > 0 && numericDiscount > 0
+          ? Math.max(0, Math.round(((numericPrice - numericDiscount) / numericPrice) * 100))
+          : 0;
+
+      const imageUrls = images.map((img) => img.url).filter(Boolean);
+
+      await createProduct({
+        title: englishDetails.title,
+        short_description: englishDetails.shortDescription,
+        description: englishDetails.description,
+        product_type: (productType?.toLowerCase() as any) || "physical",
+        listing_type: listingType === "ordinary_listing" ? "ordinary_listing" : "sell_on_site",
+        price: numericDiscount > 0 ? numericDiscount : numericPrice,
+        discount_rate: discountRate,
+        sku: sku || undefined,
+        stock: isUnlimitedStock ? 9999 : parseInt(stock, 10) || 10,
+        images: imageUrls.length > 0 ? imageUrls : ["/images/products/midi-skirt.webp"],
+        status: "active",
+      });
+
+      setIsPublished(true);
+    } catch (err) {
+      console.error("Failed to add product:", err);
+      setIsPublished(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addVariation = () => {

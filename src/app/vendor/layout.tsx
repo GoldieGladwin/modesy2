@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const VENDOR_USER = {
   name: "Trendshop",
-  email: "trendshop@codingest.net",
+  email: "trendshop@gmail.com",
   role: "vendor" as const,
   avatar: "/assets/img/trendshop-avatar.jpg",
 };
@@ -23,8 +23,14 @@ export default function VendorLayout({
   const isDashboard = pathname?.startsWith("/vendor/dashboard");
 
   useEffect(() => {
-    // Automatically authenticate as vendor when in /vendor area without needing manual login
-    if (!user || user.role !== "vendor") {
+    // If user is already authenticated as vendor or admin, preserve their active session
+    if (user?.role === "vendor" || user?.role === "admin") {
+      return;
+    }
+
+    // In demo mode, only fallback if no user is authenticated and has not explicitly logged out
+    const isExplicitLogout = typeof window !== "undefined" && sessionStorage.getItem("modesy_explicit_logout") === "true";
+    if (!user && !isExplicitLogout) {
       login(VENDOR_USER);
     }
   }, [user, login]);

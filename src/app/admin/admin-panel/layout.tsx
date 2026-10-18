@@ -2,15 +2,33 @@
 
 import AdminPanelNavbar from "@/components/admin/AdminPanelNavbar";
 import AdminPanelSidebar from "@/components/admin/AdminPanelSidebar";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function AdminPanelLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useAuth();
+  const router = useRouter();
+
   // State untuk mengontrol buka/tutup sidebar (default true / terbuka di desktop)
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Guard: if user is not admin/moderator or explicitly logged out, redirect to admin login
+  useEffect(() => {
+    const isExplicitLogout =
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("modesy_explicit_logout") === "true";
+    if (
+      isExplicitLogout ||
+      (user && user.role !== "admin" && user.role !== "moderator")
+    ) {
+      router.push("/admin/login");
+    }
+  }, [user, router]);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);

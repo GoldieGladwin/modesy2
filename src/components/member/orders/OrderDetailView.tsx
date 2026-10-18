@@ -422,7 +422,7 @@ export default function OrderDetailView({ orderId = "10044" }: OrderDetailViewPr
               </div>
               <div className="flex">
                 <span className="w-36 text-gray-500 font-normal">Email</span>
-                <span className="text-gray-900 font-normal">test@codingest.net</span>
+                <span className="text-gray-900 font-normal">test@gmail.com</span>
               </div>
               <div className="flex">
                 <span className="w-36 text-gray-500 font-normal">Phone Number</span>
@@ -467,7 +467,7 @@ export default function OrderDetailView({ orderId = "10044" }: OrderDetailViewPr
               </div>
               <div className="flex">
                 <span className="w-36 text-gray-500 font-normal">Email</span>
-                <span className="text-gray-900 font-normal">test@codingest.net</span>
+                <span className="text-gray-900 font-normal">test@gmail.com</span>
               </div>
               <div className="flex">
                 <span className="w-36 text-gray-500 font-normal">Phone Number</span>

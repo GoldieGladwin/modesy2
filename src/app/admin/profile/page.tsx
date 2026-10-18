@@ -416,10 +416,10 @@ export default function AdminProfilePage() {
                 <div className="flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-[#555555]" />
                   <a
-                    href="mailto:admin@codingest.net"
+                    href="mailto:admin@gmail.com"
                     className="hover:text-[#00a99d] transition-colors text-[#555555]"
                   >
-                    admin@codingest.net
+                    admin@gmail.com
                   </a>
                 </div>
               </div>
@@ -871,7 +871,7 @@ export default function AdminProfilePage() {
             <div>
               <h3 className="text-[16px] font-bold text-[#222222] mb-2">Customer Support</h3>
               <p className="text-[13px] leading-relaxed text-[#666666]">
-                Our support team is available Monday through Friday, 9:00 AM – 6:00 PM EST. For any inquiries regarding orders, products, or shipping, please reach out via email at admin@codingest.net.
+                Our support team is available Monday through Friday, 9:00 AM – 6:00 PM EST. For any inquiries regarding orders, products, or shipping, please reach out via email at admin@gmail.com.
               </p>
             </div>
           </div>

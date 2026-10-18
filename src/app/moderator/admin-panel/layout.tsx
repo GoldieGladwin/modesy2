@@ -2,14 +2,32 @@
 
 import ModeratorPanelNavbar from "@/components/moderator/ModeratorPanelNavbar";
 import ModeratorPanelSidebar from "@/components/moderator/ModeratorPanelSidebar";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function ModeratorPanelLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useAuth();
+  const router = useRouter();
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Guard: if user is not moderator/admin or explicitly logged out, redirect to admin login
+  useEffect(() => {
+    const isExplicitLogout =
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("modesy_explicit_logout") === "true";
+    if (
+      isExplicitLogout ||
+      (user && user.role !== "moderator" && user.role !== "admin")
+    ) {
+      router.push("/admin/login");
+    }
+  }, [user, router]);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);

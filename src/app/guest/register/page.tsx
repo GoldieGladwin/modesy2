@@ -27,9 +27,9 @@ export default function RegisterPage() {
       <main className="max-w-md w-full mx-auto px-4 py-8 sm:py-12 flex-1 flex flex-col justify-center">
         <RegisterForm
           onOpenLoginModal={openLoginModal}
-          onSuccess={(user) => {
-            login(user);
-            setTimeout(() => router.push("/guest"), 1000);
+          onSuccess={async (user) => {
+            await login(user);
+            setTimeout(() => router.push("/guest"), 800);
           }}
         />
       </main>

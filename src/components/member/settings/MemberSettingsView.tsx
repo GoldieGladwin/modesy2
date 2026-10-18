@@ -83,7 +83,7 @@ export default function MemberSettingsView() {
   // ======================== TAB 1: UPDATE PROFILE STATE ========================
   const [avatarImage, setAvatarImage] = useState<string>("/images/peter-jone-avatar.jpg");
   const [coverImage, setCoverImage] = useState<string | null>(null);
-  const [emailAddress, setEmailAddress] = useState("member@codingest.net");
+  const [emailAddress, setEmailAddress] = useState("member@gmail.com");
   const [slug, setSlug] = useState("peter-jone");
   const [firstName, setFirstName] = useState("Peter");
   const [lastName, setLastName] = useState("Jone");
@@ -136,10 +136,10 @@ export default function MemberSettingsView() {
       title: "Home",
       fullName: "Peter Jone",
       addressLine: "Test Address d4141 Centre/Centre/France",
-      contact: "test@codingest.net 876 4766 8978",
+      contact: "test@gmail.com 876 4766 8978",
       firstName: "Peter",
       lastName: "Jone",
-      email: "test@codingest.net",
+      email: "test@gmail.com",
       phoneNumber: "876 4766 8978",
       country: "France",
       state: "Centre",
@@ -182,7 +182,7 @@ export default function MemberSettingsView() {
       title: "Home",
       firstName: "Peter",
       lastName: "Jone",
-      email: "member@codingest.net",
+      email: "member@gmail.com",
       phoneNumber: "876 677 897",
       country: "France",
       state: "Centre",
@@ -199,7 +199,7 @@ export default function MemberSettingsView() {
       title: addr.title,
       firstName: addr.firstName || "Peter",
       lastName: addr.lastName || "Jone",
-      email: addr.email || "test@codingest.net",
+      email: addr.email || "test@gmail.com",
       phoneNumber: addr.phoneNumber || "876 4766 8978",
       country: addr.country || "France",
       state: addr.state || "Centre",

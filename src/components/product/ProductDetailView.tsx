@@ -25,11 +25,21 @@ import {
 import ModesyHeader from "@/components/layout/guest/ModesyHeader";
 import ModesyFooter from "@/components/layout/guest/ModesyFooter";
 import LoginModal from "@/components/auth/LoginModal";
+import { useAuth } from "@/context/AuthContext";
+import { toggleWishlist, getLocalWishlistIds } from "@/lib/supabase/wishlist";
+import {
+  getProductReviews,
+  addProductReview,
+  getProductComments,
+  addProductComment,
+} from "@/lib/supabase/reviews";
 import {
   getProductByIdOrSlug,
   DetailedProduct,
   DETAILED_PRODUCTS,
 } from "@/data/productsRegistry";
+import { getProductBySlugOrId } from "@/lib/supabase/products";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 interface ProductDetailViewProps {
   productId?: number | string;
@@ -54,8 +64,9 @@ export default function ProductDetailView({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Resolve current product from registry
-  const product: DetailedProduct = getProductByIdOrSlug(productId);
+  // Resolve current product from registry or dynamic state
+  const initialProduct = getProductByIdOrSlug(productId);
+  const [product, setProduct] = useState<DetailedProduct>(initialProduct);
 
   // Gallery
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -63,12 +74,48 @@ export default function ProductDetailView({
   // Sizing & Variants
   const initialSkuParam = searchParams.get("sku");
   const [selectedSize, setSelectedSize] = useState<string>(
-    product.sizes && product.sizes.length > 0 ? product.sizes[0] : ""
+    initialProduct.sizes && initialProduct.sizes.length > 0 ? initialProduct.sizes[0] : ""
   );
   const [selectedColor, setSelectedColor] = useState<string>(
-    product.colors && product.colors.length > 0 ? product.colors[0].name : ""
+    initialProduct.colors && initialProduct.colors.length > 0 ? initialProduct.colors[0].name : ""
   );
 
+  useEffect(() => {
+    const resolved = getProductByIdOrSlug(productId);
+    setProduct(resolved);
+    setActiveImageIndex(0);
+    setSelectedSize(resolved.sizes && resolved.sizes.length > 0 ? resolved.sizes[0] : "");
+    setSelectedColor(resolved.colors && resolved.colors.length > 0 ? resolved.colors[0].name : "");
+
+    if (isSupabaseConfigured() && typeof productId === "string") {
+      getProductBySlugOrId(productId).then(({ data }) => {
+        if (data) {
+          const imgs =
+            data.product_images && data.product_images.length > 0
+              ? data.product_images.map((i: any) => i.image_url)
+              : [resolved.image];
+
+          setProduct((prev) => ({
+            ...prev,
+            slug: data.slug || prev.slug,
+            title: data.title || prev.title,
+            price: `$${Number(data.price).toFixed(2)}`,
+            sku: data.sku || prev.sku,
+            description: data.description || data.short_description || prev.description,
+            image: imgs[0] || prev.image,
+            images: imgs,
+            seller: data.profiles?.username || prev.seller,
+            category: data.categories?.name || prev.category,
+            rating: Number(data.rating_avg) || prev.rating,
+            reviewsCount: data.review_count || prev.reviewsCount,
+            status: data.stock > 0 ? "In Stock" : "Out of Stock",
+          }));
+        }
+      });
+    }
+  }, [productId]);
+
+  const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const initialTabParam = searchParams.get("tab");
@@ -137,11 +184,21 @@ export default function ProductDetailView({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Reset product state when product changes
+  // Reset product state when product changes & load persistent reviews/comments
   useEffect(() => {
     setActiveImageIndex(0);
-    setReviewsList(product.reviews || []);
-    setCommentsList(product.comments || []);
+    let isMounted = true;
+
+    getProductReviews(product.id, product.reviews || []).then((revs) => {
+      if (isMounted) setReviewsList(revs);
+    });
+
+    getProductComments(product.id, product.comments || []).then((cmts) => {
+      if (isMounted) setCommentsList(cmts);
+    });
+
+    setIsWishlisted(getLocalWishlistIds().includes(String(product.id)));
+
     if (product.sizes && product.sizes.length > 0) {
       if (initialSkuParam) {
         const foundSize = product.sizes.find((s) => initialSkuParam.endsWith(`-${s}`));
@@ -158,6 +215,10 @@ export default function ProductDetailView({
     } else {
       setSelectedColor("");
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [product.id, initialSkuParam]);
 
   // Compute SKU
@@ -203,42 +264,49 @@ export default function ProductDetailView({
     triggerToast(`Added ${quantity} "${product.title}" to Cart!`);
   };
 
-  const handleToggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+  const handleToggleWishlist = async () => {
+    const res = await toggleWishlist(product.id, user?.id);
+    setIsWishlisted(res.isWishlisted);
     triggerToast(
-      !isWishlisted ? "Added to wishlist!" : "Removed from wishlist!"
+      res.isWishlisted ? "Added to wishlist!" : "Removed from wishlist!"
     );
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim()) return;
-    setCommentsList([
-      ...commentsList,
+    const authorName = commentName.trim() || user?.name || "Guest";
+    const updated = await addProductComment(
+      product.id,
       {
-        name: commentName || "Guest",
-        date: "Just now",
+        name: authorName,
+        email: commentEmail,
         text: commentText,
       },
-    ]);
+      user?.id
+    );
+    setCommentsList(updated);
     setCommentName("");
     setCommentEmail("");
     setCommentText("");
     triggerToast("Comment submitted successfully!");
   };
 
-  const handleAddReview = (e: React.FormEvent) => {
+  const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewText.trim()) return;
-    setReviewsList([
+    const authorName = user?.name || "You";
+    const updated = await addProductReview(
+      product.id,
       {
-        author: "You",
+        author: authorName,
         rating: reviewRating,
-        date: "Just now",
         text: reviewText,
+        avatar: user?.avatar,
       },
-      ...reviewsList,
-    ]);
+      user?.id
+    );
+    setReviewsList(updated);
     setReviewText("");
     setIsReviewModalOpen(false);
     triggerToast("Thank you for your review!");
@@ -255,7 +323,7 @@ export default function ProductDetailView({
       <ModesyHeader
         currentUser={{
           name: "Trendshop",
-          email: "trendshop@codingest.net",
+          email: "trendshop@gmail.com",
           avatar: "/assets/img/trendshop-avatar.jpg",
           role: "vendor",
         }}

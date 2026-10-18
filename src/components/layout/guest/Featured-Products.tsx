@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Star, Heart, ChevronDown, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { getProducts } from "@/lib/supabase/products";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 type Product = {
   id: string;
@@ -20,153 +22,66 @@ type Product = {
   fallbackHoverImageUrl?: string;
 };
 
-const products: Product[] = [
-  {
-    id: "41",
-    title: "Black midi skirt with white flowers",
-    seller: "Trendshop",
-    rating: 4,
-    favoriteCount: 12,
-    currentPrice: "$48",
-    originalPrice: "$55",
-    imageUrl: "/images/products/midi-skirt.webp",
-    hoverImageUrl: "/images/products/floral-sundress-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b48564a31327-49271135.webp",
-  },
-  {
-    id: "42",
-    title: "Handcrafted decorative pillow for a luxurious touch",
-    seller: "Admin",
-    rating: 5,
-    favoriteCount: 8,
-    currentPrice: "$59",
-    originalPrice: "$69",
-    imageUrl: "/images/products/pillow.webp",
-    hoverImageUrl: "/images/products/pillow-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b483286b2598-48004230.webp",
-  },
-  {
-    id: "38",
-    title: "Floral women sundress",
-    seller: "Admin",
-    rating: 4,
-    favoriteCount: 15,
-    currentPrice: "$80",
-    originalPrice: "$89",
-    imageUrl: "/images/products/floral-sundress.webp",
-    hoverImageUrl: "/images/products/floral-sundress-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b4782b9f3272-81456431.webp",
-  },
-  {
-    id: "47",
-    title: "Women elegant knitted scarves",
-    seller: "Trendshop",
-    rating: 5,
-    favoriteCount: 6,
-    currentPrice: "$29",
-    imageUrl: "/images/products/scarves.webp",
-    hoverImageUrl: "/images/products/scarves-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b444b8350808-17188737.webp",
-  },
-  {
-    id: "37",
-    title: "Leather brown bootie and boots",
-    seller: "Trendshop",
-    rating: 5,
-    favoriteCount: 19,
-    currentPrice: "$89",
-    originalPrice: "$100",
-    imageUrl: "/images/products/brown-bootie.webp",
-    hoverImageUrl: "/images/products/brown-bootie-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b4201f177942-79779282.webp",
-  },
-  {
-    id: "1",
-    title: "Women kipling bailey saddle handbag",
-    seller: "Admin",
-    rating: 4,
-    favoriteCount: 22,
-    currentPrice: "$59",
-    originalPrice: "$69",
-    imageUrl: "/images/products/kipling-bag.webp",
-    hoverImageUrl: "/images/products/kipling-bag-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b47ead253a50-47019432.webp",
-  },
-  {
-    id: "70",
-    title: "Cobalt man t-shirt all colors",
-    seller: "Admin",
-    rating: 4,
-    favoriteCount: 5,
-    currentPrice: "Request a Quote",
-    imageUrl: "/images/products/cobalt-man-tshirt.webp",
-    hoverImageUrl: "/images/products/cobalt-man-tshirt-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b42a279b91f6-61790023.webp",
-  },
-  {
-    id: "39",
-    title: "Adorable cat artwork illustration prints",
-    seller: "Admin",
-    rating: 5,
-    favoriteCount: 14,
-    currentPrice: "Free",
-    imageUrl: "/images/products/cat-art.webp",
-    hoverImageUrl: "/images/products/cat-art-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b47e4f83c917-29188591.webp",
-  },
-  {
-    id: "36",
-    title: "Sailing ship art poster print",
-    seller: "Admin",
-    rating: 4,
-    favoriteCount: 7,
-    currentPrice: "$15",
-    originalPrice: "$34",
-    imageUrl: "/images/products/ship-art.webp",
-    hoverImageUrl: "/images/products/cat-art-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b411ed6f0554-72302953.webp",
-  },
-  {
-    id: "44",
-    title: "Grey comfortable sofa couch",
-    seller: "Trendshop",
-    rating: 5,
-    favoriteCount: 11,
-    currentPrice: "$210",
-    originalPrice: "$250",
-    imageUrl: "/images/products/grey-couch.webp",
-    hoverImageUrl: "/images/products/pillow.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b483286b2598-48004230.webp",
-  },
-  {
-    id: "25",
-    title: "Light blue women shirt",
-    seller: "Trendshop",
-    rating: 5,
-    favoriteCount: 9,
-    currentPrice: "$49",
-    originalPrice: "$69",
-    imageUrl: "/images/products/light-blue-shirt.webp",
-    hoverImageUrl: "/images/products/light-blue-shirt-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b48564a31327-49271135.webp",
-  },
-  {
-    id: "19",
-    title: "Summer fashion top lace blouse",
-    seller: "Trendshop",
-    rating: 5,
-    favoriteCount: 18,
-    currentPrice: "$65",
-    originalPrice: "$79",
-    imageUrl: "/images/products/summer-top-lace.webp",
-    hoverImageUrl: "/images/products/summer-top-lace-hover.webp",
-    fallbackImageUrl: "https://modesy.codingest.net/uploads/images/202508/img_w480_68b4201f177942-79779282.webp",
-  },
-];
-
 export default function FeaturedProducts() {
   const { addToCart } = useCart();
+  const [productList, setProductList] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    async function loadFeatured() {
+      if (isSupabaseConfigured()) {
+        try {
+          let { data } = await getProducts({ isFeatured: true, status: "active", limit: 12 });
+          // If no featured flag set on some products, load latest active
+          if (!data || data.length === 0) {
+            const fallback = await getProducts({ status: "active", limit: 12 });
+            data = fallback.data;
+          }
+
+          if (data && data.length > 0) {
+            const liveProducts: Product[] = data.map((p) => {
+              const sortedImages = p.product_images
+                ? [...p.product_images].sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+                : [];
+              const primary =
+                sortedImages.find((img) => img.is_primary)?.image_url ||
+                sortedImages[0]?.image_url ||
+                "/images/products/midi-skirt.webp";
+              const secondary = sortedImages[1]?.image_url || primary;
+
+              const isQuote = p.listing_type === "ordinary_listing" || Number(p.price) === 0;
+              const formattedPrice = isQuote ? "Request a Quote" : `$${Math.round(Number(p.price))}`;
+              const origPrice = Number(p.discount_rate) > 0 && !isQuote
+                ? `$${Math.round(Number(p.price) / (1 - Number(p.discount_rate) / 100))}`
+                : undefined;
+
+              return {
+                id: p.slug || p.id,
+                title: p.title,
+                seller: p.profiles?.username || "Trendshop",
+                rating: Number(p.rating_avg) || 5,
+                reviewsCount: p.review_count || 0,
+                favoriteCount: 12,
+                currentPrice: formattedPrice,
+                originalPrice: origPrice,
+                imageUrl: primary,
+                hoverImageUrl: secondary,
+              };
+            });
+            setProductList(liveProducts);
+          }
+        } catch (e) {
+          console.error("Error loading featured products from database:", e);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    }
+    loadFeatured();
+  }, []);
 
   const toggleLike = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -181,10 +96,26 @@ export default function FeaturedProducts() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
       <h2 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">Featured Products</h2>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {products.map((product) => {
-          const isLiked = !!likedMap[product.id];
-          const displayLikes = product.favoriteCount + (isLiked ? 1 : 0);
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white border border-gray-200 rounded-[4px] p-2 animate-pulse space-y-2">
+              <div className="aspect-[4/5] bg-gray-100 rounded-[3px]" />
+              <div className="h-3.5 bg-gray-200 rounded w-3/4 mt-2" />
+              <div className="h-3 bg-gray-100 rounded w-1/2" />
+              <div className="h-4 bg-gray-200 rounded w-1/3 mt-2" />
+            </div>
+          ))}
+        </div>
+      ) : productList.length === 0 ? (
+        <div className="text-center py-10 text-gray-400 bg-white border border-gray-200 rounded-[4px] text-sm">
+          No featured products found in database.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {productList.map((product) => {
+            const isLiked = !!likedMap[product.id];
+            const displayLikes = product.favoriteCount + (isLiked ? 1 : 0);
 
           return (
             <div
@@ -323,6 +254,7 @@ export default function FeaturedProducts() {
           );
         })}
       </div>
+      )}
       
       <div className="mt-8 flex justify-center">
         <button

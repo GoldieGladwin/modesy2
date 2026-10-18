@@ -5,7 +5,7 @@ import ModesyHeader from "@/components/layout/guest/ModesyHeader";
 
 const DEFAULT_VENDOR = {
   name: "Trendshop",
-  email: "trendshop@codingest.net",
+  email: "trendshop@gmail.com",
   role: "vendor" as const,
   avatar: "/assets/img/trendshop-avatar.jpg",
 };
@@ -15,7 +15,7 @@ interface VendorHeaderProps {
     email: string;
     name: string;
     avatar?: string;
-    role?: "admin" | "vendor" | "user";
+    role?: "admin" | "vendor" | "member" | "moderator";
   } | null;
 }
 

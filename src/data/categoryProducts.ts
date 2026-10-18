@@ -240,7 +240,7 @@ export const CATEGORY_PRODUCTS: CategoryProduct[] = [
     brand: "Hugo Boss",
   },
   {
-    id: 1,
+    id: 70,
     title: "Cobalt man t-shirt all colors",
     seller: "Admin",
     image: "/images/products/cobalt-man-tshirt.webp",

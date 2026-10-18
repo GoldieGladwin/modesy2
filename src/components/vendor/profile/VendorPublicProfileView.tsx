@@ -825,10 +825,10 @@ function VendorPublicProfileInner({
                 <div className="flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-gray-400" />
                   <a
-                    href="mailto:trendshop@codingest.net"
+                    href="mailto:trendshop@gmail.com"
                     className="text-gray-600 hover:text-[#20c997] transition-colors"
                   >
-                    trendshop@codingest.net
+                    trendshop@gmail.com
                   </a>
                 </div>
               </div>

@@ -9,6 +9,8 @@ import ProductPromoteModal from "./ProductPromoteModal";
 import ProductDeleteModal from "./ProductDeleteModal";
 import { ProductFilterState, ProductItem } from "./types";
 import { initialDashboardProducts } from "./mockData";
+import { getProducts, deleteProduct, createProduct, updateProduct } from "@/lib/supabase/products";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 import { matchesProductCategory } from "./categoryData";
 
@@ -38,6 +40,44 @@ function ProductsContainerContent({
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [promoteProduct, setPromoteProduct] = useState<ProductItem | null>(null);
   const [deleteProductTarget, setDeleteProductTarget] = useState<ProductItem | null>(null);
+
+  useEffect(() => {
+    async function loadSupabaseProducts() {
+      if (isSupabaseConfigured()) {
+        try {
+          const { data } = await getProducts();
+          if (data && data.length > 0) {
+            const mapped: ProductItem[] = data.map((db, idx) => {
+              const primaryImg =
+                db.product_images?.find((img) => img.is_primary)?.image_url ||
+                db.product_images?.[0]?.image_url ||
+                "/images/products/midi-skirt.webp";
+
+              return {
+                id: idx + 1000,
+                uuid: db.id,
+                title: db.title,
+                sku: db.sku || "",
+                productType: db.product_type === "digital" ? "Digital" : "Physical",
+                listingType: db.listing_type === "sell_on_site" ? "Sell Now" : "Classified Ads",
+                category: db.categories?.name || "General",
+                price: `$${Number(db.price).toFixed(2)}`,
+                stock: db.stock > 0 ? `In Stock (${db.stock})` : "Out of Stock",
+                pageViews: Number(db.views_count) || 0,
+                date: new Date(db.created_at).toISOString().slice(0, 10),
+                isFeatured: db.is_featured,
+                image: primaryImg,
+              };
+            });
+            setProducts(mapped);
+          }
+        } catch (e) {
+          console.error("Error loading products from Supabase:", e);
+        }
+      }
+    }
+    loadSupabaseProducts();
+  }, []);
 
   useEffect(() => {
     if (pageParam) {
@@ -196,11 +236,26 @@ function ProductsContainerContent({
     router.push(`/dashboard/edit_product/${prod.id}`);
   };
 
-  const handleClone = (prod: ProductItem) => {
+  const handleClone = async (prod: ProductItem) => {
     const newId = Math.max(...products.map((p) => p.id), 0) + 1;
+    let newUuid: string | undefined;
+
+    if (isSupabaseConfigured()) {
+      const priceNum = parseFloat(prod.price.replace(/[^0-9.]/g, "")) || 0;
+      const { data } = await createProduct({
+        title: `${prod.title} (Copy)`,
+        sku: `${prod.sku || "PROD"}-COPY`,
+        price: priceNum,
+        product_type: prod.productType === "Digital" ? "digital" : "physical",
+        images: prod.image ? [prod.image] : undefined,
+      });
+      if (data) newUuid = data.id;
+    }
+
     const cloned: ProductItem = {
       ...prod,
       id: newId,
+      uuid: newUuid,
       title: `${prod.title} (Copy)`,
       sku: `${prod.sku}-COPY`,
       date: new Date().toISOString().slice(0, 10) + " / 12:00",
@@ -216,14 +271,21 @@ function ProductsContainerContent({
     }
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (deleteProductTarget) {
+      if (deleteProductTarget.uuid) {
+        await deleteProduct(deleteProductTarget.uuid);
+      }
       setProducts((prev) => prev.filter((p) => p.id !== deleteProductTarget.id));
       setDeleteProductTarget(null);
     }
   };
 
-  const handlePromoteSuccess = (id: number, planName: string) => {
+  const handlePromoteSuccess = async (id: number, planName: string) => {
+    const target = products.find((p) => p.id === id);
+    if (target?.uuid) {
+      await updateProduct({ id: target.uuid, is_promoted: true, is_featured: true });
+    }
     setProducts((prev) =>
       prev.map((p) =>
         p.id === id ? { ...p, purchasedPlan: planName, isFeatured: true } : p

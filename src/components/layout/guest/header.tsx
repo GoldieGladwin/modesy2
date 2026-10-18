@@ -25,7 +25,7 @@ interface HeaderProps {
     email: string;
     name: string;
     avatar?: string;
-    role?: "admin" | "vendor" | "user";
+    role?: "admin" | "vendor" | "member" | "moderator";
   } | null;
   onLogout?: () => void;
   cartCount?: number;
@@ -165,7 +165,82 @@ export default function Header({
     },
   ];
 
-  const activeProfileMenus = isVendor ? vendorProfileMenus : adminProfileMenus;
+  // Member dropdown menus
+  const memberProfileMenus = [
+    {
+      title: "Profile",
+      href: "/member/profile",
+      icon: User,
+    },
+    {
+      title: "Wallet",
+      href: "/member/wallet",
+      icon: Wallet,
+    },
+    {
+      title: "Orders",
+      href: "/member/orders",
+      icon: ShoppingBasket,
+    },
+    {
+      title: "My Coupons",
+      href: "/member/my-coupons",
+      icon: Tag,
+    },
+    {
+      title: "Messages",
+      href: "/member/messages",
+      icon: MessageSquare,
+    },
+    {
+      title: "Profile Settings",
+      href: "/member/settings",
+      icon: Settings,
+    },
+    {
+      title: "Logout",
+      href: "#logout",
+      icon: LogOut,
+    },
+  ];
+
+  // Moderator dropdown menus
+  const moderatorProfileMenus = [
+    {
+      title: "Moderator Panel",
+      href: "/moderator/admin-panel",
+      icon: Layers,
+    },
+    {
+      title: "Profile",
+      href: "/admin/profile",
+      icon: User,
+    },
+    {
+      title: "Messages",
+      href: "/admin/messages",
+      icon: MessageSquare,
+    },
+    {
+      title: "Profile Settings",
+      href: "/admin/profile-settings",
+      icon: Settings,
+    },
+    {
+      title: "Logout",
+      href: "#logout",
+      icon: LogOut,
+    },
+  ];
+
+  const activeProfileMenus =
+    effectiveUser?.role === "vendor"
+      ? vendorProfileMenus
+      : effectiveUser?.role === "moderator"
+      ? moderatorProfileMenus
+      : effectiveUser?.role === "member"
+      ? memberProfileMenus
+      : adminProfileMenus;
 
   const currencyRef = useRef<HTMLDivElement>(null);
   const languageRef = useRef<HTMLDivElement>(null);

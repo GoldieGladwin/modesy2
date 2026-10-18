@@ -3,22 +3,77 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
-  SPECIAL_OFFERS,
   PROMO_BANNERS,
+  SpecialOfferProduct,
 } from "@/data/specialOffers";
 import { useCart } from "@/context/CartContext";
+import { getProducts } from "@/lib/supabase/products";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 export default function SpecialOffers() {
   const { addToCart } = useCart();
-  const baseCount = SPECIAL_OFFERS.length;
-  // 3 duplicate sets of products for seamless infinite loop
-  const extendedProducts = [
-    ...SPECIAL_OFFERS,
-    ...SPECIAL_OFFERS,
-    ...SPECIAL_OFFERS,
-  ];
+  const [products, setProducts] = useState<SpecialOfferProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [currentIndex, setCurrentIndex] = useState(baseCount);
+  useEffect(() => {
+    async function loadOffers() {
+      if (isSupabaseConfigured()) {
+        try {
+          let { data } = await getProducts({ isSpecialOffer: true, status: "active", limit: 18 });
+          if (!data || data.length === 0) {
+            const fallback = await getProducts({ status: "active", limit: 18 });
+            data = fallback.data;
+          }
+          if (data && data.length > 0) {
+            const mapped: SpecialOfferProduct[] = data.map((p) => {
+              const sortedImages = p.product_images
+                ? [...p.product_images].sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+                : [];
+              const primary =
+                sortedImages.find((img) => img.is_primary)?.image_url ||
+                sortedImages[0]?.image_url ||
+                "/images/products/midi-skirt.webp";
+
+              const disc = Number(p.discount_rate) > 0 ? Math.round(Number(p.discount_rate)) : 10;
+              const priceNum = Math.round(Number(p.price));
+              const origNum = Math.round(priceNum / (1 - disc / 100));
+
+              return {
+                id: (p.slug || p.id) as any,
+                title: p.title,
+                badge: `-${disc}%`,
+                image: primary,
+                seller: p.profiles?.username || "Trendshop",
+                rating: Number(p.rating_avg) || 5,
+                wishlist: 0,
+                price: `$${priceNum}`,
+                originalPrice: `$${origNum}`,
+              };
+            });
+            setProducts(mapped);
+            setCurrentIndex(mapped.length);
+          }
+        } catch (e) {
+          console.error("Error loading special offers:", e);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    }
+    loadOffers();
+  }, []);
+
+  const baseCount = products.length;
+  // 3 duplicate sets of products for seamless infinite loop
+  const extendedProducts = products.length > 0 ? [
+    ...products,
+    ...products,
+    ...products,
+  ] : [];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [isMoving, setIsMoving] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -184,7 +239,19 @@ export default function SpecialOffers() {
         </h3>
       </div>
 
-      {/* CAROUSEL CONTAINER */}
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 py-2">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white border border-gray-200 rounded-[4px] p-2 animate-pulse space-y-2">
+              <div className="aspect-square bg-gray-100 rounded-[3px]" />
+              <div className="h-3.5 bg-gray-200 rounded w-3/4 mt-2" />
+              <div className="h-3 bg-gray-100 rounded w-1/2" />
+              <div className="h-4 bg-gray-200 rounded w-1/3 mt-2" />
+            </div>
+          ))}
+        </div>
+      ) : products.length === 0 ? null : (
+      /* CAROUSEL CONTAINER */
       <div
         className="relative group/carousel select-none px-1"
         onMouseEnter={() => setIsHovered(true)}
@@ -406,6 +473,7 @@ export default function SpecialOffers() {
           </svg>
         </button>
       </div>
+      )}
 
       {/* PROMO BANNERS SECTION (BELOW SPECIAL OFFERS) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">

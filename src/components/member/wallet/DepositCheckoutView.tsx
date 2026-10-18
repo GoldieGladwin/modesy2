@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, CreditCard, ChevronRight, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { addWalletDeposit } from "@/lib/supabase/wallet";
 
 interface PaymentGatewayOption {
   id: string;
@@ -160,56 +162,33 @@ export default function DepositCheckoutView() {
     setStep(2);
   };
 
-  const handleProcessPayment = () => {
+  const { user } = useAuth();
+
+  const handleProcessPayment = async () => {
     setIsProcessing(true);
+    const isBank = selectedGateway === "bank_transfer";
+    const paymentMethodName = isBank
+      ? "Bank Transfer"
+      : gateways.find((g) => g.id === selectedGateway)?.name || "PayPal";
+
+    await addWalletDeposit(
+      {
+        amount: depositAmount,
+        paymentMethod: paymentMethodName,
+        isReported: false,
+      },
+      user?.id,
+      "member"
+    );
 
     setTimeout(() => {
-      // Save new deposit to localStorage
-      try {
-        const saved = localStorage.getItem("modesy_member_wallet");
-        let balance = 9.95;
-        let deposits = [];
-
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          balance = parsed.balance || 9.95;
-          deposits = parsed.deposits || [];
-        }
-
-        const isBank = selectedGateway === "bank_transfer";
-        const newBalance = isBank ? balance : balance + depositAmount;
-
-        const newDeposit = {
-          id: `dep-${Date.now()}`,
-          paymentId: `BTR-${Math.random().toString(36).substring(2, 12).toUpperCase()}`,
-          paymentMethod: isBank
-            ? "Bank Transfer"
-            : gateways.find((g) => g.id === selectedGateway)?.name || "PayPal",
-          amount: depositAmount,
-          currency: "USD",
-          status: isBank ? "Pending Payment" : "Completed",
-          isReported: false,
-          date: new Date().toISOString().slice(0, 10) + " / " + new Date().toTimeString().slice(0, 5),
-        };
-
-        localStorage.setItem(
-          "modesy_member_wallet",
-          JSON.stringify({
-            balance: newBalance,
-            deposits: [newDeposit, ...deposits],
-          })
-        );
-      } catch (e) {
-        console.error("Failed to update wallet", e);
-      }
-
       setIsProcessing(false);
-      if (selectedGateway === "bank_transfer") {
+      if (isBank) {
         router.push("/member/wallet?reported=pending");
       } else {
         router.push("/member/wallet?success=true");
       }
-    }, 1200);
+    }, 800);
   };
 
   return (

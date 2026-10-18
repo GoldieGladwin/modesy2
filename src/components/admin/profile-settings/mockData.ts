@@ -7,7 +7,7 @@ import {
 } from "./types";
 
 export const initialProfileData: ProfileSettingsData = {
-  email: "admin@codingest.net",
+  email: "admin@gmail.com",
   slug: "admin",
   firstName: "John",
   lastName: "Doe",
@@ -41,7 +41,7 @@ export const initialAddresses: AddressItem[] = [
     city: "Tampa",
     state: "Florida",
     country: "United States",
-    email: "test@codingest.net",
+    email: "test@gmail.com",
     phone: "3634534543",
   },
   {
@@ -55,7 +55,7 @@ export const initialAddresses: AddressItem[] = [
     city: "Indian Harbour Beach",
     state: "Florida",
     country: "United States",
-    email: "test@codingest.net",
+    email: "test@gmail.com",
     phone: "03634534543",
   },
   {
@@ -69,7 +69,7 @@ export const initialAddresses: AddressItem[] = [
     city: "Indian Harbour Beach",
     state: "Florida",
     country: "United States",
-    email: "test@codingest.net",
+    email: "test@gmail.com",
     phone: "03634534543",
   },
 ];

@@ -9,6 +9,15 @@ import NewPayoutModal from "@/components/admin/wallet/NewPayoutModal";
 import InvoiceModal from "@/components/admin/wallet/InvoiceModal";
 import { DepositRecord, PayoutAccountSettings, PayoutRequestRecord, PayoutMethodType } from "@/components/admin/wallet/types";
 import { INITIAL_PAYOUT_SETTINGS } from "@/components/admin/wallet/mockData";
+import { useAuth } from "@/context/AuthContext";
+import {
+  getWalletData,
+  addWalletDeposit,
+  reportBankTransfer,
+  requestPayout,
+  savePayoutSettings,
+  WALLET_CHANGE_EVENT,
+} from "@/lib/supabase/wallet";
 
 export type MemberWalletTab = "deposits" | "expenses" | "payouts" | "set-payout-account";
 
@@ -17,8 +26,9 @@ interface MemberDepositItem extends DepositRecord {
 }
 
 export default function MemberWalletView() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<MemberWalletTab>("deposits");
-  const [balance, setBalance] = useState<number>(9.95);
+  const [balance, setBalance] = useState<number>(45.0);
 
   // Deposits matching Screenshot 1
   const [deposits, setDeposits] = useState<MemberDepositItem[]>([
@@ -114,22 +124,32 @@ export default function MemberWalletView() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Sync with localStorage & URL params
+  // Sync with persistent wallet & URL params
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("modesy_member_wallet");
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (typeof parsed.balance === "number") setBalance(parsed.balance);
-          if (Array.isArray(parsed.deposits) && parsed.deposits.length > 0) {
-            setDeposits(parsed.deposits);
-          }
-        } catch (e) {
-          console.error("Failed to load wallet", e);
-        }
+    let isMounted = true;
+    getWalletData(user?.id, "member").then((data) => {
+      if (isMounted) {
+        setBalance(data.balance);
+        setDeposits(data.deposits);
+        setExpenses(data.expenses);
+        setPayouts(data.payouts);
+        setPayoutSettings(data.payoutSettings);
       }
+    });
 
+    const onWalletChange = (e: any) => {
+      if (e.detail) {
+        setBalance(e.detail.balance);
+        setDeposits(e.detail.deposits);
+        setExpenses(e.detail.expenses);
+        setPayouts(e.detail.payouts);
+        setPayoutSettings(e.detail.payoutSettings);
+      }
+    };
+
+    window.addEventListener(WALLET_CHANGE_EVENT, onWalletChange);
+
+    if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("success") === "true") {
         showToast("Payment completed successfully and funds added to your wallet!");
@@ -139,46 +159,49 @@ export default function MemberWalletView() {
         window.history.replaceState({}, "", window.location.pathname);
       }
     }
-  }, []);
 
-  // Add Funds confirm
-  const handleAddFunds = (amount: number) => {
-    setBalance((prev) => prev + amount);
-    const newDep: MemberDepositItem = {
-      id: `dep-${Date.now()}`,
-      paymentId: `BTR-${Math.random().toString(36).substring(2, 12).toUpperCase()}`,
-      paymentMethod: "Bank Transfer",
-      amount: amount,
-      currency: "USD",
-      status: "Pending Payment",
-      isReported: false,
-      date: new Date().toISOString().slice(0, 10) + " / " + new Date().toTimeString().slice(0, 5),
+    return () => {
+      isMounted = false;
+      window.removeEventListener(WALLET_CHANGE_EVENT, onWalletChange);
     };
-    setDeposits((prev) => [newDep, ...prev]);
-    showToast(`Successfully added deposit request for $${amount.toFixed(2)} USD!`);
+  }, [user?.id]);
+
+  // Add Funds confirm (Persists to DB / LocalStorage)
+  const handleAddFunds = async (amount: number) => {
+    const res = await addWalletDeposit(
+      { amount, paymentMethod: "Bank Transfer", isReported: false },
+      user?.id,
+      "member"
+    );
+    if (res.success) {
+      setBalance(res.newBalance);
+      setDeposits((prev) => [res.deposit, ...prev]);
+      showToast(`Successfully added deposit request for $${amount.toFixed(2)} USD!`);
+    }
   };
 
   // Report Bank Transfer confirm
-  const handleReportBankTransfer = (depositId: string, referenceNo: string, note: string) => {
-    setDeposits((prev) =>
-      prev.map((d) => (d.id === depositId ? { ...d, isReported: true } : d))
-    );
-    showToast(`Bank transfer report has been submitted for review!`);
+  const handleReportBankTransfer = async (depositId: string, referenceNo: string, note: string) => {
+    const res = await reportBankTransfer(depositId, referenceNo, note, user?.id, "member");
+    if (res.success) {
+      setBalance(res.newBalance);
+      setDeposits((prev) =>
+        prev.map((d) => (d.id === depositId ? { ...d, isReported: true, status: "Completed" } : d))
+      );
+      showToast(`Bank transfer report has been submitted for review!`);
+    }
   };
 
   // New Payout Request confirm
-  const handleNewPayoutRequest = (method: string, amount: number) => {
-    setBalance((prev) => Math.max(0, prev - amount));
-    const newReq: PayoutRequestRecord = {
-      id: `pay-${Date.now()}`,
-      withdrawalMethod: method,
-      withdrawalAmount: amount,
-      currency: "USD",
-      status: "Pending",
-      date: new Date().toISOString().slice(0, 10) + " / " + new Date().toTimeString().slice(0, 5),
-    };
-    setPayouts((prev) => [newReq, ...prev]);
-    showToast(`Payout request for $${amount.toFixed(2)} USD placed successfully.`);
+  const handleNewPayoutRequest = async (method: string, amount: number) => {
+    const res = await requestPayout({ amount, method }, user?.id, "member");
+    if (res.success && res.payout) {
+      setBalance(res.newBalance);
+      setPayouts((prev) => [res.payout!, ...prev]);
+      showToast(`Payout request for $${amount.toFixed(2)} USD placed successfully.`);
+    } else if (res.error) {
+      showToast(res.error);
+    }
   };
 
   return (

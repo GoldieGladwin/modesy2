@@ -32,7 +32,7 @@ export default function PendingProductCommentsPage() {
     {
       id: 1,
       name: "Peter Jone",
-      email: "member@codingest.net",
+      email: "member@gmail.com",
       comment: "good",
       url: "#",
       urlText: "Women lace blouse with different colors",
@@ -47,7 +47,7 @@ export default function PendingProductCommentsPage() {
     {
       id: 2,
       name: "Sophia Lauren",
-      email: "member@codingest.net",
+      email: "member@gmail.com",
       comment: "Great material, fits perfectly and very comfortable!",
       url: "#",
       urlText: "Women lace blouse with different colors",
@@ -59,7 +59,7 @@ export default function PendingProductCommentsPage() {
     {
       id: 3,
       name: "David Miller",
-      email: "david.m@codingest.net",
+      email: "david.m@gmail.com",
       comment: "Fast delivery and awesome quality. Highly recommended!",
       url: "#",
       urlText: "Men slim fit business casual shirt",

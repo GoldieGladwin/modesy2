@@ -1,3 +1,9 @@
+import { SPECIAL_OFFERS } from "./specialOffers";
+import { NEW_ARRIVALS_PRODUCTS } from "@/components/home/NewArrivals";
+import { CLOTHING_PRODUCTS } from "@/components/home/ClothingSection";
+import { allProductsData, jewelryProductsData } from "./products";
+import { CATEGORY_PRODUCTS } from "./categoryProducts";
+
 export interface ProductReview {
   author: string;
   avatar?: string;
@@ -458,46 +464,61 @@ export const DETAILED_PRODUCTS: Record<number, DetailedProduct> = {
     comments: [],
   },
 
-  // 10. Women lace blouse with different colors (ID: 25)
+  // 10. Light blue women shirt (ID: 25 - Clothing)
   25: {
     id: 25,
-    slug: "women-lace-blouse-with-different-colors-25",
-    title: "Women lace blouse with different colors",
+    slug: "light-blue-women-shirt-25",
+    title: "Light blue women shirt",
     seller: "Trendshop",
     sellerSlug: "trendshop",
-    image: "/images/products/women-lace-blouse.webp",
-    secondaryImage: "/images/products/women-lace-blouse-hover.webp",
-    images: ["/images/products/women-lace-blouse.webp", "/images/products/women-lace-blouse-hover.webp"],
-    price: "$59",
-    originalPrice: "$70",
-    discountPercent: "-16%",
+    image: "/images/products/light-blue-shirt.webp",
+    secondaryImage: "/images/products/light-blue-shirt-hover.webp",
+    images: [
+      "/images/products/light-blue-shirt.webp",
+      "/images/products/light-blue-shirt-hover.webp",
+    ],
+    price: "$49",
+    originalPrice: "$69",
+    discountPercent: "-29%",
     status: "In Stock",
-    baseSku: "W1L2B3C4O5L6",
-    sku: "W1L2B3C4O5L6-M",
-    category: "Dresses",
+    baseSku: "SH-LB-025",
+    sku: "SH-LB-025-M",
+    category: "Shirts",
     subCategory: "Women's Clothing",
     rootCategory: "Clothing",
     breadcrumb: [
       { label: "Home", href: "/" },
-      { label: "Clothing", href: "/vendor/profile?p_cat=1" },
-      { label: "Women's Clothing", href: "/vendor/profile?p_cat=9" },
-      { label: "Dresses", href: "/vendor/profile?p_cat=42" },
-      { label: "Women lace blouse with different colors", href: "#" },
+      { label: "Clothing", href: "/category/clothing" },
+      { label: "Women's Clothing", href: "/category/womens-clothing" },
+      { label: "Shirts", href: "/category/womens-clothing" },
+      { label: "Light blue women shirt", href: "#" },
     ],
-    brand: "H&M",
-    fabric: "Lace, Cotton",
-    rating: 0,
-    reviewsCount: 0,
-    viewsCount: 120,
-    commentsCount: 0,
-    favoritesCount: 1,
+    brand: "Mango",
+    fabric: "100% Breathable Oxford Cotton",
+    rating: 5,
+    reviewsCount: 4,
+    viewsCount: 215,
+    commentsCount: 1,
+    favoritesCount: 9,
     readyToShip: "Ready to ship in 2-3 Business Days",
     location: "Berlin, Germany",
     mapQuery: "Berlin, Germany",
-    sizes: ["S", "M", "L"],
+    sizes: ["S", "M", "L", "XL"],
+    colors: [
+      { name: "Light Blue", hex: "#7dd3fc" },
+      { name: "Crisp White", hex: "#ffffff" },
+    ],
     description:
-      "Chic and versatile lace blouse designed for both smart office wear and evening outings.",
-    reviews: [],
+      "Crisp light blue button-down shirt with a relaxed tailored silhouette. Easy to iron and supremely soft against the skin, ideal for both workday attire and casual weekend looks.",
+    reviews: [
+      {
+        author: "Admin",
+        avatar: "/images/avatars/admin-avatar.jpg",
+        rating: 5,
+        date: "3 weeks ago",
+        text: "Beautiful shade of light blue, comfortable fit and great fabric quality.",
+      },
+    ],
     comments: [],
   },
 
@@ -623,32 +644,1256 @@ export const DETAILED_PRODUCTS: Record<number, DetailedProduct> = {
     reviews: [],
     comments: [],
   },
+
+  // 14. Handcrafted decorative pillow (ID: 42)
+  42: {
+    id: 42,
+    slug: "handcrafted-decorative-pillow-42",
+    title: "Handcrafted decorative pillow for a luxurious touch",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/pillow.webp",
+    secondaryImage: "/images/products/pillow-hover.webp",
+    images: ["/images/products/pillow.webp", "/images/products/pillow-hover.webp"],
+    price: "$59",
+    originalPrice: "$69",
+    discountPercent: "-14%",
+    status: "In Stock",
+    baseSku: "HDP-42-LUX",
+    sku: "HDP-42-LUX-STD",
+    category: "Decorative Pillows",
+    subCategory: "Home Decor",
+    rootCategory: "Home & Living",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Home & Living", href: "/category/home-living" },
+      { label: "Decorative Pillows", href: "/category/decorative-pillows" },
+      { label: "Handcrafted decorative pillow for a luxurious touch", href: "#" },
+    ],
+    brand: "IKEA",
+    material: "Plush Velvet, Hypoallergenic Filling",
+    rating: 5,
+    reviewsCount: 8,
+    viewsCount: 280,
+    commentsCount: 2,
+    favoritesCount: 8,
+    readyToShip: "Ready to ship in 1-2 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    description:
+      "Enhance your living space with this plush, artistically embroidered cushion designed for living room couches and master bedrooms. Made with soft premium textured fabrics.",
+    reviews: [
+      {
+        author: "Trendshop",
+        avatar: "/assets/img/trendshop-avatar.jpg",
+        rating: 5,
+        date: "1 month ago",
+        text: "Very comfortable pillow with luxurious texture. Matches my sofa perfectly!",
+      },
+    ],
+    comments: [],
+  },
+
+  // 15. Floral women sundress (ID: 38)
+  38: {
+    id: 38,
+    slug: "floral-women-sundress-38",
+    title: "Floral women sundress",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/floral-sundress.webp",
+    secondaryImage: "/images/products/floral-sundress-hover.webp",
+    images: ["/images/products/floral-sundress.webp", "/images/products/floral-sundress-hover.webp"],
+    price: "$80",
+    originalPrice: "$89",
+    discountPercent: "-10%",
+    status: "In Stock",
+    baseSku: "FWS-38-FLR",
+    sku: "FWS-38-FLR-M",
+    category: "Dresses",
+    subCategory: "Women's Clothing",
+    rootCategory: "Clothing",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Clothing", href: "/category/clothing" },
+      { label: "Women's Clothing", href: "/category/womens-clothing" },
+      { label: "Dresses", href: "/category/dresses" },
+      { label: "Floral women sundress", href: "#" },
+    ],
+    brand: "Zara",
+    fabric: "100% Breathable Rayon",
+    rating: 4,
+    reviewsCount: 3,
+    viewsCount: 412,
+    commentsCount: 1,
+    favoritesCount: 15,
+    readyToShip: "Ready to ship in 2-3 Business Days",
+    location: "Paris, France",
+    mapQuery: "Paris, France",
+    sizes: ["S", "M", "L"],
+    description:
+      "Delight in sunny days with this effortless floral sundress made of breathable soft rayon. Perfect for seaside vacations, garden parties, or everyday summer strolls.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 16. Women kipling bailey saddle handbag (ID: 1)
+  1: {
+    id: 1,
+    slug: "women-kipling-bailey-saddle-handbag-1",
+    title: "Women kipling bailey saddle handbag",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/kipling-bag.webp",
+    secondaryImage: "/images/products/kipling-bag-hover.webp",
+    images: ["/images/products/kipling-bag.webp", "/images/products/kipling-bag-hover.webp"],
+    price: "$59",
+    originalPrice: "$69",
+    discountPercent: "-14%",
+    status: "In Stock",
+    baseSku: "WT4283SHADB-Black",
+    sku: "WT4283SHADB-Black",
+    category: "Handbags",
+    subCategory: "Bags & Purses",
+    rootCategory: "Jewelry & Accessories",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Jewelry & Accessories", href: "/category/jewelry-accessories" },
+      { label: "Bags & Purses", href: "/category/bags-purses" },
+      { label: "Handbags", href: "/category/handbags" },
+      { label: "Women kipling bailey saddle handbag", href: "#" },
+    ],
+    brand: "Gucci",
+    material: "Lightweight Water-Resistant Nylon",
+    rating: 4,
+    reviewsCount: 2,
+    viewsCount: 520,
+    commentsCount: 3,
+    favoritesCount: 22,
+    readyToShip: "Ready to ship in 1-3 Business Days",
+    location: "New York, United States",
+    mapQuery: "New York, United States",
+    description:
+      "The Kipling Bailey Saddle Handbag for women combines chic style with functional design, perfect for daily use or casual outings. Crafted with lightweight durable fabric and multi-pocket convenience.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 17. Cobalt man t-shirt all colors (ID: 70)
+  70: {
+    id: 70,
+    slug: "cobalt-man-t-shirt-all-colors-70",
+    title: "Cobalt man t-shirt all colors",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/cobalt-man-tshirt.webp",
+    secondaryImage: "/images/products/cobalt-man-tshirt-hover.webp",
+    images: ["/images/products/cobalt-man-tshirt.webp", "/images/products/cobalt-man-tshirt-hover.webp"],
+    price: "Request a Quote",
+    isQuote: true,
+    status: "In Stock",
+    baseSku: "CMT-70-ALL",
+    sku: "CMT-70-ALL-L",
+    category: "T-Shirts",
+    subCategory: "Men's Clothing",
+    rootCategory: "Clothing",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Clothing", href: "/category/clothing" },
+      { label: "Men's Clothing", href: "/category/mens-clothing" },
+      { label: "T-Shirts", href: "/category/t-shirts" },
+      { label: "Cobalt man t-shirt all colors", href: "#" },
+    ],
+    brand: "Nike",
+    fabric: "100% Combed Cotton",
+    rating: 4,
+    reviewsCount: 1,
+    viewsCount: 310,
+    commentsCount: 0,
+    favoritesCount: 5,
+    readyToShip: "Ready to ship in 2-4 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    description:
+      "Classic everyday regular-fit cobalt blue crewneck cotton t-shirt for men. Available for quotation and bulk custom printing with ultra-durable stitching.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 18. Ship illustration royalty free image (ID: 36 - New Arrivals)
+  36: {
+    id: 36,
+    slug: "ship-illustration-royalty-free-image-36",
+    title: "Ship illustration royalty free image",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/ship-art.webp",
+    secondaryImage: "/images/products/cat-art.webp",
+    images: ["/images/products/ship-art.webp", "/images/products/cat-art.webp"],
+    price: "$15",
+    originalPrice: "$20",
+    discountPercent: "-25%",
+    status: "In Stock",
+    baseSku: "SSA-36-PST",
+    sku: "SSA-36-PST",
+    category: "Illustrations",
+    subCategory: "Graphics",
+    rootCategory: "Graphics & Photos",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Graphics & Photos", href: "/category/graphics-photos" },
+      { label: "Illustrations", href: "/category/illustrations" },
+      { label: "Ship illustration royalty free image", href: "#" },
+    ],
+    format: "JPG, PNG, PDF 300DPI",
+    rating: 4,
+    reviewsCount: 0,
+    viewsCount: 145,
+    commentsCount: 0,
+    favoritesCount: 7,
+    readyToShip: "Instant Digital Download",
+    location: "London, United Kingdom",
+    mapQuery: "London, United Kingdom",
+    description:
+      "High-resolution vintage digital illustration print of majestic sailing vessels navigating stormy seas. Suitable for physical framing or digital background use.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 19. Modern grey couch and pillows (ID: 44 - New Arrivals)
+  44: {
+    id: 44,
+    slug: "modern-grey-couch-and-pillows-44",
+    title: "Modern grey couch and pillows",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/grey-couch.webp",
+    secondaryImage: "/images/products/pillow.webp",
+    images: ["/images/products/grey-couch.webp", "/images/products/pillow.webp"],
+    price: "$299",
+    status: "In Stock",
+    baseSku: "FN-GC-044",
+    sku: "FN-GC-044",
+    category: "Sofas & Couches",
+    subCategory: "Living Room",
+    rootCategory: "Home & Living",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Home & Living", href: "/category/home-living" },
+      { label: "Living Room", href: "/category/living-room" },
+      { label: "Modern grey couch and pillows", href: "#" },
+    ],
+    brand: "Ikea",
+    material: "Textured Linen & Solid Wood Frame",
+    rating: 5,
+    reviewsCount: 4,
+    viewsCount: 620,
+    commentsCount: 1,
+    favoritesCount: 11,
+    readyToShip: "Ready to ship in 3-5 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    colors: [
+      { name: "Slate Grey", hex: "#64748b" },
+      { name: "Charcoal", hex: "#334155" },
+    ],
+    description:
+      "Modern minimalist living room couch upholstered in high resilience stain-resistant linen with soft accent throw pillows.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 20. Summer fashion top lace blouse (ID: 19)
+  19: {
+    id: 19,
+    slug: "summer-fashion-top-lace-blouse-19",
+    title: "Summer fashion top lace blouse",
+    seller: "Trendshop",
+    sellerSlug: "trendshop",
+    image: "/images/products/summer-top-lace.webp",
+    secondaryImage: "/images/products/summer-top-lace-hover.webp",
+    images: ["/images/products/summer-top-lace.webp", "/images/products/summer-top-lace-hover.webp"],
+    price: "$65",
+    originalPrice: "$79",
+    discountPercent: "-17%",
+    status: "In Stock",
+    baseSku: "SFT-19-LCE",
+    sku: "SFT-19-LCE-M",
+    category: "Tops & Blouses",
+    subCategory: "Women's Clothing",
+    rootCategory: "Clothing",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Clothing", href: "/category/clothing" },
+      { label: "Women's Clothing", href: "/category/womens-clothing" },
+      { label: "Summer fashion top lace blouse", href: "#" },
+    ],
+    brand: "Zara",
+    fabric: "Floral Lace & Silk Blend",
+    rating: 5,
+    reviewsCount: 6,
+    viewsCount: 390,
+    commentsCount: 0,
+    favoritesCount: 18,
+    readyToShip: "Ready to ship in 2-3 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    sizes: ["S", "M", "L"],
+    description:
+      "Delicate lace sleeveless summer blouse designed with intricate patterns and lightweight lining for comfort and style. Ideal for warm weather gatherings.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 21. Black sneakers with white sole (ID: 107 - Special Offers Sepatu)
+  107: {
+    id: 107,
+    slug: "black-sneakers-with-white-sole-107",
+    title: "Black sneakers with white sole",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80",
+    secondaryImage: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=600&auto=format&fit=crop&q=80",
+    ],
+    price: "$69",
+    originalPrice: "$89",
+    discountPercent: "-22%",
+    status: "In Stock",
+    baseSku: "SN-BK-107",
+    sku: "SN-BK-107-42",
+    category: "Sneakers",
+    subCategory: "Men's Shoes",
+    rootCategory: "Shoes",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Shoes", href: "/products/shoes" },
+      { label: "Men's Shoes", href: "/products/shoes" },
+      { label: "Sneakers", href: "/products/shoes" },
+      { label: "Black sneakers with white sole", href: "#" },
+    ],
+    brand: "Nike",
+    material: "Breathable Mesh, Responsive Air Sole, Durable Rubber Tread",
+    rating: 5,
+    reviewsCount: 5,
+    viewsCount: 310,
+    commentsCount: 1,
+    favoritesCount: 12,
+    readyToShip: "Ready to ship in 1-2 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    sizes: ["39", "40", "41", "42", "43", "44"],
+    colors: [{ name: "Black / White", hex: "#18181b" }],
+    description:
+      "Lightweight lifestyle running sneakers engineered with responsive air cushioning, flexible breathable mesh uppers, and high-traction rubber outsoles. Designed for all-day comfort whether training or navigating city streets.",
+    reviews: [
+      {
+        author: "Admin",
+        avatar: "/images/avatars/admin-avatar.jpg",
+        rating: 5,
+        date: "3 weeks ago",
+        text: "Extremely comfortable sneakers! The cushioning feels amazing and they fit true to size. High quality materials.",
+      },
+      {
+        author: "Alex Miller",
+        avatar: "/assets/img/trendshop-avatar.jpg",
+        rating: 5,
+        date: "1 month ago",
+        text: "Sleek look and very lightweight. Perfect for everyday walking and casual wear.",
+      },
+    ],
+    comments: [
+      {
+        name: "Marcus",
+        date: "2 weeks ago",
+        text: "Are these true to size or should I size up?",
+      },
+    ],
+  },
+
+  // 22. Gucci nylon fabric smart backpack (ID: 10 - Special Offers Tas Ransel)
+  10: {
+    id: 10,
+    slug: "gucci-nylon-fabric-smart-backpack-10",
+    title: "Gucci nylon fabric smart backpack",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=800&auto=format&fit=crop&q=80",
+    secondaryImage: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+    ],
+    price: "$55",
+    originalPrice: "$69",
+    discountPercent: "-20%",
+    status: "In Stock",
+    baseSku: "GC-BP-010",
+    sku: "GC-BP-010",
+    category: "Backpacks",
+    subCategory: "Bags & Purses",
+    rootCategory: "Bags & Purses",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Bags & Purses", href: "/products/bags-purses" },
+      { label: "Backpacks", href: "/products/bags-purses" },
+      { label: "Gucci nylon fabric smart backpack", href: "#" },
+    ],
+    brand: "Gucci",
+    material: "High-grade Technical Nylon, Leather Accents, Silver Hardware",
+    rating: 5,
+    reviewsCount: 3,
+    viewsCount: 155,
+    commentsCount: 0,
+    favoritesCount: 8,
+    readyToShip: "Ready to ship in 1-2 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    description:
+      "Crafted from premium water-resistant technical nylon, this smart backpack blends contemporary Italian luxury with practical day-to-day functionality. Features padded laptop sleeves, multiple organizer compartments, and ergonomic breathable shoulder straps.",
+    reviews: [
+      {
+        author: "Sophie Dupont",
+        avatar: "/images/avatars/admin-avatar.jpg",
+        rating: 5,
+        date: "1 month ago",
+        text: "Outstanding backpack. Lots of room for my 15-inch laptop and accessories while remaining sleek and stylish.",
+      },
+    ],
+    comments: [],
+  },
+
+  // 23. Women lace blouse with different colors (ID: 31 - Special Offers Blouse)
+  31: {
+    id: 31,
+    slug: "women-lace-blouse-with-different-colors-31",
+    title: "Women lace blouse with different colors",
+    seller: "Trendshop",
+    sellerSlug: "trendshop",
+    image: "/images/products/women-lace-blouse.webp",
+    secondaryImage: "/images/products/women-lace-blouse-hover.webp",
+    images: [
+      "/images/products/women-lace-blouse.webp",
+      "/images/products/women-lace-blouse-hover.webp",
+    ],
+    price: "$69",
+    originalPrice: "$79",
+    discountPercent: "-12%",
+    status: "In Stock",
+    baseSku: "BL-LC-031",
+    sku: "BL-LC-031-M",
+    category: "Tops & Blouses",
+    subCategory: "Women's Clothing",
+    rootCategory: "Clothing",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Clothing", href: "/category/clothing" },
+      { label: "Women's Clothing", href: "/category/womens-clothing" },
+      { label: "Tops & Blouses", href: "/category/womens-clothing" },
+      { label: "Women lace blouse with different colors", href: "#" },
+    ],
+    brand: "H&M",
+    fabric: "Floral Lace, Cotton & Silk Lining",
+    rating: 5,
+    reviewsCount: 4,
+    viewsCount: 280,
+    commentsCount: 1,
+    favoritesCount: 9,
+    readyToShip: "Ready to ship in 2-3 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    sizes: ["S", "M", "L", "XL"],
+    colors: [
+      { name: "White", hex: "#ffffff" },
+      { name: "Black", hex: "#18181b" },
+      { name: "Blush Pink", hex: "#fbcfe8" },
+    ],
+    description:
+      "A stunning feminine blouse featuring delicate floral lace embroidery, ruffled trim accents, and breathable soft cotton lining. Versatile enough for professional office attire or sophisticated evening dinners.",
+    reviews: [
+      {
+        author: "Elena Rostova",
+        avatar: "/assets/img/trendshop-avatar.jpg",
+        rating: 5,
+        date: "2 weeks ago",
+        text: "The lace detail is exquisite! It fits perfectly and feels very delicate and well-constructed.",
+      },
+    ],
+    comments: [
+      {
+        name: "Jessica",
+        date: "3 weeks ago",
+        text: "Does this require special dry cleaning or can it be washed on gentle cycle?",
+      },
+    ],
+  },
+  // 24. Women's ankle boot with different colors (ID: 46 - New Arrivals)
+  46: {
+    id: 46,
+    slug: "womens-ankle-boot-with-different-colors-46",
+    title: "Women's ankle boot with different colors",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/grey-boots.webp",
+    secondaryImage: "/images/products/grey-boots-hover.webp",
+    images: [
+      "/images/products/grey-boots.webp",
+      "/images/products/grey-boots-hover.webp",
+    ],
+    price: "$59",
+    originalPrice: "$69",
+    discountPercent: "-14%",
+    status: "In Stock",
+    baseSku: "BT-GR-046",
+    sku: "BT-GR-046-38",
+    category: "Boots",
+    subCategory: "Women's Shoes",
+    rootCategory: "Shoes",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Shoes", href: "/products/shoes" },
+      { label: "Women's Shoes", href: "/products/shoes" },
+      { label: "Boots", href: "/products/shoes" },
+      { label: "Women's ankle boot with different colors", href: "#" },
+    ],
+    brand: "Zara",
+    material: "Suede Upper, Stacked Block Heel, Cushioned Footbed",
+    rating: 5,
+    reviewsCount: 3,
+    viewsCount: 260,
+    commentsCount: 0,
+    favoritesCount: 10,
+    readyToShip: "Ready to ship in 2-3 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    sizes: ["36", "37", "38", "39", "40", "41"],
+    colors: [
+      { name: "Slate Grey", hex: "#64748b" },
+      { name: "Classic Black", hex: "#1e293b" },
+    ],
+    description:
+      "Chic grey ankle bootie featuring a stacked block heel, cushioned footbed, and convenient inner zip closure for day-to-night comfort and versatile styling.",
+    reviews: [
+      {
+        author: "Admin",
+        avatar: "/images/avatars/admin-avatar.jpg",
+        rating: 5,
+        date: "2 weeks ago",
+        text: "Very stylish ankle boots. The suede finish looks premium and the heel height is very comfortable for all-day wear.",
+      },
+    ],
+    comments: [],
+  },
+
+  // 25. Women kipling bailey saddle handbag (ID: 40 - New Arrivals)
+  40: {
+    id: 40,
+    slug: "women-kipling-bailey-saddle-handbag-40",
+    title: "Women kipling bailey saddle handbag",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/kipling-bag.webp",
+    secondaryImage: "/images/products/kipling-bag-hover.webp",
+    images: [
+      "/images/products/kipling-bag.webp",
+      "/images/products/kipling-bag-hover.webp",
+    ],
+    price: "$59",
+    originalPrice: "$69",
+    discountPercent: "-14%",
+    status: "In Stock",
+    baseSku: "WT4283SHADB-40",
+    sku: "WT4283SHADB-Black",
+    category: "Bags & Purses",
+    subCategory: "Handbags",
+    rootCategory: "Jewelry & Accessories",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Jewelry & Accessories", href: "/products/jewelry-accessories" },
+      { label: "Bags & Purses", href: "/products/bags-purses" },
+      { label: "Women kipling bailey saddle handbag", href: "#" },
+    ],
+    brand: "Gucci",
+    material: "Durable Lightweight Nylon & Leather Trim",
+    rating: 5,
+    reviewsCount: 3,
+    viewsCount: 220,
+    commentsCount: 0,
+    favoritesCount: 16,
+    readyToShip: "Ready to ship in 1-2 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    colors: [
+      { name: "Black", hex: "#0f172a" },
+      { name: "White", hex: "#f8fafc" },
+      { name: "Coral", hex: "#e11d48" },
+    ],
+    description:
+      "The Kipling Bailey Saddle Handbag for women combines chic style with functional design, perfect for daily use or casual outings. Crafted with lightweight durable fabric and multi-pocket convenience.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 26. Women casual dress (ID: 28 - Clothing)
+  28: {
+    id: 28,
+    slug: "women-casual-dress-28",
+    title: "Women casual dress",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/women-casual-dress.webp",
+    images: ["/images/products/women-casual-dress.webp"],
+    price: "$56",
+    status: "In Stock",
+    baseSku: "DR-CS-028",
+    sku: "DR-CS-028-M",
+    category: "Dresses",
+    subCategory: "Women's Clothing",
+    rootCategory: "Clothing",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Clothing", href: "/category/clothing" },
+      { label: "Women's Clothing", href: "/category/womens-clothing" },
+      { label: "Dresses", href: "/category/dresses" },
+      { label: "Women casual dress", href: "#" },
+    ],
+    brand: "Zara",
+    fabric: "Linen Cotton Blend",
+    rating: 4,
+    reviewsCount: 2,
+    viewsCount: 175,
+    commentsCount: 0,
+    favoritesCount: 8,
+    readyToShip: "Ready to ship in 2-3 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    sizes: ["S", "M", "L", "XL"],
+    colors: [
+      { name: "Emerald Green", hex: "#065f46" },
+      { name: "Beige", hex: "#f5f5f4" },
+    ],
+    description:
+      "Everyday relaxed casual dress tailored with breathable linen-cotton blend. Ideal for both office casual and weekend getaways.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 27. Women red casual dress (ID: 22 - Clothing)
+  22: {
+    id: 22,
+    slug: "women-red-casual-dress-22",
+    title: "Women red casual dress",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "/images/products/women-red-dress.webp",
+    images: ["/images/products/women-red-dress.webp"],
+    price: "$99",
+    status: "In Stock",
+    baseSku: "DR-RD-022",
+    sku: "DR-RD-022-M",
+    category: "Dresses",
+    subCategory: "Women's Clothing",
+    rootCategory: "Clothing",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Clothing", href: "/category/clothing" },
+      { label: "Women's Clothing", href: "/category/womens-clothing" },
+      { label: "Dresses", href: "/category/dresses" },
+      { label: "Women red casual dress", href: "#" },
+    ],
+    brand: "Hugo Boss",
+    fabric: "100% Breathable Viscose Crepe",
+    rating: 4,
+    reviewsCount: 3,
+    viewsCount: 190,
+    commentsCount: 0,
+    favoritesCount: 11,
+    readyToShip: "Ready to ship in 2-3 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    sizes: ["S", "M", "L"],
+    colors: [
+      { name: "Crimson Red", hex: "#dc2626" },
+      { name: "Wine Burgundy", hex: "#881337" },
+    ],
+    description:
+      "Striking scarlet red casual dress designed with a flattering wrap tie and subtle V-neckline. Makes an effortless style statement.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 28. Elegant white lace fabric (ID: 14 - Clothing)
+  14: {
+    id: 14,
+    slug: "elegant-white-lace-fabric-14",
+    title: "Elegant white lace fabric",
+    seller: "Trendshop",
+    sellerSlug: "trendshop",
+    image: "/images/products/elegant-white-lace.webp",
+    images: ["/images/products/elegant-white-lace.webp"],
+    price: "$59",
+    originalPrice: "$69",
+    discountPercent: "-14%",
+    status: "In Stock",
+    baseSku: "LC-WH-014",
+    sku: "LC-WH-014",
+    category: "Fabrics",
+    subCategory: "Women's Clothing",
+    rootCategory: "Clothing",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Clothing", href: "/category/clothing" },
+      { label: "Women's Clothing", href: "/category/womens-clothing" },
+      { label: "Fabrics", href: "/category/clothing" },
+      { label: "Elegant white lace fabric", href: "#" },
+    ],
+    brand: "Armani",
+    fabric: "Floral Cotton Lace",
+    rating: 4,
+    reviewsCount: 2,
+    viewsCount: 165,
+    commentsCount: 0,
+    favoritesCount: 8,
+    readyToShip: "Ready to ship in 2-3 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    colors: [{ name: "Pure White", hex: "#ffffff" }],
+    description:
+      "High grade floral white lace fabric suitable for dressmaking, festive couture, accents, and custom luxury tailoring.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 29. Handmade cute handbag (ID: 3 - Jewelry & Accessories)
+  3: {
+    id: 3,
+    slug: "handmade-cute-handbag-3",
+    title: "Handmade cute handbag",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=800&auto=format&fit=crop&q=80",
+    secondaryImage: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&auto=format&fit=crop&q=80",
+    ],
+    price: "$30",
+    originalPrice: "$46",
+    discountPercent: "-35%",
+    status: "In Stock",
+    baseSku: "HM-HB-003",
+    sku: "HM-HB-003",
+    category: "Handbags",
+    subCategory: "Bags & Purses",
+    rootCategory: "Jewelry & Accessories",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Jewelry & Accessories", href: "/products/jewelry-accessories" },
+      { label: "Bags & Purses", href: "/products/jewelry-accessories" },
+      { label: "Handbags", href: "/products/jewelry-accessories" },
+      { label: "Handmade cute handbag", href: "#" },
+    ],
+    brand: "Mango",
+    material: "Woven Natural Straw & Vegan Leather Strap",
+    rating: 4,
+    reviewsCount: 1,
+    viewsCount: 195,
+    commentsCount: 0,
+    favoritesCount: 6,
+    readyToShip: "Ready to ship in 1-2 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    description:
+      "Handcrafted round straw woven summer handbag with stylish shoulder strap and protective interior lining. Perfect for beach days, vacation outings, and sunny weekend brunches.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 30. Modern blue handbag (ID: 6 - Jewelry & Accessories)
+  6: {
+    id: 6,
+    slug: "modern-blue-handbag-6",
+    title: "Modern blue handbag",
+    seller: "Trendshop",
+    sellerSlug: "trendshop",
+    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&auto=format&fit=crop&q=80",
+    secondaryImage: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&auto=format&fit=crop&q=80",
+    ],
+    price: "$45",
+    originalPrice: "$60",
+    discountPercent: "-25%",
+    status: "In Stock",
+    baseSku: "HB-BL-006",
+    sku: "HB-BL-006",
+    category: "Handbags",
+    subCategory: "Bags & Purses",
+    rootCategory: "Jewelry & Accessories",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Jewelry & Accessories", href: "/products/jewelry-accessories" },
+      { label: "Bags & Purses", href: "/products/jewelry-accessories" },
+      { label: "Handbags", href: "/products/jewelry-accessories" },
+      { label: "Modern blue handbag", href: "#" },
+    ],
+    brand: "Tommy Hilfiger",
+    material: "Premium Vegan Leather, Gold Finished Hardware",
+    rating: 4,
+    reviewsCount: 3,
+    viewsCount: 275,
+    commentsCount: 0,
+    favoritesCount: 11,
+    readyToShip: "Ready to ship in 1-3 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    description:
+      "Contemporary tote handbag with spacious interior compartments and premium vegan leather finish. Designed with dual reinforced grab handles and an optional adjustable shoulder strap.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 31. Women black leather handbag (ID: 7 - Jewelry & Accessories)
+  7: {
+    id: 7,
+    slug: "women-black-leather-handbag-7",
+    title: "Women black leather handbag",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&auto=format&fit=crop&q=80",
+    secondaryImage: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=800&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?w=800&auto=format&fit=crop&q=80",
+    ],
+    price: "$39",
+    originalPrice: "$49",
+    discountPercent: "-20%",
+    status: "In Stock",
+    baseSku: "HB-LK-007",
+    sku: "HB-LK-007",
+    category: "Handbags",
+    subCategory: "Bags & Purses",
+    rootCategory: "Jewelry & Accessories",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Jewelry & Accessories", href: "/products/jewelry-accessories" },
+      { label: "Bags & Purses", href: "/products/jewelry-accessories" },
+      { label: "Handbags", href: "/products/jewelry-accessories" },
+      { label: "Women black leather handbag", href: "#" },
+    ],
+    brand: "Gucci",
+    material: "Genuine Italian Textured Leather",
+    rating: 4,
+    reviewsCount: 2,
+    viewsCount: 188,
+    commentsCount: 0,
+    favoritesCount: 9,
+    readyToShip: "Ready to ship in 1-2 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    description:
+      "Classic black leather handbag featuring gold metallic hardware, dual handles, and zippered top closure. Elegant, timeless, and effortlessly pairs with any formal or business casual outfit.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 32. Black gold fashion backpack (ID: 8 - Jewelry & Accessories)
+  8: {
+    id: 8,
+    slug: "black-gold-fashion-backpack-8",
+    title: "Black gold fashion backpack",
+    seller: "Trendshop",
+    sellerSlug: "trendshop",
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80",
+    ],
+    price: "Request a Quote",
+    isQuote: true,
+    status: "In Stock",
+    baseSku: "BP-BG-008",
+    sku: "BP-BG-008",
+    category: "Backpacks",
+    subCategory: "Bags & Purses",
+    rootCategory: "Jewelry & Accessories",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Jewelry & Accessories", href: "/products/jewelry-accessories" },
+      { label: "Bags & Purses", href: "/products/jewelry-accessories" },
+      { label: "Backpacks", href: "/products/jewelry-accessories" },
+      { label: "Black gold fashion backpack", href: "#" },
+    ],
+    brand: "Nike",
+    material: "Waterproof Oxford Fabric, Polished Brass Accents",
+    rating: 5,
+    reviewsCount: 1,
+    viewsCount: 164,
+    commentsCount: 0,
+    favoritesCount: 7,
+    readyToShip: "Ready to ship in 2-3 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    description:
+      "Modern backpack with gold accents, drawstrings, and multiple utility pockets. Designed for urban exploration, college, and weekend travels.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 33. Black bag over the shoulder (ID: 9 - Jewelry & Accessories)
+  9: {
+    id: 9,
+    slug: "black-bag-over-the-shoulder-9",
+    title: "Black bag over the shoulder",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&auto=format&fit=crop&q=80",
+    secondaryImage: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&auto=format&fit=crop&q=80",
+    ],
+    price: "$49",
+    originalPrice: "$69",
+    discountPercent: "-29%",
+    status: "In Stock",
+    baseSku: "SB-BK-009",
+    sku: "SB-BK-009",
+    category: "Handbags",
+    subCategory: "Bags & Purses",
+    rootCategory: "Jewelry & Accessories",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Jewelry & Accessories", href: "/products/jewelry-accessories" },
+      { label: "Bags & Purses", href: "/products/jewelry-accessories" },
+      { label: "Handbags", href: "/products/jewelry-accessories" },
+      { label: "Black bag over the shoulder", href: "#" },
+    ],
+    brand: "Puma",
+    material: "Soft Grain Faux Leather",
+    rating: 5,
+    reviewsCount: 5,
+    viewsCount: 312,
+    commentsCount: 2,
+    favoritesCount: 14,
+    readyToShip: "Ready to ship in 1-2 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    description:
+      "Versatile over-the-shoulder everyday bag with slouchy relaxed silhouette. Provides ample room for daily accessories, phone, cosmetics, and keys.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 34. Bohemian Multicolor Handmade Bracelet Set (ID: 51 - Jewelry & Accessories)
+  51: {
+    id: 51,
+    slug: "bohemian-multicolor-handmade-bracelet-set-51",
+    title: "Bohemian Multicolor Handmade Bracelet Set",
+    seller: "Trendshop",
+    sellerSlug: "trendshop",
+    image: "https://images.unsplash.com/photo-1611591475152-4735496181b3?w=800&auto=format&fit=crop&q=80",
+    secondaryImage: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1611591475152-4735496181b3?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&auto=format&fit=crop&q=80",
+    ],
+    price: "$49",
+    originalPrice: "$69",
+    discountPercent: "-29%",
+    status: "In Stock",
+    baseSku: "BR-BM-051",
+    sku: "BR-BM-051",
+    category: "Bracelets",
+    subCategory: "Necklaces & Accessories",
+    rootCategory: "Jewelry & Accessories",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Jewelry & Accessories", href: "/products/jewelry-accessories" },
+      { label: "Necklaces & Accessories", href: "/products/jewelry-accessories" },
+      { label: "Bracelets", href: "/products/jewelry-accessories" },
+      { label: "Bohemian Multicolor Handmade Bracelet Set", href: "#" },
+    ],
+    brand: "Mango",
+    material: "Natural Semiprecious Stones, Bohemian Beads & Gold Plated Charms",
+    rating: 4,
+    reviewsCount: 3,
+    viewsCount: 298,
+    commentsCount: 0,
+    favoritesCount: 15,
+    readyToShip: "Ready to ship in 1-2 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    description:
+      "Vibrant bohemian layered beaded bracelets set handcrafted with natural stones and charms. Elastic stretch fit comfortably contours to most wrist sizes.",
+    reviews: [],
+    comments: [],
+  },
+
+  // 35. Vintage Golden Ring with Emerald Stone (ID: 12 - Jewelry & Accessories)
+  12: {
+    id: 12,
+    slug: "vintage-golden-ring-with-emerald-stone-12",
+    title: "Vintage Golden Ring with Emerald Stone",
+    seller: "Admin",
+    sellerSlug: "admin",
+    image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80",
+    secondaryImage: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=800&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=800&auto=format&fit=crop&q=80",
+    ],
+    price: "$75",
+    originalPrice: "$90",
+    discountPercent: "-17%",
+    status: "In Stock",
+    baseSku: "RG-EM-012",
+    sku: "RG-EM-012-7",
+    category: "Rings",
+    subCategory: "Jewelry",
+    rootCategory: "Jewelry & Accessories",
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: "Jewelry & Accessories", href: "/products/jewelry-accessories" },
+      { label: "Rings", href: "/products/jewelry-accessories" },
+      { label: "Vintage Golden Ring with Emerald Stone", href: "#" },
+    ],
+    brand: "Gucci",
+    material: "18K Gold Plated Brass, Emerald Cut Created Green Stone",
+    rating: 5,
+    reviewsCount: 5,
+    viewsCount: 340,
+    commentsCount: 1,
+    favoritesCount: 20,
+    readyToShip: "Ready to ship in 1-2 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    sizes: ["6", "7", "8"],
+    description:
+      "Exquisite vintage 18k gold plated ring set with a vibrant deep emerald center stone and delicate art deco filigree engravings. A statement jewelry piece for celebrations and formal events.",
+    reviews: [],
+    comments: [],
+  },
 };
+
+/**
+ * Helper to dynamically convert any standard product object from SPECIAL_OFFERS,
+ * allProductsData, or CATEGORY_PRODUCTS into a complete DetailedProduct for ProductDetailView.
+ */
+function buildDetailedProductFromGeneric(p: any): DetailedProduct {
+  const images: string[] =
+    Array.isArray(p.images) && p.images.length > 0
+      ? p.images
+      : p.secondaryImage
+      ? [p.image, p.secondaryImage]
+      : [p.image];
+
+  const category = p.category || "General";
+  const seller = p.seller || "Admin";
+  const sellerSlug = seller.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const slug = p.slug || `${(p.title || "product").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${p.id}`;
+
+  return {
+    id: p.id,
+    slug,
+    title: p.title || "Product",
+    seller,
+    sellerSlug,
+    image: p.image,
+    secondaryImage: p.secondaryImage || images[1] || undefined,
+    images,
+    price: p.price || "$0",
+    originalPrice: p.originalPrice || undefined,
+    discountPercent: p.discountPercent || p.badge || undefined,
+    status: p.status || "In Stock",
+    baseSku: p.sku || `SKU-${p.id}`,
+    sku: p.sku || `SKU-${p.id}`,
+    category,
+    subCategory: p.subCategory || category,
+    rootCategory: p.rootCategory || category,
+    breadcrumb: [
+      { label: "Home", href: "/" },
+      { label: category, href: `/products` },
+      { label: p.title || "Product", href: "#" },
+    ],
+    brand: p.brand || (seller === "Admin" ? "Modesy Brand" : seller),
+    material: p.material || p.fabric || "Premium Quality Materials",
+    rating: typeof p.rating === "number" ? p.rating : 5,
+    reviewsCount: p.reviewsCount || 0,
+    viewsCount: p.viewsCount || 150,
+    commentsCount: p.commentsCount || 0,
+    favoritesCount: p.favorites || p.wishlist || 0,
+    readyToShip: "Ready to ship in 1-3 Business Days",
+    location: "Berlin, Germany",
+    mapQuery: "Berlin, Germany",
+    sizes: p.sizes || undefined,
+    colors: p.colors || undefined,
+    description:
+      p.description ||
+      `${p.title}. Crafted with high quality materials and precision styling to deliver outstanding performance and aesthetic elegance.`,
+    reviews: [],
+    comments: [],
+  };
+}
 
 export function getProductByIdOrSlug(idOrSlug: string | number): DetailedProduct {
   if (typeof idOrSlug === "number") {
-    return DETAILED_PRODUCTS[idOrSlug] || DETAILED_PRODUCTS[41];
+    if (DETAILED_PRODUCTS[idOrSlug]) return DETAILED_PRODUCTS[idOrSlug];
   }
 
-  const numericId = parseInt(idOrSlug, 10);
-  if (!isNaN(numericId) && DETAILED_PRODUCTS[numericId]) {
-    return DETAILED_PRODUCTS[numericId];
+  const str = String(idOrSlug).trim();
+  const numericId = parseInt(str, 10);
+  if (!isNaN(numericId)) {
+    if (DETAILED_PRODUCTS[numericId]) return DETAILED_PRODUCTS[numericId];
+    // Legacy jewelry alias mapping
+    if (numericId === 2 && DETAILED_PRODUCTS[17]) return DETAILED_PRODUCTS[17];
+    if (numericId === 4 && DETAILED_PRODUCTS[47]) return DETAILED_PRODUCTS[47];
+    if (numericId === 5 && DETAILED_PRODUCTS[43]) return DETAILED_PRODUCTS[43];
   }
 
-  // Try extracting ID from end of slug (e.g. "colorful-women-scarves-47" -> 47)
-  const match = idOrSlug.match(/-(\d+)$/);
+  // Try extracting ID from end of slug (e.g. "black-sneakers-with-white-sole-107" -> 107)
+  const match = str.match(/-(\d+)$/);
   if (match) {
     const extractedId = parseInt(match[1], 10);
     if (DETAILED_PRODUCTS[extractedId]) {
       return DETAILED_PRODUCTS[extractedId];
     }
+    if (extractedId === 2 && DETAILED_PRODUCTS[17]) return DETAILED_PRODUCTS[17];
+    if (extractedId === 4 && DETAILED_PRODUCTS[47]) return DETAILED_PRODUCTS[47];
+    if (extractedId === 5 && DETAILED_PRODUCTS[43]) return DETAILED_PRODUCTS[43];
   }
 
-  // Search by exact slug
-  const found = Object.values(DETAILED_PRODUCTS).find(
-    (p) => p.slug.toLowerCase() === idOrSlug.toLowerCase()
+  // Search in DETAILED_PRODUCTS by exact slug or exact title
+  const foundInRegistry = Object.values(DETAILED_PRODUCTS).find(
+    (p) =>
+      p.slug.toLowerCase() === str.toLowerCase() ||
+      p.title.toLowerCase() === str.toLowerCase()
   );
-  if (found) return found;
+  if (foundInRegistry) return foundInRegistry;
 
+  // Search in SPECIAL_OFFERS, NEW_ARRIVALS_PRODUCTS, CLOTHING_PRODUCTS, jewelryProductsData, allProductsData, and CATEGORY_PRODUCTS by ID
+  const targetId = !isNaN(numericId) ? numericId : match ? parseInt(match[1], 10) : null;
+  if (targetId !== null) {
+    const fromSpecial = SPECIAL_OFFERS.find((s) => s.id === targetId);
+    if (fromSpecial) {
+      const built = buildDetailedProductFromGeneric(fromSpecial);
+      DETAILED_PRODUCTS[targetId] = built;
+      return built;
+    }
+
+    const fromNew = NEW_ARRIVALS_PRODUCTS.find((n) => n.id === targetId);
+    if (fromNew) {
+      const built = buildDetailedProductFromGeneric({
+        ...fromNew,
+        price: fromNew.price ? `$${fromNew.price}` : "Request a Quote",
+        originalPrice: fromNew.oldPrice ? `$${fromNew.oldPrice}` : undefined,
+      });
+      DETAILED_PRODUCTS[targetId] = built;
+      return built;
+    }
+
+    const fromClothing = CLOTHING_PRODUCTS.find((c) => c.id === targetId);
+    if (fromClothing) {
+      const built = buildDetailedProductFromGeneric({
+        ...fromClothing,
+        price: fromClothing.price ? `$${fromClothing.price}` : "Request a Quote",
+        originalPrice: fromClothing.oldPrice ? `$${fromClothing.oldPrice}` : undefined,
+      });
+      DETAILED_PRODUCTS[targetId] = built;
+      return built;
+    }
+
+    const fromJewelry = jewelryProductsData.find((j) => j.id === targetId);
+    if (fromJewelry) {
+      const built = buildDetailedProductFromGeneric(fromJewelry);
+      DETAILED_PRODUCTS[targetId] = built;
+      return built;
+    }
+
+    const fromAll = allProductsData.find((a) => a.id === targetId);
+    if (fromAll) {
+      const built = buildDetailedProductFromGeneric(fromAll);
+      DETAILED_PRODUCTS[targetId] = built;
+      return built;
+    }
+
+    const fromCat = CATEGORY_PRODUCTS.find((c) => c.id === targetId);
+    if (fromCat) {
+      const built = buildDetailedProductFromGeneric(fromCat);
+      DETAILED_PRODUCTS[targetId] = built;
+      return built;
+    }
+  }
+
+  // Search by title or partial slug in other datasets
+  const lowerStr = str.toLowerCase();
+  const fromSpecialBySlug = SPECIAL_OFFERS.find(
+    (s) =>
+      lowerStr.includes(s.title.toLowerCase()) ||
+      s.title.toLowerCase().includes(lowerStr)
+  );
+  if (fromSpecialBySlug) {
+    const built = buildDetailedProductFromGeneric(fromSpecialBySlug);
+    DETAILED_PRODUCTS[fromSpecialBySlug.id] = built;
+    return built;
+  }
+
+  const fromNewBySlug = NEW_ARRIVALS_PRODUCTS.find(
+    (n) =>
+      lowerStr.includes(n.title.toLowerCase()) ||
+      n.title.toLowerCase().includes(lowerStr)
+  );
+  if (fromNewBySlug) {
+    const built = buildDetailedProductFromGeneric({
+      ...fromNewBySlug,
+      price: fromNewBySlug.price ? `$${fromNewBySlug.price}` : "Request a Quote",
+      originalPrice: fromNewBySlug.oldPrice ? `$${fromNewBySlug.oldPrice}` : undefined,
+    });
+    DETAILED_PRODUCTS[fromNewBySlug.id] = built;
+    return built;
+  }
+
+  const fromClothingBySlug = CLOTHING_PRODUCTS.find(
+    (c) =>
+      lowerStr.includes(c.title.toLowerCase()) ||
+      c.title.toLowerCase().includes(lowerStr)
+  );
+  if (fromClothingBySlug) {
+    const built = buildDetailedProductFromGeneric({
+      ...fromClothingBySlug,
+      price: fromClothingBySlug.price ? `$${fromClothingBySlug.price}` : "Request a Quote",
+      originalPrice: fromClothingBySlug.oldPrice ? `$${fromClothingBySlug.oldPrice}` : undefined,
+    });
+    DETAILED_PRODUCTS[fromClothingBySlug.id] = built;
+    return built;
+  }
+
+  const fromJewelryBySlug = jewelryProductsData.find(
+    (j) =>
+      lowerStr.includes(j.title.toLowerCase()) ||
+      j.title.toLowerCase().includes(lowerStr)
+  );
+  if (fromJewelryBySlug) {
+    const built = buildDetailedProductFromGeneric(fromJewelryBySlug);
+    DETAILED_PRODUCTS[fromJewelryBySlug.id] = built;
+    return built;
+  }
+
+  const fromAllBySlug = allProductsData.find(
+    (a) =>
+      lowerStr.includes(a.title.toLowerCase()) ||
+      a.title.toLowerCase().includes(lowerStr)
+  );
+  if (fromAllBySlug) {
+    const built = buildDetailedProductFromGeneric(fromAllBySlug);
+    DETAILED_PRODUCTS[fromAllBySlug.id] = built;
+    return built;
+  }
+
+  // Final fallback to 41 if absolutely no product can be found anywhere
   return DETAILED_PRODUCTS[41];
 }

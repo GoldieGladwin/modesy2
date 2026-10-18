@@ -145,10 +145,18 @@ export function saveStoredSliderItems(items: SliderItem[]): void {
   }
 }
 
-export function deleteStoredSliderItem(id: number): SliderItem[] {
+import { createSlider, updateSlider, deleteSlider } from "@/lib/supabase/sliders";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
+
+export function deleteStoredSliderItem(id: number | string): SliderItem[] {
   const items = getStoredSliderItems();
   const updated = items.filter((i) => i.id !== id);
   saveStoredSliderItems(updated);
+
+  if (isSupabaseConfigured()) {
+    deleteSlider(String(id)).catch((e) => console.error("Supabase deleteSlider error:", e));
+  }
+
   return updated;
 }
 
@@ -157,8 +165,25 @@ export function saveSingleSliderItem(item: SliderItem): SliderItem[] {
   const idx = items.findIndex((i) => i.id === item.id);
   if (idx >= 0) {
     items[idx] = item;
+    if (isSupabaseConfigured()) {
+      updateSlider({
+        id: String(item.id),
+        title: item.title,
+        link_url: item.link,
+        image_url: item.image,
+        order_index: item.order,
+      }).catch((e) => console.error("Supabase updateSlider error:", e));
+    }
   } else {
     items.unshift(item);
+    if (isSupabaseConfigured()) {
+      createSlider({
+        title: item.title,
+        link_url: item.link,
+        image_url: item.image,
+        order_index: item.order,
+      }).catch((e) => console.error("Supabase createSlider error:", e));
+    }
   }
   saveStoredSliderItems(items);
   return items;

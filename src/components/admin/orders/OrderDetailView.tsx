@@ -14,16 +14,47 @@ import {
   Upload,
   AlertCircle,
 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { Order } from './types';
 import { mockOrdersList } from './mockData';
 import ModesyHeader from '@/components/layout/guest/ModesyHeader';
 import ModesyFooter from '@/components/layout/guest/ModesyFooter';
+import { useAuth } from '@/context/AuthContext';
 
 interface OrderDetailViewProps {
   orderId: string;
+  hideHeaderFooter?: boolean;
 }
 
-export default function OrderDetailView({ orderId }: OrderDetailViewProps) {
+export default function OrderDetailView({ orderId, hideHeaderFooter }: OrderDetailViewProps) {
+  const { user } = useAuth();
+  const pathname = usePathname();
+
+  const shouldHideHeaderFooter =
+    hideHeaderFooter ||
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/moderator') ||
+    pathname?.startsWith('/member');
+
+  const homeLink = pathname?.startsWith('/admin')
+    ? '/admin'
+    : pathname?.startsWith('/vendor')
+    ? '/vendor'
+    : pathname?.startsWith('/moderator')
+    ? '/moderator'
+    : pathname?.startsWith('/member')
+    ? '/member'
+    : '/';
+
+  const ordersLink = pathname?.startsWith('/admin')
+    ? '/admin/orders'
+    : pathname?.startsWith('/vendor')
+    ? '/vendor/orders'
+    : pathname?.startsWith('/moderator')
+    ? '/moderator/orders'
+    : pathname?.startsWith('/member')
+    ? '/member/orders'
+    : '/orders';
   const initialOrder =
     mockOrdersList.find((o) => o.id === orderId) ||
     mockOrdersList.find((o) => o.id === '10042') ||
@@ -65,7 +96,7 @@ export default function OrderDetailView({ orderId }: OrderDetailViewProps) {
   const shipping = order.shippingAddress || {
     firstName: 'Daniel',
     lastName: 'Jones',
-    email: 'test@codingest.net',
+    email: 'test@gmail.com',
     phone: '+49 123 45 67 89',
     address: 'Schutzenstrasse 12 Landstuhl',
     country: 'Germany',
@@ -77,17 +108,14 @@ export default function OrderDetailView({ orderId }: OrderDetailViewProps) {
   const billing = order.billingAddress || shipping;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-gray-800 antialiased">
-      {/* Modesy Header */}
-      <ModesyHeader
-        currentUser={{
-          name: 'Trendshop',
-          email: 'trendshop@codingest.net',
-          avatar: '/assets/img/trendshop-avatar.jpg',
-          role: 'vendor',
-        }}
-        cartCount={3}
-      />
+    <div className={`${shouldHideHeaderFooter ? "w-full" : "min-h-screen"} bg-white flex flex-col font-sans text-gray-800 antialiased`}>
+      {/* Modesy Header (only when not inside layout) */}
+      {!shouldHideHeaderFooter && (
+        <ModesyHeader
+          currentUser={user || undefined}
+          cartCount={3}
+        />
+      )}
 
       <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-6 text-gray-800">
         {/* Toast Alert */}
@@ -100,11 +128,11 @@ export default function OrderDetailView({ orderId }: OrderDetailViewProps) {
 
         {/* Breadcrumb matching Screenshot 1: Home / Orders / Order */}
         <nav className="text-[12px] text-gray-500 mb-4 flex items-center gap-1.5 font-normal">
-          <Link href="/" className="hover:text-[#00a99d] transition-colors">
+          <Link href={homeLink} className="hover:text-[#00a99d] transition-colors">
             Home
           </Link>
           <span className="text-gray-400">/</span>
-          <Link href="/orders" className="hover:text-[#00a99d] transition-colors">
+          <Link href={ordersLink} className="hover:text-[#00a99d] transition-colors">
             Orders
           </Link>
           <span className="text-gray-400">/</span>
@@ -580,8 +608,8 @@ export default function OrderDetailView({ orderId }: OrderDetailViewProps) {
         )}
       </main>
 
-      {/* Modesy Footer */}
-      <ModesyFooter />
+      {/* Modesy Footer (only when not inside layout) */}
+      {!shouldHideHeaderFooter && <ModesyFooter />}
     </div>
   );
 }
