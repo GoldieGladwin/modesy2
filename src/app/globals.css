@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #222222;
+  --mds-color-main: #00a99d;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: #00a99d;
+  --font-sans: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: #fdfdfd;
+  color: var(--foreground);
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Authentic Modesy / AdminLTE Modal & Form Smooth Animations */
+@keyframes modalBackdropIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-45px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes formViewSmoothIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdownMenuSmooth {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-modal-backdrop {
+  animation: modalBackdropIn 0.25s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+.animate-modal-dialog {
+  animation: modalSlideDown 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+.animate-form-view {
+  animation: formViewSmoothIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+.animate-dropdown-menu {
+  animation: dropdownMenuSmooth 0.22s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}

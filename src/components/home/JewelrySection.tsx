@@ -1,0 +1,407 @@
+"use client";
+
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import Link from "next/link";
+import { Star, Heart, ShoppingBag, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import { getProducts } from "@/lib/supabase/products";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
+
+export default function JewelrySection() {
+  const { addToCart } = useCart();
+  const [jewelryList, setJewelryList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [wishlistState, setWishlistState] = useState<{ [key: string | number]: boolean }>({});
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [withAnimation, setWithAnimation] = useState(true);
+
+  const isTransitioningRef = useRef(false);
+  const autoUnlockTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    async function loadJewelry() {
+      if (isSupabaseConfigured()) {
+        try {
+          let { data } = await getProducts({ categorySlug: "jewelry-accessories", status: "active", limit: 20 });
+          if (!data || data.length === 0) {
+            const fallback = await getProducts({ status: "active", limit: 20 });
+            data = fallback.data;
+          }
+          if (data && data.length > 0) {
+            const mapped = data.map((p) => {
+              const sortedImages = p.product_images
+                ? [...p.product_images].sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+                : [];
+              const primary =
+                sortedImages.find((img) => img.is_primary)?.image_url ||
+                sortedImages[0]?.image_url ||
+                "/images/products/midi-skirt.webp";
+              const secondary = sortedImages[1]?.image_url || primary;
+
+              const isQuote = p.listing_type === "ordinary_listing" || Number(p.price) === 0;
+              const priceNum = Math.round(Number(p.price));
+              const disc = Number(p.discount_rate) || 0;
+              const oldPriceNum = disc > 0 && !isQuote ? Math.round(priceNum / (1 - disc / 100)) : undefined;
+
+              return {
+                id: (p.slug || p.id) as any,
+                title: p.title,
+                seller: p.profiles?.username || "Trendshop",
+                image: primary,
+                secondaryImage: secondary,
+                rating: Number(p.rating_avg) || 5,
+                favorites: 0,
+                likes: 0,
+                price: isQuote ? "Request a Quote" : `$${priceNum}`,
+                numericPrice: priceNum,
+                isDiscounted: disc > 0,
+                discountPercent: disc > 0 ? `-${disc}%` : undefined,
+                originalPrice: oldPriceNum ? `$${oldPriceNum}` : undefined,
+                isQuote,
+                link: `/product/${p.slug || p.id}`,
+              };
+            });
+            setJewelryList(mapped);
+            setCurrentIndex(mapped.length);
+          }
+        } catch (e) {
+          console.error("Error loading jewelry:", e);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    }
+    loadJewelry();
+  }, []);
+
+  // Buffer 3 set produk agar scrolling benar-benar unlimited & bolak-balik tanpa batas
+  const extendedProducts = useMemo(() => {
+    if (jewelryList.length === 0) return [];
+    return [
+      ...jewelryList.map((p, idx) => ({ ...p, uniqueKey: `prev-${p.id}-${idx}` })),
+      ...jewelryList.map((p, idx) => ({ ...p, uniqueKey: `current-${p.id}-${idx}` })),
+      ...jewelryList.map((p, idx) => ({ ...p, uniqueKey: `next-${p.id}-${idx}` })),
+    ];
+  }, [jewelryList]);
+
+  // Update jumlah kartu tampak sesuai ukuran layar
+  useEffect(() => {
+    const updateVisibleCount = () => {
+      const w = window.innerWidth;
+      if (w >= 1024) {
+        setVisibleCount(6);
+      } else if (w >= 768) {
+        setVisibleCount(4);
+      } else if (w >= 640) {
+        setVisibleCount(3);
+      } else {
+        setVisibleCount(2);
+      }
+    };
+
+    updateVisibleCount();
+    window.addEventListener("resize", updateVisibleCount);
+    return () => window.removeEventListener("resize", updateVisibleCount);
+  }, []);
+
+  // Kembalikan animasi transisi setelah silent repositioning
+  useEffect(() => {
+    if (!withAnimation) {
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setWithAnimation(true);
+        });
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [withAnimation]);
+
+  const toggleWishlist = (id: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    setWishlistState((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  // Geser tepat 1 kartu ke KANAN (Unlimited)
+  const handleNext = () => {
+    if (isTransitioningRef.current) return;
+    isTransitioningRef.current = true;
+    setWithAnimation(true);
+    setCurrentIndex((prev) => prev + 1);
+
+    if (autoUnlockTimerRef.current) clearTimeout(autoUnlockTimerRef.current);
+    autoUnlockTimerRef.current = setTimeout(() => {
+      isTransitioningRef.current = false;
+    }, 420);
+  };
+
+  // Geser tepat 1 kartu ke KIRI (Unlimited)
+  const handlePrev = () => {
+    if (isTransitioningRef.current) return;
+    isTransitioningRef.current = true;
+    setWithAnimation(true);
+    setCurrentIndex((prev) => prev - 1);
+
+    if (autoUnlockTimerRef.current) clearTimeout(autoUnlockTimerRef.current);
+    autoUnlockTimerRef.current = setTimeout(() => {
+      isTransitioningRef.current = false;
+    }, 420);
+  };
+
+  // Saat transisi selesai, reset silent jika sudah mencapai clone batas agar unlimited
+  const handleTransitionEnd = () => {
+    isTransitioningRef.current = false;
+    const len = jewelryList.length;
+    if (len === 0) return;
+    if (currentIndex >= 2 * len) {
+      setWithAnimation(false);
+      setCurrentIndex((prev) => prev - len);
+    } else if (currentIndex < len) {
+      setWithAnimation(false);
+      setCurrentIndex((prev) => prev + len);
+    }
+  };
+
+  return (
+    <section className="w-full bg-[#fcfcfc] py-8 sm:py-12 lg:py-14 border-t border-gray-100">
+      <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Bagian Jewelry & Accessories */}
+        <div className="flex items-center justify-between pb-5 sm:pb-6 border-b border-gray-100 mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-[28px] lg:text-3xl font-bold text-gray-900 tracking-tight">
+            <Link href="/products/jewelry-accessories" className="hover:text-[#00a99d] transition-colors">
+              Jewelry &amp; Accessories
+            </Link>
+          </h2>
+
+          <Link
+            href="/products/jewelry-accessories"
+            className="group inline-flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base font-semibold text-gray-700 hover:text-black transition-colors"
+          >
+            <span>View All</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5 lg:gap-6 py-2">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-lg p-2.5 animate-pulse space-y-2.5">
+                <div className="aspect-square bg-gray-100 rounded-md" />
+                <div className="h-4 bg-gray-200 rounded w-3/4 mt-2" />
+                <div className="h-3 bg-gray-100 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 rounded w-1/3 mt-2" />
+              </div>
+            ))}
+          </div>
+        ) : jewelryList.length === 0 ? (
+          <div className="text-center py-10 text-gray-400 bg-white border border-gray-200 rounded-lg text-sm">
+            No jewelry & accessories found in database.
+          </div>
+        ) : (
+        /* Carousel Produk Jewelry dengan Navigasi 1-Card & Infinite Loop */
+        <div className="relative group/carousel">
+          {/* Tombol Scroll Kiri (<): Mengambang di atas gambar kartu sebelah kiri */}
+          <button
+            type="button"
+            onClick={handlePrev}
+            aria-label="Previous product"
+            className="absolute left-3.5 top-[37%] -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white text-gray-800 shadow-[0_3px_12px_rgba(0,0,0,0.18)] border border-gray-100 flex items-center justify-center transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+          >
+            <ChevronLeft className="w-5 h-5 sm:w-5.5 sm:h-5.5 -ml-0.5 text-gray-700" />
+          </button>
+
+          {/* Tombol Scroll Kanan (>): Mengambang di atas gambar kartu sebelah kanan */}
+          <button
+            type="button"
+            onClick={handleNext}
+            aria-label="Next product"
+            className="absolute right-3.5 top-[37%] -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-white text-gray-800 shadow-[0_3px_12px_rgba(0,0,0,0.18)] border border-gray-100 flex items-center justify-center transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+          >
+            <ChevronRight className="w-5 h-5 sm:w-5.5 sm:h-5.5 -mr-0.5 text-gray-700" />
+          </button>
+
+          {/* Viewport Carousel */}
+          <div className="overflow-hidden -mx-2 sm:-mx-2.5 pb-4 pt-1">
+            <div
+              className="flex flex-nowrap items-stretch will-change-transform"
+              style={{
+                width: `${(extendedProducts.length / visibleCount) * 100}%`,
+                transform: `translateX(-${(currentIndex / extendedProducts.length) * 100}%)`,
+                transition: withAnimation
+                  ? "transform 380ms cubic-bezier(0.25, 1, 0.5, 1)"
+                  : "none",
+              }}
+              onTransitionEnd={handleTransitionEnd}
+            >
+              {extendedProducts.map((product) => {
+                const isLiked = wishlistState[product.id] ?? false;
+
+                return (
+                  <div
+                    key={product.uniqueKey}
+                    className="flex-shrink-0 px-2 sm:px-2.5 h-full flex flex-col"
+                    style={{
+                      width: `${100 / extendedProducts.length}%`,
+                    }}
+                  >
+                    <div className="group h-full flex flex-col bg-white rounded-lg border border-gray-200/90 hover:border-gray-300 hover:shadow-lg transition-all duration-300 overflow-hidden">
+                      {/* Gambar Produk & Tombol Action Overlay */}
+                      <div className="relative aspect-square w-full bg-[#f8f9fa] overflow-hidden flex-shrink-0">
+                        <Link href={product.link} className="block w-full h-full relative">
+                          {/* Gambar Utama (Default Image) */}
+                          <img
+                            src={product.image}
+                            alt={product.title}
+                            className={`absolute inset-0 w-full h-full object-cover object-center pointer-events-none transition-all duration-400 ease-in-out ${
+                              product.secondaryImage
+                                ? "group-hover:opacity-0 group-hover:scale-105"
+                                : "group-hover:scale-105"
+                            }`}
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              if (!target.src.includes("images.unsplash.com") && !target.src.includes("modesy.codingest")) {
+                                target.src = "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800";
+                              }
+                            }}
+                          />
+
+                          {/* Gambar Kedua saat Diarahkan Cursor (Hover Image) */}
+                          {product.secondaryImage && (
+                            <img
+                              src={product.secondaryImage}
+                              alt={`${product.title} - Preview`}
+                              className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-400 ease-in-out"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                target.src = product.image;
+                              }}
+                            />
+                          )}
+                        </Link>
+
+                        {/* Tombol Action (Cart & Wishlist) saat Hover */}
+                        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 translate-y-1 group-hover:translate-y-0">
+                          <button
+                            type="button"
+                            aria-label="Add to cart"
+                            title="Add to cart"
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white text-gray-700 hover:text-black hover:bg-gray-50 shadow-md flex items-center justify-center transition-all cursor-pointer hover:scale-105"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              addToCart({
+                                id: product.id,
+                                title: product.title,
+                                price: product.price,
+                                image: product.image,
+                                seller: product.seller,
+                                sku: product.sku,
+                              }, 1);
+                            }}
+                          >
+                            <ShoppingBag className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Add to wishlist"
+                            onClick={(e) => toggleWishlist(product.id, e)}
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white text-gray-700 hover:text-red-500 hover:bg-gray-50 shadow-md flex items-center justify-center transition-all cursor-pointer hover:scale-105"
+                          >
+                            <Heart
+                              className={`w-4 h-4 sm:w-4.5 sm:h-4.5 transition-colors ${
+                                isLiked ? "fill-red-500 text-red-500" : ""
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Deskripsi & Detail Kartu Produk */}
+                      <div className="p-3.5 sm:p-4 flex flex-col flex-1 justify-between gap-2">
+                        <div>
+                          {/* Judul Produk: Tinggi seragam (2 baris) */}
+                          <div className="h-[38px] sm:h-[42px] flex items-start overflow-hidden">
+                            <h3 className="text-sm sm:text-[15px] font-semibold text-gray-800 leading-snug line-clamp-2 hover:text-[#00a99d] transition-colors">
+                              <Link href={product.link} title={product.title}>
+                                {product.title}
+                              </Link>
+                            </h3>
+                          </div>
+
+                          {/* Penjual (Vendor): Tinggi seragam */}
+                          <div className="mt-1 h-[18px] flex items-center overflow-hidden">
+                            <Link
+                              href="/vendor/profile"
+                              className="text-xs sm:text-[13px] font-medium text-gray-400 hover:text-gray-600 transition-colors truncate"
+                            >
+                              {product.seller}
+                            </Link>
+                          </div>
+
+                          {/* Rating Bintang & Jumlah Likes/Wishlist: Tinggi seragam */}
+                          <div className="mt-2 h-[20px] flex items-center justify-between text-xs sm:text-[13px]">
+                            {/* 5 Bintang Rating */}
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                                    star <= product.rating
+                                      ? "text-amber-400 fill-amber-400"
+                                      : "text-gray-200"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+
+                            {/* Jumlah Likes / Hati */}
+                            <div className="flex items-center gap-1 text-gray-400 font-medium">
+                              <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+                              <span>{(Number(product.favorites) || Number(product.likes) || 0) + (isLiked ? 1 : 0)}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Harga Produk: Tinggi seragam */}
+                        <div className="pt-2 border-t border-gray-100/80 h-[34px] flex items-center">
+                          {product.isQuote ? (
+                            <span className="text-sm sm:text-[15px] font-bold text-gray-900 hover:text-[#00a99d] hover:underline cursor-pointer">
+                              Request a Quote
+                            </span>
+                          ) : (
+                            <div className="flex items-baseline gap-2">
+                              <span
+                                className={`text-base sm:text-[17px] font-bold ${
+                                  product.originalPrice
+                                    ? "text-[#00a99d]"
+                                    : "text-gray-900"
+                                }`}
+                              >
+                                {product.price}
+                              </span>
+                              {product.originalPrice && (
+                                <del className="text-xs sm:text-sm text-gray-400 font-medium line-through">
+                                  {product.originalPrice}
+                                </del>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        )}
+      </div>
+    </section>
+  );
+}
