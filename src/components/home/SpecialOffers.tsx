@@ -41,8 +41,13 @@ export default function SpecialOffers() {
               const priceNum = Math.round(Number(p.price));
               const origNum = Math.round(priceNum / (1 - disc / 100));
 
+              // Extract canonical numeric ID from slug ending or numeric id
+              const match = p.slug?.match(/-(\d+)$/);
+              const canonicalId = match ? parseInt(match[1], 10) : (typeof p.id === "number" ? p.id : 1);
+
               return {
-                id: (p.slug || p.id) as any,
+                id: canonicalId,
+                slug: p.slug || String(canonicalId),
                 title: p.title,
                 badge: `-${disc}%`,
                 image: primary,
@@ -363,7 +368,7 @@ export default function SpecialOffers() {
 
                     {/* Main Product Image Container with Link */}
                     <Link
-                      href={`/product/${product.id}`}
+                      href={`/product/${product.slug || product.id}`}
                       className="block w-full h-full relative cursor-pointer"
                       onClick={(e) => {
                         if (hasDraggedRef.current) {
@@ -384,6 +389,8 @@ export default function SpecialOffers() {
                       {/* Add to Wishlist button */}
                       <button
                         type="button"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                         aria-label={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
                         title={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
                         onClick={async (e) => {
@@ -407,6 +414,8 @@ export default function SpecialOffers() {
                       {/* Add to Cart button */}
                       <button
                         type="button"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                         aria-label="Add to cart"
                         title="Add to cart"
                         onClick={(e) => {
@@ -414,7 +423,7 @@ export default function SpecialOffers() {
                           e.stopPropagation();
                           addToCart(
                             {
-                              id: product.id,
+                              id: String(product.id),
                               title: product.title,
                               price: product.price,
                               image: product.image,
@@ -435,7 +444,7 @@ export default function SpecialOffers() {
                     <div>
                       {/* Title with Link */}
                       <Link
-                        href={`/product/${product.id}`}
+                        href={`/product/${product.slug || product.id}`}
                         className="block"
                         onClick={(e) => {
                           if (hasDraggedRef.current) {
@@ -462,6 +471,8 @@ export default function SpecialOffers() {
                         {renderStars(product.rating)}
                         <button
                           type="button"
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
                           aria-label={isInWishlist(product.id) ? "Unlike" : "Like"}
                           title={isInWishlist(product.id) ? "Unlike" : "Like"}
                           onClick={async (e) => {

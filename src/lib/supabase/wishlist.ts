@@ -4,11 +4,49 @@ import { getProductByIdOrSlug, DetailedProduct } from "@/data/productsRegistry";
 export const WISHLIST_STORAGE_KEY = "modesy_wishlist_ids";
 export const WISHLIST_CHANGE_EVENT = "modesy_wishlist_change";
 
+/**
+ * Normalizes any product identifier (number, string id, or slug) to its canonical numeric string ID.
+ * Examples:
+ * - 37 -> "37"
+ * - "seychelles-womens-brown-ankle-bootie-37" -> "37"
+ * - "black-midi-skirt-with-white-flowers-41" -> "41"
+ */
+export function normalizeWishlistId(idOrSlug: string | number): string {
+  if (!idOrSlug) return "";
+  const str = String(idOrSlug).trim();
+
+  // If it's already a clean numeric string
+  if (/^\d+$/.test(str)) {
+    return str;
+  }
+
+  // If it ends with -<digits> (standard slug pattern in Modesy)
+  const match = str.match(/-(\d+)$/);
+  if (match) {
+    return match[1];
+  }
+
+  // Try registry lookup
+  try {
+    const p = getProductByIdOrSlug(str);
+    if (p && p.id !== undefined && p.id !== null) {
+      return String(p.id);
+    }
+  } catch {}
+
+  return str;
+}
+
 export function getLocalWishlistIds(): string[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : ["41"]; // Default with skirt #41
+    if (raw === null) return ["41"]; // Default with skirt #41 for first-time visitors
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return Array.from(new Set(parsed.map((id) => normalizeWishlistId(id)).filter(Boolean)));
+    }
+    return [];
   } catch {
     return [];
   }
@@ -17,8 +55,11 @@ export function getLocalWishlistIds(): string[] {
 export function saveLocalWishlistIds(ids: string[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids));
-    window.dispatchEvent(new CustomEvent(WISHLIST_CHANGE_EVENT, { detail: ids }));
+    const normalized = Array.from(
+      new Set(ids.map((id) => normalizeWishlistId(id)).filter(Boolean))
+    );
+    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(normalized));
+    window.dispatchEvent(new CustomEvent(WISHLIST_CHANGE_EVENT, { detail: normalized }));
   } catch (e) {
     console.error("Failed to save wishlist", e);
   }

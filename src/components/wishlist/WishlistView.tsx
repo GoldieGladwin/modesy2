@@ -6,6 +6,7 @@ import ModesyHeader from "@/components/layout/guest/ModesyHeader";
 import ModesyFooter from "@/components/layout/guest/ModesyFooter";
 import {
   getWishlistProducts,
+  normalizeWishlistId,
 } from "@/lib/supabase/wishlist";
 import { Heart, Trash2, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -22,7 +23,10 @@ export default function WishlistView() {
   }, [wishlistIds]);
 
   const handleRemove = async (productId: string | number) => {
-    setProducts((prev) => prev.filter((item) => String(item.id) !== String(productId)));
+    const target = normalizeWishlistId(productId);
+    setProducts((prev) =>
+      prev.filter((item) => normalizeWishlistId(item.id) !== target)
+    );
     await removeFromWishlist(productId);
   };
 
@@ -69,7 +73,7 @@ export default function WishlistView() {
               >
                 {/* Image */}
                 <div className="relative aspect-square w-full bg-gray-50 overflow-hidden">
-                  <Link href={`/product/${p.id}`}>
+                  <Link href={`/product/${p.slug || p.id}`}>
                     <img
                       src={p.image}
                       alt={p.title}
@@ -80,9 +84,13 @@ export default function WishlistView() {
                   {/* Remove Button */}
                   <button
                     type="button"
-                    onClick={() => handleRemove(p.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleRemove(p.id);
+                    }}
                     title="Remove from wishlist"
-                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-rose-500 hover:text-rose-600 shadow-sm flex items-center justify-center transition cursor-pointer"
+                    className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-white/95 hover:bg-white text-rose-500 hover:text-rose-600 shadow-md flex items-center justify-center transition cursor-pointer hover:scale-110 active:scale-95"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

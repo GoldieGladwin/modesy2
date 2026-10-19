@@ -5,6 +5,7 @@ import {
   getLocalWishlistIds,
   saveLocalWishlistIds,
   getWishlistProductIds,
+  normalizeWishlistId,
   WISHLIST_CHANGE_EVENT,
 } from "@/lib/supabase/wishlist";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
@@ -58,16 +59,16 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
   const isInWishlist = useCallback(
     (productId: string | number): boolean => {
-      const idStr = String(productId);
-      return wishlistIds.includes(idStr);
+      const target = normalizeWishlistId(productId);
+      return wishlistIds.some((id) => normalizeWishlistId(id) === target);
     },
     [wishlistIds]
   );
 
   const removeFromWishlist = useCallback(
     async (productId: string | number) => {
-      const idStr = String(productId);
-      const nextIds = wishlistIds.filter((id) => id !== idStr);
+      const target = normalizeWishlistId(productId);
+      const nextIds = wishlistIds.filter((id) => normalizeWishlistId(id) !== target);
       setWishlistIds(nextIds);
       saveLocalWishlistIds(nextIds);
 
@@ -77,7 +78,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             .from("wishlists")
             .delete()
             .eq("user_id", user.id)
-            .eq("product_id", idStr);
+            .eq("product_id", target);
         } catch (err) {
           console.warn("Failed to delete wishlist item from Supabase:", err);
         }
@@ -88,14 +89,16 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
   const toggleWishlist = useCallback(
     async (productId: string | number): Promise<boolean> => {
-      const idStr = String(productId);
-      const isCurrentlyWishlisted = wishlistIds.includes(idStr);
+      const target = normalizeWishlistId(productId);
+      const isCurrentlyWishlisted = wishlistIds.some(
+        (id) => normalizeWishlistId(id) === target
+      );
       const nextWishlisted = !isCurrentlyWishlisted;
 
-      // Optimistic update
+      // Optimistic update using normalized canonical ID
       const nextIds = nextWishlisted
-        ? [...wishlistIds.filter((id) => id !== idStr), idStr]
-        : wishlistIds.filter((id) => id !== idStr);
+        ? [...wishlistIds.filter((id) => normalizeWishlistId(id) !== target), target]
+        : wishlistIds.filter((id) => normalizeWishlistId(id) !== target);
 
       setWishlistIds(nextIds);
       saveLocalWishlistIds(nextIds);
@@ -107,7 +110,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             await supabase
               .from("wishlists")
               .upsert(
-                { user_id: user.id, product_id: idStr },
+                { user_id: user.id, product_id: target },
                 { onConflict: "user_id,product_id" }
               );
           } else {
@@ -115,7 +118,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
               .from("wishlists")
               .delete()
               .eq("user_id", user.id)
-              .eq("product_id", idStr);
+              .eq("product_id", target);
           }
         } catch (err) {
           console.warn("Failed to persist wishlist change in Supabase:", err);
@@ -127,11 +130,15 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     [wishlistIds, user?.id]
   );
 
+  const uniqueWishlistCount = new Set(
+    wishlistIds.map((id) => normalizeWishlistId(id)).filter(Boolean)
+  ).size;
+
   return (
     <WishlistContext.Provider
       value={{
         wishlistIds,
-        totalWishlistItems: mounted ? wishlistIds.length : 0,
+        totalWishlistItems: mounted ? uniqueWishlistCount : 0,
         isInWishlist,
         toggleWishlist,
         removeFromWishlist,

@@ -1,5 +1,6 @@
 export interface SpecialOfferProduct {
   id: number;
+  slug?: string;
   title: string;
   badge: string;
   image: string;
