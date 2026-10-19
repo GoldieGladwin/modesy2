@@ -7,11 +7,13 @@ import {
   SpecialOfferProduct,
 } from "@/data/specialOffers";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 export default function SpecialOffers() {
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [products, setProducts] = useState<SpecialOfferProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -336,24 +338,9 @@ export default function SpecialOffers() {
                       />
                     </Link>
 
-                    {/* Floating Quick Action Overlay (Wishlist & Cart) */}
-                    <div className="absolute right-2 top-2 flex flex-col space-y-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 z-10">
-                      <button
-                        type="button"
-                        aria-label="Wishlist"
-                        className="w-7 h-7 bg-white rounded-full shadow flex items-center justify-center text-[#666] hover:text-[#00a99d] transition-colors border-0 cursor-pointer"
-                      >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                        </svg>
-                      </button>
+                    {/* Floating Quick Action Overlay (Cart & Wishlist) */}
+                    <div className="absolute right-2 top-2 z-10 flex flex-col gap-1.5 opacity-0 group-hover/card:opacity-100 transition-all duration-300">
+                      {/* Add to Cart button */}
                       <button
                         type="button"
                         aria-label="Add to cart"
@@ -361,15 +348,18 @@ export default function SpecialOffers() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          addToCart({
-                            id: product.id,
-                            title: product.title,
-                            price: product.price,
-                            image: product.image,
-                            seller: product.seller,
-                          }, 1);
+                          addToCart(
+                            {
+                              id: product.id,
+                              title: product.title,
+                              price: product.price,
+                              image: product.image,
+                              seller: product.seller,
+                            },
+                            1
+                          );
                         }}
-                        className="w-7 h-7 bg-white rounded-full shadow flex items-center justify-center text-[#666] hover:text-[#00a99d] transition-colors border-0 cursor-pointer hover:scale-105"
+                        className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700 hover:text-[#00a99d] hover:border-[#00a99d] hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
                       >
                         <svg
                           width="14"
@@ -382,6 +372,30 @@ export default function SpecialOffers() {
                           <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                           <line x1="3" y1="6" x2="21" y2="6" />
                           <path d="M16 10a4 4 0 0 1-8 0" />
+                        </svg>
+                      </button>
+
+                      {/* Add to Wishlist button */}
+                      <button
+                        type="button"
+                        aria-label={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                        title={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          await toggleWishlist(product.id);
+                        }}
+                        className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700 hover:text-rose-500 hover:border-rose-300 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill={isInWishlist(product.id) ? "#f43f5e" : "none"}
+                          stroke={isInWishlist(product.id) ? "#f43f5e" : "currentColor"}
+                          strokeWidth="2"
+                        >
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                         </svg>
                       </button>
                     </div>
@@ -422,14 +436,14 @@ export default function SpecialOffers() {
                             width="12"
                             height="12"
                             viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
+                            fill={isInWishlist(product.id) ? "#f43f5e" : "none"}
+                            stroke={isInWishlist(product.id) ? "#f43f5e" : "currentColor"}
                             strokeWidth="2"
                             className="mr-1"
                           >
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                           </svg>
-                          {product.wishlist}
+                          {product.wishlist + (isInWishlist(product.id) ? 1 : 0)}
                         </span>
                       </div>
 
@@ -477,19 +491,26 @@ export default function SpecialOffers() {
 
       {/* PROMO BANNERS SECTION (BELOW SPECIAL OFFERS) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-        {PROMO_BANNERS.map((banner) => (
-          <div
-            key={banner.id}
-            className="overflow-hidden rounded-[4px] cursor-pointer group/banner shadow-sm"
-          >
-            <img
-              src={banner.image}
-              alt={banner.alt}
-              className="w-full h-auto object-cover transition-transform duration-300 group-hover/banner:scale-[1.01]"
-              draggable={false}
-            />
-          </div>
-        ))}
+        {PROMO_BANNERS.map((banner, idx) => {
+          const bannerLink =
+            idx === 0
+              ? "/category/clothing?sub=Women's%20Clothing"
+              : "/category/jewelry-accessories?sub=Bags%20%26%20Purses";
+          return (
+            <Link
+              key={banner.id}
+              href={bannerLink}
+              className="overflow-hidden rounded-[4px] cursor-pointer group/banner shadow-sm block relative hover:opacity-95 transition-opacity"
+            >
+              <img
+                src={banner.image}
+                alt={banner.alt}
+                className="w-full h-auto object-cover transition-transform duration-300 group-hover/banner:scale-[1.01]"
+                draggable={false}
+              />
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

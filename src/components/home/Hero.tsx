@@ -26,7 +26,7 @@ const DEFAULT_SLIDES: HeroSlide[] = [
     description:
       "Timeless, modern, and feminine pieces made with quality materials and craftsmanship",
     buttonText: "Buy Now",
-    buttonLink: "/bags-purses/backpacks",
+    buttonLink: "/category/jewelry-accessories?sub=Bags%20%26%20Purses",
     imageDesktop: "/images/slider/slider-1.webp",
     imageMobile: "/images/slider/slider-1-mobile.webp",
   },
@@ -36,7 +36,7 @@ const DEFAULT_SLIDES: HeroSlide[] = [
     description:
       "Discover quality premium basics and trendy essentials at surprisingly affordable prices",
     buttonText: "Explore Now",
-    buttonLink: "/clothing/womens-clothing",
+    buttonLink: "/category/clothing?sub=Women's%20Clothing",
     imageDesktop: "/images/slider/slider-2.webp",
     imageMobile: "/images/slider/slider-2-mobile.webp",
   },
@@ -64,17 +64,33 @@ export default function Hero({
         try {
           const { data } = await getSliders();
           if (data && data.length > 0) {
-            const mapped: HeroSlide[] = data.map((s, idx) => ({
-              id: s.id,
-              title: s.title || (idx === 0 ? "Find Backpacks That Best Suit You" : "Buy Nice and Unique Clothes"),
-              description: idx === 0 
-                ? "Timeless, modern, and feminine pieces made with quality materials and craftsmanship"
-                : "Discover quality premium basics and trendy essentials at surprisingly affordable prices",
-              buttonText: idx === 0 ? "Buy Now" : "Explore Now",
-              buttonLink: s.link_url || "/category/clothing",
-              imageDesktop: s.image_url,
-              imageMobile: s.image_url,
-            }));
+            const mapped: HeroSlide[] = data.map((s, idx) => {
+              const isBackpack =
+                s.title?.toLowerCase().includes("backpack") ||
+                s.title?.toLowerCase().includes("bag") ||
+                idx === 0;
+              const defaultLink = isBackpack
+                ? "/category/jewelry-accessories?sub=Bags%20%26%20Purses"
+                : "/category/clothing?sub=Women's%20Clothing";
+
+              return {
+                id: s.id,
+                title:
+                  s.title ||
+                  (idx === 0
+                    ? "Find Backpacks That Best Suit You"
+                    : "Buy Nice and Unique Clothes"),
+                description:
+                  idx === 0
+                    ? "Timeless, modern, and feminine pieces made with quality materials and craftsmanship"
+                    : "Discover quality premium basics and trendy essentials at surprisingly affordable prices",
+                buttonText: idx === 0 ? "Buy Now" : "Explore Now",
+                buttonLink:
+                  s.link_url && s.link_url !== "#" ? s.link_url : defaultLink,
+                imageDesktop: s.image_url,
+                imageMobile: s.image_url,
+              };
+            });
             setSlides(mapped);
           } else {
             setSlides(DEFAULT_SLIDES);
@@ -293,7 +309,7 @@ export default function Hero({
 
       {/* Slider Viewport & Infinite Track */}
       <div
-        className="relative w-full h-[360px] sm:h-[440px] md:h-[500px] lg:h-[560px] xl:h-[600px] overflow-hidden cursor-grab active:cursor-grabbing"
+        className="relative w-full h-[280px] xs:h-[340px] sm:h-[440px] md:h-[500px] lg:h-[560px] xl:h-[600px] overflow-hidden cursor-grab active:cursor-grabbing"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -323,7 +339,7 @@ export default function Hero({
                 className="relative flex-shrink-0 w-full h-full overflow-hidden"
                 aria-hidden={!isSlideInView}
               >
-                {/* Background Image */}
+                {/* Background Image & Tap Overlay */}
                 <div className="absolute inset-0 w-full h-full">
                   <picture className="w-full h-full block">
                     {slide.imageMobile && (
@@ -350,33 +366,51 @@ export default function Hero({
                     />
                   </picture>
                   {/* Overlay gradien halus untuk memastikan teks kontras dan terbaca jelas */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-transparent to-transparent pointer-events-none md:from-black/20" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/15 to-transparent pointer-events-none md:from-black/25" />
                 </div>
 
+                {/* Clickable backdrop link */}
+                <Link
+                  href={slide.buttonLink || "#"}
+                  className="absolute inset-0 z-0 block cursor-pointer"
+                  aria-label={slide.title}
+                  onClick={(e) => {
+                    if (isDragging) e.preventDefault();
+                  }}
+                />
+
                 {/* Konten Teks di Sisi Kiri */}
-                <div className="relative z-10 w-full h-full flex items-center">
-                  <div className="max-w-7xl mx-auto px-6 sm:px-12 md:px-16 lg:px-20 w-full">
-                    <div className="max-w-xl sm:max-w-2xl text-left">
+                <div className="relative z-10 w-full h-full flex items-center pointer-events-none">
+                  <div className="max-w-7xl mx-auto px-5 sm:px-12 md:px-16 lg:px-20 w-full">
+                    <div className="max-w-xs xs:max-w-sm sm:max-w-xl md:max-w-2xl text-left pointer-events-auto">
                       {/* 1. Judul Slide */}
-                      <h2
-                        className={`text-2xl sm:text-3xl md:text-4xl lg:text-[46px] xl:text-[50px] font-bold text-white leading-tight sm:leading-tight md:leading-[1.18] tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)] ${
-                          shouldAnimate
-                            ? "hero-stagger-title"
-                            : isSlideInView
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-0"
-                        }`}
-                        style={{
-                          textShadow:
-                            "0 2px 10px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3)",
+                      <Link
+                        href={slide.buttonLink || "#"}
+                        className="block hover:underline"
+                        onClick={(e) => {
+                          if (isDragging) e.preventDefault();
                         }}
                       >
-                        {slide.title}
-                      </h2>
+                        <h2
+                          className={`text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-[46px] xl:text-[50px] font-bold text-white leading-tight sm:leading-tight md:leading-[1.18] tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)] ${
+                            shouldAnimate
+                              ? "hero-stagger-title"
+                              : isSlideInView
+                              ? "opacity-100 translate-y-0"
+                              : "opacity-0"
+                          }`}
+                          style={{
+                            textShadow:
+                              "0 2px 10px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3)",
+                          }}
+                        >
+                          {slide.title}
+                        </h2>
+                      </Link>
 
                       {/* 2. Deskripsi Slide */}
                       <p
-                        className={`mt-3 sm:mt-4 text-xs sm:text-sm md:text-base lg:text-[17px] text-white/95 font-normal leading-relaxed max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] ${
+                        className={`mt-2 sm:mt-4 text-[11px] xs:text-xs sm:text-sm md:text-base lg:text-[17px] text-white/95 font-normal leading-relaxed max-w-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] line-clamp-3 sm:line-clamp-none ${
                           shouldAnimate
                             ? "hero-stagger-desc"
                             : isSlideInView
@@ -392,7 +426,7 @@ export default function Hero({
 
                       {/* 3. Tombol Aksi */}
                       <div
-                        className={`mt-5 sm:mt-7 ${
+                        className={`mt-4 sm:mt-7 ${
                           shouldAnimate
                             ? "hero-stagger-btn"
                             : isSlideInView
@@ -402,7 +436,7 @@ export default function Hero({
                       >
                         <Link
                           href={slide.buttonLink || "#"}
-                          className="inline-flex items-center justify-center px-6 py-2.5 sm:px-7 sm:py-3 text-xs sm:text-sm md:text-[15px] font-medium text-white bg-[#222222] hover:bg-black rounded-[4px] shadow-md hover:shadow-lg transition-colors duration-200 cursor-pointer"
+                          className="inline-flex items-center justify-center px-4 py-2 sm:px-7 sm:py-3 text-xs sm:text-sm md:text-[15px] font-medium text-white bg-[#222222] hover:bg-black rounded-[4px] shadow-md hover:shadow-lg transition-colors duration-200 cursor-pointer"
                           style={{
                             backgroundColor: slide.buttonColor || "#222222",
                             color: slide.buttonTextColor || "#ffffff",

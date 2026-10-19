@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Star, Heart, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -238,9 +239,9 @@ export const PROMO_BANNERS = [
 
 export default function NewArrivals() {
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist: toggleWishlistGlobal } = useWishlist();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [wishlistState, setWishlistState] = useState<{ [key: string | number]: boolean }>({});
 
   useEffect(() => {
     async function loadNewArrivals() {
@@ -293,12 +294,10 @@ export default function NewArrivals() {
     loadNewArrivals();
   }, []);
 
-  const toggleWishlist = (id: string | number, e: React.MouseEvent) => {
+  const toggleWishlist = async (id: string | number, e: React.MouseEvent) => {
     e.preventDefault();
-    setWishlistState((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    e.stopPropagation();
+    await toggleWishlistGlobal(id);
   };
 
   return (
@@ -337,7 +336,7 @@ export default function NewArrivals() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5 lg:gap-6">
             {products.map((product) => {
-              const isLiked = wishlistState[product.id] ?? false;
+              const isLiked = isInWishlist(product.id);
 
               return (
                 <div

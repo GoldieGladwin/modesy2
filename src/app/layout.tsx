@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import AddToCartModal from "@/components/cart/AddToCartModal";
 import "./globals.css";
 
@@ -31,8 +32,10 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         <AuthProvider>
           <CartProvider>
-            {children}
-            <AddToCartModal />
+            <WishlistProvider>
+              {children}
+              <AddToCartModal />
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

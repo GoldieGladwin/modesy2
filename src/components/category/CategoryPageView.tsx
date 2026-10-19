@@ -24,6 +24,7 @@ import {
   CategoryProduct,
 } from "@/data/categoryProducts";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -37,18 +38,35 @@ function CategoryPageContent({
   role = "guest",
 }: CategoryPageViewProps) {
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const searchParams = useSearchParams();
   const initialSub = searchParams.get("sub");
+  const urlSearch = searchParams.get("search") || searchParams.get("q") || "";
+
+  const isAllProducts = slug === "all" || slug === "products";
 
   // Resolve category details from slug
   const category: CategoryItem = useMemo(() => {
+    if (isAllProducts) {
+      return {
+        id: "all",
+        title: urlSearch ? `Search Results for "${urlSearch}"` : "All Products",
+        slug: "all",
+        link: "/products",
+        icon: "ShoppingBag",
+        subcategories: CATEGORIES.flatMap((c) => c.subcategories || []),
+      } as any;
+    }
     const found = getCategoryBySlug(slug);
     if (found) return found;
     // Default fallback to Clothing if not found
     return CATEGORIES[0];
-  }, [slug]);
+  }, [slug, isAllProducts, urlSearch]);
 
-  const categorySlug = useMemo(() => getCategorySlug(category), [category]);
+  const categorySlug = useMemo(() => {
+    if (isAllProducts) return "all";
+    return getCategorySlug(category);
+  }, [category, isAllProducts]);
 
   // States
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
@@ -59,9 +77,8 @@ function CategoryPageContent({
   const [isBrandOpen, setIsBrandOpen] = useState(true);
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
-  const [keyword, setKeyword] = useState<string>("");
+  const [keyword, setKeyword] = useState<string>(urlSearch);
   const [sortBy, setSortBy] = useState<string>("most_recent");
-  const [wishlistState, setWishlistState] = useState<{ [key: string | number]: boolean }>({});
   const [hoveredProduct, setHoveredProduct] = useState<string | number | null>(null);
   const [dbProducts, setDbProducts] = useState<CategoryProduct[] | null>(null);
   const [isLoadingDb, setIsLoadingDb] = useState<boolean>(false);
@@ -73,6 +90,13 @@ function CategoryPageContent({
     }
   }, [initialSub]);
 
+  // Sync keyword when URL search param changes
+  useEffect(() => {
+    if (urlSearch) {
+      setKeyword(urlSearch);
+    }
+  }, [urlSearch]);
+
   // Fetch category products from Supabase
   useEffect(() => {
     let isMounted = true;
@@ -80,11 +104,18 @@ function CategoryPageContent({
       if (!isSupabaseConfigured()) return;
       setIsLoadingDb(true);
       try {
-        const { data, error } = await getProducts({
-          categorySlug,
+        const fetchOptions: any = {
           status: "active",
           limit: 100,
-        });
+        };
+        if (!isAllProducts && categorySlug && categorySlug !== "all") {
+          fetchOptions.categorySlug = categorySlug;
+        }
+        if (keyword.trim()) {
+          fetchOptions.search = keyword.trim();
+        }
+
+        const { data, error } = await getProducts(fetchOptions);
 
         if (error || !data || data.length === 0) {
           if (isMounted) setIsLoadingDb(false);
@@ -160,7 +191,7 @@ function CategoryPageContent({
     return () => {
       isMounted = false;
     };
-  }, [categorySlug, category]);
+  }, [categorySlug, category, isAllProducts, keyword]);
 
   // Subcategories from category
   const subCategoryList = useMemo(() => {
@@ -181,24 +212,20 @@ function CategoryPageContent({
     );
   };
 
-  const handleWishlistToggle = (productId: string | number) => {
-    setWishlistState((prev) => ({
-      ...prev,
-      [productId]: !prev[productId],
-    }));
-  };
-
   // Get products for this category (Supabase database first, fallback to static registry)
   const productsForCategory = useMemo(() => {
     if (dbProducts && dbProducts.length > 0) {
       return dbProducts;
+    }
+    if (isAllProducts) {
+      return CATEGORY_PRODUCTS;
     }
     return CATEGORY_PRODUCTS.filter(
       (p) =>
         p.categorySlug === categorySlug ||
         p.category.toLowerCase() === category.title.toLowerCase()
     );
-  }, [dbProducts, categorySlug, category.title]);
+  }, [dbProducts, categorySlug, category.title, isAllProducts]);
 
   // Filtered & sorted products
   const filteredProducts = useMemo(() => {
@@ -284,22 +311,30 @@ function CategoryPageContent({
             Products
           </Link>
           <span className="text-gray-400">/</span>
-          <span
-            className={`font-semibold cursor-pointer ${
-              selectedSubCategory
-                ? "hover:text-[#00a99d] text-gray-600"
-                : "text-gray-900"
-            }`}
-            onClick={() => setSelectedSubCategory(null)}
-          >
-            {category.title}
-          </span>
-          {selectedSubCategory && (
+          {isAllProducts ? (
+            <span className="font-semibold text-gray-900">
+              {urlSearch ? `Search Results for "${urlSearch}"` : "All Products"}
+            </span>
+          ) : (
             <>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-900 font-semibold">
-                {selectedSubCategory}
+              <span
+                className={`font-semibold cursor-pointer ${
+                  selectedSubCategory
+                    ? "hover:text-[#00a99d] text-gray-600"
+                    : "text-gray-900"
+                }`}
+                onClick={() => setSelectedSubCategory(null)}
+              >
+                {category.title}
               </span>
+              {selectedSubCategory && (
+                <>
+                  <span className="text-gray-400">/</span>
+                  <span className="text-gray-900 font-semibold">
+                    {selectedSubCategory}
+                  </span>
+                </>
+              )}
             </>
           )}
         </nav>
@@ -490,7 +525,7 @@ function CategoryPageContent({
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filteredProducts.map((product) => {
                   const isHovered = hoveredProduct === product.id;
-                  const isWishlisted = Boolean(wishlistState[product.id]);
+                  const isWishlisted = isInWishlist(product.id);
                   const hasSecondaryImage = Boolean(
                     product.secondaryImage || product.fallbackSecondaryImage
                   );
@@ -573,6 +608,28 @@ function CategoryPageContent({
                           >
                             <ShoppingCart className="w-3.5 h-3.5" />
                           </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleWishlist(product.id);
+                            }}
+                            className={`w-7 h-7 rounded-full bg-white border shadow-sm flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer ${
+                              isWishlisted
+                                ? "text-rose-500 border-rose-300"
+                                : "text-gray-700 border-gray-200 hover:text-rose-500 hover:border-rose-300"
+                            }`}
+                            title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                            aria-label="Wishlist"
+                          >
+                            <Heart
+                              className={`w-3.5 h-3.5 ${
+                                isWishlisted ? "fill-[#f43f5e] text-[#f43f5e]" : ""
+                              }`}
+                            />
+                          </button>
                         </div>
                       </div>
 
@@ -620,7 +677,7 @@ function CategoryPageContent({
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleWishlistToggle(product.id);
+                                toggleWishlist(product.id);
                               }}
                               className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-rose-500 transition-colors cursor-pointer bg-transparent border-0 p-0"
                               title={isWishlisted ? "Unlike" : "Like"}
@@ -628,14 +685,14 @@ function CategoryPageContent({
                               <Heart
                                 className={`w-3 h-3 transition-colors ${
                                   isWishlisted || product.favorites > 0
-                                    ? "fill-rose-400 text-rose-400 stroke-none"
+                                    ? "fill-[#f43f5e] text-[#f43f5e] stroke-none"
                                     : "text-gray-300 stroke-[1.5]"
                                 }`}
                               />
                               <span
                                 className={
                                   isWishlisted
-                                    ? "text-rose-500 font-semibold"
+                                    ? "text-[#f43f5e] font-semibold"
                                     : ""
                                 }
                               >

@@ -6,11 +6,7 @@ import { Star, Heart, ShoppingCart } from "lucide-react";
 import { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import {
-  toggleWishlist,
-  getLocalWishlistIds,
-  WISHLIST_CHANGE_EVENT,
-} from "@/lib/supabase/wishlist";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface ProductCardProps {
   product: Product;
@@ -19,23 +15,10 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { user } = useAuth();
   const { addToCart } = useCart();
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const isWishlisted = isInWishlist(product.id);
   const [isImageHovered, setIsImageHovered] = useState(false);
   const hasMultipleImages = Boolean(product.secondaryImage);
-
-  useEffect(() => {
-    setIsWishlisted(getLocalWishlistIds().includes(String(product.id)));
-
-    const handleWishlistChange = (e: any) => {
-      const ids: string[] = e.detail || [];
-      setIsWishlisted(ids.includes(String(product.id)));
-    };
-
-    window.addEventListener(WISHLIST_CHANGE_EVENT, handleWishlistChange);
-    return () => {
-      window.removeEventListener(WISHLIST_CHANGE_EVENT, handleWishlistChange);
-    };
-  }, [product.id]);
 
   return (
     <div className="relative bg-white border border-gray-200 rounded-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow duration-300 h-full">
@@ -116,8 +99,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              const res = await toggleWishlist(product.id, user?.id);
-              setIsWishlisted(res.isWishlisted);
+              await toggleWishlist(product.id);
             }}
             className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700 hover:text-rose-500 hover:border-rose-300 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
             title="Add to wishlist"
@@ -171,8 +153,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const res = await toggleWishlist(product.id, user?.id);
-                setIsWishlisted(res.isWishlisted);
+                await toggleWishlist(product.id);
               }}
               className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-rose-500 transition-colors cursor-pointer bg-transparent border-0 p-0"
               title={isWishlisted ? "Unlike" : "Like"}

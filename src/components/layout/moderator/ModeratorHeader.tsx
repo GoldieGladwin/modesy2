@@ -2,11 +2,12 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { CATEGORIES, getCategorySlug } from "@/data/categories";
 import LocationModal from "@/components/modals/LocationModal";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import {
   Layers,
   User,
@@ -24,8 +25,21 @@ import {
 
 export default function ModeratorHeader() {
   const { totalCartItems } = useCart();
+  const { totalWishlistItems } = useWishlist();
   const { logout } = useAuth();
+  const router = useRouter();
   const pathname = usePathname();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (trimmed) {
+      router.push(`/products?search=${encodeURIComponent(trimmed)}`);
+    } else {
+      router.push("/products");
+    }
+  };
 
   // Dropdown states
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
@@ -340,22 +354,24 @@ export default function ModeratorHeader() {
             </div>
 
             {/* Search Bar */}
-            <div className="flex-1 max-w-[620px]">
+            <form onSubmit={handleSearch} className="flex-1 max-w-[620px]">
               <div className="relative flex items-center bg-[#f6f6f6] border border-[#f6f6f6] rounded-[4px] h-[46px] w-full">
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for products, categories or brands"
                   className="w-full h-full bg-transparent pl-5 pr-12 text-[14px] text-[#7b808a] placeholder-[#7b808a] outline-none"
                 />
                 <button
-                  type="button"
+                  type="submit"
                   aria-label="Search"
                   className="absolute right-0 top-0 h-full w-[46px] flex items-center justify-center text-[#7b808a] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-none"
                 >
                   <Search className="w-4.5 h-4.5" />
                 </button>
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Right Actions: Cart (with badge 4), Wishlist, Sell Now */}
@@ -367,8 +383,8 @@ export default function ModeratorHeader() {
             >
               <div className="relative mr-1.5 flex items-center">
                 <ShoppingCart className="w-6 h-6 stroke-[1.7]" />
-                <span className="absolute -top-1.5 -right-2 bg-[#e74c3c] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold">
-                  {totalCartItems > 1 ? totalCartItems : 4}
+                <span className="absolute -top-1.5 -right-2 bg-[#00a99d] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold">
+                  {totalCartItems}
                 </span>
               </div>
               <span className="text-[14px] font-medium leading-[26px]">Cart</span>
@@ -376,11 +392,16 @@ export default function ModeratorHeader() {
 
             {/* Wishlist */}
             <Link
-              href="/guest/wishlist"
-              className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0"
+              href="/wishlist"
+              className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative"
             >
-              <div className="mr-1.5 flex items-center">
+              <div className="relative mr-1.5 flex items-center">
                 <Heart className="w-6 h-6 stroke-[1.7]" />
+                {totalWishlistItems > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#f43f5e] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold">
+                    {totalWishlistItems}
+                  </span>
+                )}
               </div>
               <span className="text-[14px] font-medium leading-[26px]">Wishlist</span>
             </Link>
@@ -534,7 +555,7 @@ export default function ModeratorHeader() {
             />
           </Link>
 
-          {/* Right Mobile Icons: Search & Cart */}
+          {/* Right Mobile Icons: Search, Wishlist & Cart */}
           <div className="flex items-center space-x-3">
             <button
               type="button"
@@ -546,35 +567,53 @@ export default function ModeratorHeader() {
             </button>
 
             <Link
+              href="/wishlist"
+              className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative"
+              aria-label="Wishlist"
+            >
+              <Heart className="w-5 h-5 text-[#555]" />
+              {totalWishlistItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#f43f5e] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+                  {totalWishlistItems}
+                </span>
+              )}
+            </Link>
+
+            <Link
               href="/cart"
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative"
               aria-label="Cart"
             >
               <ShoppingCart className="w-5 h-5 text-[#555]" />
-              <span className="absolute -top-1 -right-1 bg-[#e74c3c] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
-                {totalCartItems > 1 ? totalCartItems : 4}
-              </span>
+              {totalCartItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#00a99d] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+                  {totalCartItems}
+                </span>
+              )}
             </Link>
           </div>
         </div>
 
         {/* Mobile Search Row */}
         {mobileSearchOpen && (
-          <div className="px-4 pb-3">
+          <form onSubmit={handleSearch} className="px-4 pb-3">
             <div className="relative flex items-center bg-[#f6f6f6] border border-[#f6f6f6] rounded-[4px] h-[40px] w-full">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for products, categories or brands"
                 className="w-full h-full bg-transparent pl-4 pr-10 text-[13px] text-[#7b808a] placeholder-[#7b808a] outline-none"
               />
               <button
-                type="button"
-                className="absolute right-0 top-0 h-full w-[40px] flex items-center justify-center text-[#7b808a] bg-transparent border-none"
+                type="submit"
+                aria-label="Search"
+                className="absolute right-0 top-0 h-full w-[40px] flex items-center justify-center text-[#7b808a] bg-transparent border-none cursor-pointer"
               >
                 <Search className="w-4 h-4" />
               </button>
             </div>
-          </div>
+          </form>
         )}
 
         {/* Mobile Drawer */}
@@ -664,7 +703,7 @@ export default function ModeratorHeader() {
                           ? "/guest/blog"
                           : item === "Contact"
                           ? "/guest/contact"
-                          : "/guest/wishlist"
+                          : "/wishlist"
                       }
                       onClick={() => setMobileMenuOpen(false)}
                       className="block w-full text-left py-2 text-[14px] text-[#333] hover:text-[#00a99d] transition-colors border-b border-gray-100 last:border-0"

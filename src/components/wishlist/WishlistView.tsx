@@ -2,52 +2,27 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import ModesyHeader from "@/components/layout/guest/ModesyHeader";
 import ModesyFooter from "@/components/layout/guest/ModesyFooter";
-import { useAuth } from "@/context/AuthContext";
 import {
-  getWishlistProductIds,
   getWishlistProducts,
-  toggleWishlist,
-  WISHLIST_CHANGE_EVENT,
 } from "@/lib/supabase/wishlist";
 import { Heart, Trash2, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 export default function WishlistView() {
-  const { user } = useAuth();
   const { addToCart } = useCart();
-  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
+  const { wishlistIds, toggleWishlist } = useWishlist();
   const [products, setProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadWishlist = async () => {
-    setIsLoading(true);
-    const ids = await getWishlistProductIds(user?.id);
-    setWishlistIds(ids);
-    const prods = getWishlistProducts(ids);
-    setProducts(prods);
-    setIsLoading(false);
-  };
 
   useEffect(() => {
-    loadWishlist();
-
-    const handleWishlistChange = (e: any) => {
-      const ids: string[] = e.detail || [];
-      setWishlistIds(ids);
-      setProducts(getWishlistProducts(ids));
-    };
-
-    window.addEventListener(WISHLIST_CHANGE_EVENT, handleWishlistChange);
-    return () => {
-      window.removeEventListener(WISHLIST_CHANGE_EVENT, handleWishlistChange);
-    };
-  }, [user?.id]);
+    const prods = getWishlistProducts(wishlistIds);
+    setProducts(prods);
+  }, [wishlistIds]);
 
   const handleRemove = async (productId: string | number) => {
-    await toggleWishlist(productId, user?.id);
+    await toggleWishlist(productId);
   };
 
   return (

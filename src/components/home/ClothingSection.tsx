@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Star, Heart, ShoppingBag, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -189,9 +190,9 @@ const N = CLOTHING_PRODUCTS.length; // 11 produk
 
 export default function ClothingSection() {
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist: toggleWishlistGlobal } = useWishlist();
   const [clothingList, setClothingList] = useState<ClothingProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [wishlistState, setWishlistState] = useState<{ [key: string | number]: boolean }>({});
   const [visibleCount, setVisibleCount] = useState(6);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [withAnimation, setWithAnimation] = useState(true);
@@ -297,13 +298,7 @@ export default function ClothingSection() {
     }
   }, [withAnimation]);
 
-  const toggleWishlist = (id: number, e: React.MouseEvent) => {
-    e.preventDefault();
-    setWishlistState((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+
 
   // Geser tepat 1 kartu ke KANAN (Unlimited)
   const handleNext = () => {
@@ -343,6 +338,12 @@ export default function ClothingSection() {
       setWithAnimation(false);
       setCurrentIndex((prev) => prev + len);
     }
+  };
+
+  const toggleWishlist = async (id: string | number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await toggleWishlistGlobal(id);
   };
 
   return (
@@ -417,7 +418,7 @@ export default function ClothingSection() {
               onTransitionEnd={handleTransitionEnd}
             >
               {extendedProducts.map((product) => {
-                const isLiked = wishlistState[product.id] ?? false;
+                const isLiked = isInWishlist(product.id);
 
                 return (
                   <div

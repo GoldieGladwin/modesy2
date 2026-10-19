@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { CATEGORIES, getCategorySlug } from "@/data/categories";
 import LocationModal from "@/components/modals/LocationModal";
 import {
@@ -21,10 +21,24 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 export default function MemberHeader() {
   const { totalCartItems } = useCart();
+  const { totalWishlistItems } = useWishlist();
+  const router = useRouter();
   const pathname = usePathname();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (trimmed) {
+      router.push(`/products?search=${encodeURIComponent(trimmed)}`);
+    } else {
+      router.push("/products");
+    }
+  };
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
@@ -306,22 +320,24 @@ export default function MemberHeader() {
               </Link>
             </div>
 
-            <div className="flex-1 max-w-[620px]">
+            <form onSubmit={handleSearch} className="flex-1 max-w-[620px]">
               <div className="relative flex items-center bg-[#f6f6f6] border border-[#f6f6f6] rounded-[4px] h-[46px] w-full">
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for products, categories or brands"
                   className="w-full h-full bg-transparent pl-5 pr-12 text-[14px] text-[#7b808a] placeholder-[#7b808a] outline-none"
                 />
                 <button
-                  type="button"
+                  type="submit"
                   aria-label="Search"
                   className="absolute right-0 top-0 h-full w-[46px] flex items-center justify-center text-[#7b808a] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-none"
                 >
                   <Search className="w-4.5 h-4.5" />
                 </button>
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Right Actions */}
@@ -342,11 +358,16 @@ export default function MemberHeader() {
             </Link>
 
             <Link
-              href="/member/wishlist"
-              className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0"
+              href="/wishlist"
+              className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative"
             >
-              <div className="mr-1.5 flex items-center">
+              <div className="relative mr-1.5 flex items-center">
                 <Heart className="w-6 h-6" />
+                {totalWishlistItems > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#f43f5e] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold">
+                    {totalWishlistItems}
+                  </span>
+                )}
               </div>
               <span className="text-[14px] font-medium">Wishlist</span>
             </Link>
@@ -469,6 +490,14 @@ export default function MemberHeader() {
           <img src="/assets/img/logo.svg" alt="Modesy" className="h-8 object-contain" />
         </Link>
         <div className="flex items-center gap-3">
+          <Link href="/wishlist" className="text-gray-700 relative">
+            <Heart className="w-5 h-5" />
+            {totalWishlistItems > 0 && (
+              <span className="absolute -top-1.5 -right-2 bg-[#f43f5e] text-white text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold">
+                {totalWishlistItems}
+              </span>
+            )}
+          </Link>
           <Link href="/member/cart" className="text-gray-700 relative">
             <ShoppingCart className="w-5 h-5" />
             {totalCartItems > 0 && (

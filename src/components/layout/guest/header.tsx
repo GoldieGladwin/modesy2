@@ -2,11 +2,12 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { CATEGORIES, CategoryItem, getCategorySlug } from "@/data/categories";
 import LocationModal from "@/components/modals/LocationModal";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import {
   Layers,
   LayoutGrid,
@@ -37,8 +38,11 @@ export default function Header({
   onLogout,
   cartCount,
 }: HeaderProps = {}) {
+  const router = useRouter();
   const { totalCartItems } = useCart();
+  const { totalWishlistItems } = useWishlist();
   const pathname = usePathname();
+  const [searchQuery, setSearchQuery] = useState("");
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
@@ -52,6 +56,14 @@ export default function Header({
   const [expandedMobileCategory, setExpandedMobileCategory] = useState<
     string | null
   >(null);
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+    router.push(`/products?search=${encodeURIComponent(trimmed)}`);
+    setMobileSearchOpen(false);
+  };
 
   // Location state
   const [locationModalOpen, setLocationModalOpen] = useState(false);
@@ -578,15 +590,17 @@ export default function Header({
             </div>
 
             {/* Search Bar */}
-            <div className="flex-1 max-w-[620px]">
+            <form onSubmit={handleSearch} className="flex-1 max-w-[620px]">
               <div className="relative flex items-center bg-[#f6f6f6] border border-[#f6f6f6] rounded-[4px] h-[46px] w-full">
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for products, categories or brands"
-                  className="w-full h-full bg-transparent pl-5 pr-12 text-[14px] text-[#7b808a] placeholder-[#7b808a] outline-none"
+                  className="w-full h-full bg-transparent pl-5 pr-12 text-[14px] text-gray-800 placeholder-[#7b808a] outline-none"
                 />
                 <button
-                  type="button"
+                  type="submit"
                   aria-label="Search"
                   className="absolute right-0 top-0 h-full w-[46px] flex items-center justify-center text-[#7b808a] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-none"
                 >
@@ -605,7 +619,7 @@ export default function Header({
                   </svg>
                 </button>
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Right Actions: Cart, Wishlist, Sell Now */}
@@ -646,7 +660,7 @@ export default function Header({
               href="/wishlist"
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0"
             >
-              <div className="mr-1.5 flex items-center">
+              <div className="mr-1.5 flex items-center relative">
                 <svg
                   width="26"
                   height="26"
@@ -659,6 +673,11 @@ export default function Header({
                 >
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                 </svg>
+                {totalWishlistItems > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#00a99d] text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center font-bold">
+                    {totalWishlistItems}
+                  </span>
+                )}
               </div>
               <span className="text-[14px] font-medium leading-[26px]">
                 Wishlist
@@ -858,6 +877,31 @@ export default function Header({
               </svg>
             </button>
 
+            {/* Wishlist Icon Mobile */}
+            <Link
+              href="/wishlist"
+              className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative flex items-center"
+              aria-label="Wishlist"
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+              {totalWishlistItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#00a99d] text-white text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold">
+                  {totalWishlistItems}
+                </span>
+              )}
+            </Link>
+
             {/* Cart Icon */}
             <Link
               href="/cart"
@@ -889,16 +933,18 @@ export default function Header({
 
         {/* Mobile Search Input Row */}
         {mobileSearchOpen && (
-          <div className="px-4 pb-3">
+          <form onSubmit={handleSearch} className="px-4 pb-3">
             <div className="relative flex items-center bg-[#f6f6f6] border border-[#f6f6f6] rounded-[4px] h-[40px] w-full">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for products, categories or brands"
-                className="w-full h-full bg-transparent pl-4 pr-10 text-[13px] text-[#7b808a] placeholder-[#7b808a] outline-none"
+                className="w-full h-full bg-transparent pl-4 pr-10 text-[13px] text-gray-800 placeholder-[#7b808a] outline-none"
               />
               <button
-                type="button"
-                className="absolute right-0 top-0 h-full w-[40px] flex items-center justify-center text-[#7b808a] bg-transparent border-none"
+                type="submit"
+                className="absolute right-0 top-0 h-full w-[40px] flex items-center justify-center text-[#7b808a] hover:text-[#00a99d] bg-transparent border-none cursor-pointer"
               >
                 <svg
                   width="16"
@@ -915,7 +961,7 @@ export default function Header({
                 </svg>
               </button>
             </div>
-          </div>
+          </form>
         )}
 
         {/* Mobile Sidebar / Drawer */}
