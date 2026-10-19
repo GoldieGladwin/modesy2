@@ -37,11 +37,21 @@ export function normalizeWishlistId(idOrSlug: string | number): string {
   return str;
 }
 
-export function getLocalWishlistIds(): string[] {
+export function getLocalWishlistIds(scope = "guest"): string[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
-    if (raw === null) return ["41"]; // Default with skirt #41 for first-time visitors
+    // Clean up legacy global un-scoped key
+    const legacy = localStorage.getItem(WISHLIST_STORAGE_KEY);
+    if (legacy !== null) {
+      if (localStorage.getItem("modesy_wishlist_guest") === null) {
+        localStorage.setItem("modesy_wishlist_guest", legacy);
+      }
+      localStorage.removeItem(WISHLIST_STORAGE_KEY);
+    }
+
+    const key = `modesy_wishlist_${scope}`;
+    const raw = localStorage.getItem(key);
+    if (raw === null) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
       return Array.from(new Set(parsed.map((id) => normalizeWishlistId(id)).filter(Boolean)));
@@ -52,14 +62,17 @@ export function getLocalWishlistIds(): string[] {
   }
 }
 
-export function saveLocalWishlistIds(ids: string[]): void {
+export function saveLocalWishlistIds(ids: string[], scope = "guest"): void {
   if (typeof window === "undefined") return;
   try {
+    const key = `modesy_wishlist_${scope}`;
     const normalized = Array.from(
       new Set(ids.map((id) => normalizeWishlistId(id)).filter(Boolean))
     );
-    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(normalized));
-    window.dispatchEvent(new CustomEvent(WISHLIST_CHANGE_EVENT, { detail: normalized }));
+    localStorage.setItem(key, JSON.stringify(normalized));
+    window.dispatchEvent(
+      new CustomEvent(WISHLIST_CHANGE_EVENT, { detail: { ids: normalized, scope } })
+    );
   } catch (e) {
     console.error("Failed to save wishlist", e);
   }
@@ -97,8 +110,11 @@ export async function resolveProductUuid(productId: string | number): Promise<st
   return null;
 }
 
-export async function getWishlistProductIds(userId?: string | null): Promise<string[]> {
-  const localIds = getLocalWishlistIds();
+export async function getWishlistProductIds(
+  userId?: string | null,
+  scope = "guest"
+): Promise<string[]> {
+  const localIds = getLocalWishlistIds(scope);
 
   if (isSupabaseConfigured() && userId) {
     try {
@@ -118,9 +134,9 @@ export async function getWishlistProductIds(userId?: string | null): Promise<str
             return normalizeWishlistId(row.product_id);
           })
           .filter(Boolean);
-        const merged = Array.from(new Set([...localIds, ...dbIds]));
-        saveLocalWishlistIds(merged);
-        return merged;
+        const userIds = Array.from(new Set(dbIds));
+        saveLocalWishlistIds(userIds, scope);
+        return userIds;
       }
     } catch (e) {
       console.warn("Failed to fetch wishlist from Supabase", e);
@@ -132,17 +148,18 @@ export async function getWishlistProductIds(userId?: string | null): Promise<str
 
 export async function toggleWishlist(
   productId: string | number,
-  userId?: string | null
+  userId?: string | null,
+  scope = "guest"
 ): Promise<{ isWishlisted: boolean; ids: string[] }> {
-  const idStr = String(productId);
-  const currentIds = getLocalWishlistIds();
+  const idStr = normalizeWishlistId(productId);
+  const currentIds = getLocalWishlistIds(scope);
   const exists = currentIds.includes(idStr);
 
   const nextIds = exists
     ? currentIds.filter((id) => id !== idStr)
     : [...currentIds, idStr];
 
-  saveLocalWishlistIds(nextIds);
+  saveLocalWishlistIds(nextIds, scope);
 
   if (isSupabaseConfigured() && userId) {
     try {

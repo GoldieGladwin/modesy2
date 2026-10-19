@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Star, Heart, ChevronDown, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -24,9 +25,9 @@ type Product = {
 
 export default function FeaturedProducts() {
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [productList, setProductList] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     async function loadFeatured() {
@@ -86,10 +87,7 @@ export default function FeaturedProducts() {
   const toggleLike = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setLikedMap((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    toggleWishlist(id);
   };
 
   return (
@@ -114,7 +112,7 @@ export default function FeaturedProducts() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {productList.map((product) => {
-            const isLiked = !!likedMap[product.id];
+            const isLiked = isInWishlist(product.id);
             const displayLikes = product.favoriteCount + (isLiked ? 1 : 0);
 
           return (

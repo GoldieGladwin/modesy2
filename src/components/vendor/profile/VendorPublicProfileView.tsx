@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import VendorHeader from "@/components/layout/vendor/VendorHeader";
 import ModesyFooter from "@/components/layout/guest/ModesyFooter";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 export type ProfileTabType =
   | "products"
@@ -667,8 +669,8 @@ function VendorPublicProfileInner({
     },
   ]);
 
-  // Wishlist state
-  const [wishlist, setWishlist] = useState<number[]>([]);
+  const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist: contextToggleWishlist } = useWishlist();
 
   useEffect(() => {
     setActiveTab(initialTab);
@@ -686,10 +688,8 @@ function VendorPublicProfileInner({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const toggleWishlist = (id: number) => {
-    setWishlist((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
-    );
+  const toggleWishlist = async (id: number) => {
+    await contextToggleWishlist(id);
   };
 
   const handleDeleteMyReview = (id: string) => {
@@ -1054,7 +1054,7 @@ function VendorPublicProfileInner({
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
                     {sortedProducts.map((product) => {
-                      const isWishlisted = wishlist.includes(product.id);
+                      const isWishlisted = isInWishlist(product.id);
                       const productHref =
                         product.id === 41
                           ? "/black-midi-skirt-with-white-flowers-41?sku=B1M2S3W4F5L6-S"
@@ -1104,6 +1104,13 @@ function VendorPublicProfileInner({
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
+                                addToCart({
+                                  id: product.id,
+                                  title: product.title,
+                                  price: product.price,
+                                  image: product.image,
+                                  seller: "Vendor",
+                                });
                               }}
                               className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-gray-500 hover:text-[#20c997] shadow-sm flex items-center justify-center transition-all hover:scale-110 cursor-pointer"
                               title="Add to Cart"

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { usePathname } from "next/navigation";
 import {
   getLocalWishlistIds,
   saveLocalWishlistIds,
@@ -11,6 +12,7 @@ import {
 } from "@/lib/supabase/wishlist";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { useAuth } from "./AuthContext";
+import { getStorageScope } from "@/lib/storageScope";
 
 interface WishlistContextType {
   wishlistIds: string[];
@@ -24,28 +26,39 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const pathname = usePathname();
+  const scope = getStorageScope(user, pathname);
+
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
+  const currentLoadedScopeRef = useRef<string>(scope);
 
-  // Initialize wishlist from local storage & Supabase
+  // Initialize and synchronize wishlist per scope
   useEffect(() => {
     setMounted(true);
-    const initial = getLocalWishlistIds();
+    currentLoadedScopeRef.current = scope;
+
+    const initial = getLocalWishlistIds(scope);
     setWishlistIds(initial);
 
-    // If logged in, sync with Supabase
-    if (user?.id) {
-      getWishlistProductIds(user.id).then((ids) => {
-        setWishlistIds(ids);
+    // If logged in and not guest scope, sync with Supabase
+    if (user?.id && scope !== "guest") {
+      getWishlistProductIds(user.id, scope).then((ids) => {
+        if (currentLoadedScopeRef.current === scope) {
+          setWishlistIds(ids);
+        }
       });
     }
 
     // Listen to changes across tabs or other components
     const handleStorageChange = (e: any) => {
       if (e?.detail) {
-        setWishlistIds(e.detail);
+        if (e.detail.scope === scope) {
+          setWishlistIds(e.detail.ids || []);
+        }
       } else {
-        setWishlistIds(getLocalWishlistIds());
+        // Native window storage event
+        setWishlistIds(getLocalWishlistIds(scope));
       }
     };
 
@@ -56,7 +69,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener(WISHLIST_CHANGE_EVENT, handleStorageChange);
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, [user?.id]);
+  }, [scope, user?.id]);
 
   const isInWishlist = useCallback(
     (productId: string | number): boolean => {
@@ -71,9 +84,9 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const target = normalizeWishlistId(productId);
       const nextIds = wishlistIds.filter((id) => normalizeWishlistId(id) !== target);
       setWishlistIds(nextIds);
-      saveLocalWishlistIds(nextIds);
+      saveLocalWishlistIds(nextIds, scope);
 
-      if (isSupabaseConfigured() && user?.id) {
+      if (isSupabaseConfigured() && user?.id && scope !== "guest") {
         try {
           const productUuid = await resolveProductUuid(productId);
           if (productUuid) {
@@ -88,7 +101,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         }
       }
     },
-    [wishlistIds, user?.id]
+    [wishlistIds, scope, user?.id]
   );
 
   const toggleWishlist = useCallback(
@@ -105,10 +118,10 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         : wishlistIds.filter((id) => normalizeWishlistId(id) !== target);
 
       setWishlistIds(nextIds);
-      saveLocalWishlistIds(nextIds);
+      saveLocalWishlistIds(nextIds, scope);
 
-      // Persist in Supabase directly using resolved product UUID
-      if (isSupabaseConfigured() && user?.id) {
+      // Persist in Supabase directly using resolved product UUID only for authenticated scope
+      if (isSupabaseConfigured() && user?.id && scope !== "guest") {
         try {
           const productUuid = await resolveProductUuid(productId);
           if (productUuid) {
@@ -134,7 +147,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
       return nextWishlisted;
     },
-    [wishlistIds, user?.id]
+    [wishlistIds, scope, user?.id]
   );
 
   const uniqueWishlistCount = new Set(
@@ -169,3 +182,4 @@ export function useWishlist(): WishlistContextType {
   }
   return context;
 }
+

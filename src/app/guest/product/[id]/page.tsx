@@ -26,6 +26,7 @@ import {
   Product,
 } from "@/data/products";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface ProductDetailPageProps {
   params: Promise<{
@@ -36,11 +37,13 @@ interface ProductDetailPageProps {
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = use(params);
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
 
   // Find product by id
   const product: Product = getProductById(id);
+  const isWishlisted = isInWishlist(product.id);
 
   // Gallery images
   const galleryImages =
@@ -55,7 +58,6 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     product.colors && product.colors.length > 0 ? product.colors[0].name : "Standard"
   );
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "description" | "additional" | "shipping" | "reviews" | "comments"
   >("description");
@@ -339,14 +341,17 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 {/* Wishlist Link */}
                 <button
                   type="button"
-                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  onClick={() => toggleWishlist(product.id)}
                   className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-rose-600 font-medium transition cursor-pointer"
                 >
                   <Heart
-                    className={`w-4 h-4 ${isWishlisted ? "fill-rose-500 text-rose-500" : ""
-                      }`}
+                    className={`w-4 h-4 ${
+                      isWishlisted ? "fill-rose-500 text-rose-500" : ""
+                    }`}
                   />
-                  <span>Add to wishlist</span>
+                  <span>
+                    {isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                  </span>
                 </button>
               </div>
 
