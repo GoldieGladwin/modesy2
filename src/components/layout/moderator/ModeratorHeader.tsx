@@ -378,7 +378,7 @@ export default function ModeratorHeader() {
           <div className="flex items-center space-x-7 shrink-0">
             {/* Cart with red 4 badge */}
             <Link
-              href="/cart"
+              href="/moderator/cart"
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative group"
             >
               <div className="relative mr-1.5 flex items-center">
@@ -392,7 +392,7 @@ export default function ModeratorHeader() {
 
             {/* Wishlist */}
             <Link
-              href="/wishlist"
+              href="/moderator/wishlist"
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative"
             >
               <div className="relative mr-1.5 flex items-center">
@@ -567,7 +567,7 @@ export default function ModeratorHeader() {
             </button>
 
             <Link
-              href="/wishlist"
+              href="/moderator/wishlist"
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative"
               aria-label="Wishlist"
             >
@@ -580,7 +580,7 @@ export default function ModeratorHeader() {
             </Link>
 
             <Link
-              href="/cart"
+              href="/moderator/cart"
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative"
               aria-label="Cart"
             >
@@ -703,7 +703,7 @@ export default function ModeratorHeader() {
                           ? "/guest/blog"
                           : item === "Contact"
                           ? "/guest/contact"
-                          : "/wishlist"
+                          : "/moderator/wishlist"
                       }
                       onClick={() => setMobileMenuOpen(false)}
                       className="block w-full text-left py-2 text-[14px] text-[#333] hover:text-[#00a99d] transition-colors border-b border-gray-100 last:border-0"

@@ -6,7 +6,7 @@ import { ShoppingCart, ArrowRight, Trash2, Plus, Minus, ArrowLeft } from "lucide
 import { useCart } from "@/context/CartContext";
 
 interface CartPageViewProps {
-  role?: "guest" | "member" | "vendor" | "admin";
+  role?: "guest" | "member" | "vendor" | "admin" | "moderator";
 }
 
 export default function CartPageView({ role = "guest" }: CartPageViewProps) {
@@ -19,7 +19,16 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
     clearCart,
   } = useCart();
 
-  const homeUrl = role === "member" ? "/member" : role === "vendor" ? "/vendor" : "/guest";
+  const homeUrl =
+    role === "admin"
+      ? "/admin"
+      : role === "moderator"
+      ? "/moderator"
+      : role === "member"
+      ? "/member"
+      : role === "vendor"
+      ? "/vendor"
+      : "/guest";
 
   if (cartItems.length === 0) {
     return (
@@ -104,7 +113,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
                           </div>
                           <div>
                             <Link
-                              href={`/product/${item.id}`}
+                              href={role === "guest" ? `/guest/product/${item.id}` : `/product/${item.id}`}
                               className="font-medium text-gray-800 hover:text-[#00a99d] transition line-clamp-2 text-xs sm:text-sm"
                             >
                               {item.title}

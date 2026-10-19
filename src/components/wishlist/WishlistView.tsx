@@ -13,7 +13,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 
 interface WishlistViewProps {
-  role?: "guest" | "member" | "vendor" | "admin";
+  role?: "guest" | "member" | "vendor" | "admin" | "moderator";
   hideHeaderFooter?: boolean;
   currentUser?: {
     email: string;
@@ -39,6 +39,10 @@ export default function WishlistView({
       ? "/vendor"
       : role === "member"
       ? "/member"
+      : role === "moderator"
+      ? "/moderator"
+      : role === "admin"
+      ? "/admin"
       : "/";
 
   const productUrl = (slugOrId: string | number) =>

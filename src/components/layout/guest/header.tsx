@@ -634,7 +634,7 @@ export default function Header({
           <div className="flex items-center space-x-7 shrink-0">
             {/* Cart */}
             <Link
-              href={isGuestRoute ? "/guest/cart" : "/cart"}
+              href={isGuestRoute ? "/guest/cart" : effectiveUser?.role === "vendor" ? "/vendor/cart" : "/cart"}
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative group"
             >
               <div className="relative mr-1.5 flex items-center">
@@ -665,7 +665,7 @@ export default function Header({
 
             {/* Wishlist */}
             <Link
-              href={isGuestRoute ? "/guest/wishlist" : "/wishlist"}
+              href={isGuestRoute ? "/guest/wishlist" : effectiveUser?.role === "vendor" ? "/vendor/wishlist" : "/wishlist"}
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0"
             >
               <div className="mr-1.5 flex items-center relative">
@@ -887,7 +887,7 @@ export default function Header({
 
             {/* Wishlist Icon Mobile */}
             <Link
-              href={isGuestRoute ? "/guest/wishlist" : "/wishlist"}
+              href={isGuestRoute ? "/guest/wishlist" : effectiveUser?.role === "vendor" ? "/vendor/wishlist" : "/wishlist"}
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative flex items-center"
               aria-label="Wishlist"
             >
@@ -912,7 +912,7 @@ export default function Header({
 
             {/* Cart Icon */}
             <Link
-              href={isGuestRoute ? "/guest/cart" : "/cart"}
+              href={isGuestRoute ? "/guest/cart" : effectiveUser?.role === "vendor" ? "/vendor/cart" : "/cart"}
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative flex items-center"
               aria-label="Cart"
             >
@@ -1014,7 +1014,7 @@ export default function Header({
               <div className="space-y-2 py-2">
                 {[
                   { title: "Home", href: isGuestRoute ? "/guest" : "/" },
-                  { title: "Wishlist", href: isGuestRoute ? "/guest/wishlist" : "/wishlist" },
+                  { title: "Wishlist", href: isGuestRoute ? "/guest/wishlist" : effectiveUser?.role === "vendor" ? "/vendor/wishlist" : "/wishlist" },
                   { title: "Contact", href: "/guest/contact" },
                   { title: "Blog", href: isGuestRoute ? "/guest/blog" : "/blog" },
                   { title: "Sell on Modesy", href: isGuestRoute ? "/guest/start-selling" : "/start-selling" },

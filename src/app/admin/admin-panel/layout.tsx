@@ -11,7 +11,7 @@ export default function AdminPanelLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
   const router = useRouter();
 
   // State untuk mengontrol buka/tutup sidebar (default true / terbuka di desktop)
@@ -19,16 +19,22 @@ export default function AdminPanelLayout({
 
   // Guard: if user is not admin/moderator or explicitly logged out, redirect to admin login
   useEffect(() => {
+    if (!isInitialized) return;
     const isExplicitLogout =
       typeof window !== "undefined" &&
       sessionStorage.getItem("modesy_explicit_logout") === "true";
     if (
       isExplicitLogout ||
-      (user && user.role !== "admin" && user.role !== "moderator")
+      !user ||
+      (user.role !== "admin" && user.role !== "moderator")
     ) {
-      router.push("/admin/login");
+      router.replace("/admin/login");
     }
-  }, [user, router]);
+  }, [user, isInitialized, router]);
+
+  if (!isInitialized || !user || (user.role !== "admin" && user.role !== "moderator")) {
+    return null;
+  }
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);

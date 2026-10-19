@@ -59,7 +59,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-2 w-full">
         <nav className="text-xs text-gray-500 flex items-center gap-1.5 flex-wrap">
-          <Link href="/" className="hover:text-[#00a99d]">
+          <Link href="/guest" className="hover:text-[#00a99d]">
             Home
           </Link>
           <span>/</span>

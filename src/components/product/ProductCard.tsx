@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Star, Heart, ShoppingCart } from "lucide-react";
 import { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
@@ -19,6 +20,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isWishlisted = isInWishlist(product.id);
   const [isImageHovered, setIsImageHovered] = useState(false);
   const hasMultipleImages = Boolean(product.secondaryImage);
+  const pathname = usePathname();
+  const isGuest = pathname?.startsWith("/guest");
+  const productUrl = isGuest ? `/guest/product/${product.id}` : `/product/${product.id}`;
 
   return (
     <div className="relative bg-white border border-gray-200 rounded-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow duration-300 h-full">
@@ -36,7 +40,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Product Image Container with Hardware-Accelerated Smooth Cross-fade */}
-        <Link href={`/product/${product.id}`} className="block w-full h-full relative overflow-hidden">
+        <Link href={productUrl} className="block w-full h-full relative overflow-hidden">
           {/* Primary Image */}
           <img
             src={product.image}
@@ -122,7 +126,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="p-3 flex-1 flex flex-col justify-between">
         <div>
           {/* Product Title */}
-          <Link href={`/product/${product.id}`} className="block">
+          <Link href={productUrl} className="block">
             <h3 className="text-xs sm:text-[13px] font-medium text-gray-800 line-clamp-2 hover:text-[#1963d8] leading-snug transition-colors h-[2.3rem] overflow-hidden">
               {product.title}
             </h3>

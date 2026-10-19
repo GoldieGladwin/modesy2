@@ -477,7 +477,7 @@ export default function AdminHeader() {
           <div className="flex items-center space-x-7 shrink-0">
             {/* Cart */}
             <Link
-              href="/admin/orders"
+              href="/admin/cart"
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative group"
             >
               <div className="relative mr-1.5 flex items-center">
@@ -508,7 +508,7 @@ export default function AdminHeader() {
 
             {/* Wishlist */}
             <Link
-              href="/wishlist"
+              href="/admin/wishlist"
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative"
             >
               <div className="relative mr-1.5 flex items-center">
@@ -717,7 +717,7 @@ export default function AdminHeader() {
 
             {/* Wishlist Icon */}
             <Link
-              href="/wishlist"
+              href="/admin/wishlist"
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative"
               aria-label="Wishlist"
             >
@@ -742,7 +742,7 @@ export default function AdminHeader() {
 
             {/* Cart Icon */}
             <Link
-              href="/admin/orders"
+              href="/admin/cart"
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative"
               aria-label="Cart"
             >
@@ -888,7 +888,7 @@ export default function AdminHeader() {
                         item === "Home"
                           ? "/admin"
                           : item === "Wishlist"
-                          ? "/wishlist"
+                          ? "/admin/wishlist"
                           : item === "Sell on Modesy"
                           ? "/admin/dashboard"
                           : item === "Blog"

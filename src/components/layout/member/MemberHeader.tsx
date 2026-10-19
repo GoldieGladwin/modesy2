@@ -358,7 +358,7 @@ export default function MemberHeader() {
             </Link>
 
             <Link
-              href="/wishlist"
+              href="/member/wishlist"
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative"
             >
               <div className="relative mr-1.5 flex items-center">
@@ -490,7 +490,7 @@ export default function MemberHeader() {
           <img src="/assets/img/logo.svg" alt="Modesy" className="h-8 object-contain" />
         </Link>
         <div className="flex items-center gap-3">
-          <Link href="/wishlist" className="text-gray-700 relative">
+          <Link href="/member/wishlist" className="text-gray-700 relative">
             <Heart className="w-5 h-5" />
             {totalWishlistItems > 0 && (
               <span className="absolute -top-1.5 -right-2 bg-[#f43f5e] text-white text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold">

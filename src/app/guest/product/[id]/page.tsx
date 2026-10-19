@@ -90,11 +90,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-2 w-full">
         <nav className="text-xs text-gray-500 flex items-center gap-1.5 flex-wrap">
-          <Link href="/" className="hover:text-[#00a99d]">
+          <Link href="/guest" className="hover:text-[#00a99d]">
             Home
           </Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-[#00a99d]">
+          <Link href="/guest/products" className="hover:text-[#00a99d]">
             {product.category || "Products"}
           </Link>
           <span>/</span>
@@ -177,7 +177,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 <div className="flex items-center gap-3">
                   <span>
                     Seller:{" "}
-                    <Link href="/" className="text-[#1963d8] hover:underline font-medium">
+                    <Link href="/guest" className="text-[#1963d8] hover:underline font-medium">
                       {product.seller}
                     </Link>
                   </span>
@@ -511,7 +511,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
           <div className="text-center pt-2">
             <Link
-              href="/products/jewelry-accessories"
+              href="/guest/products"
               className="text-xs font-semibold text-[#1963d8] hover:underline"
             >
               View All &gt;

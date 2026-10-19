@@ -18,6 +18,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
+  isInitialized: boolean;
   isLoginModalOpen: boolean;
   openLoginModal: () => void;
   closeLoginModal: () => void;
@@ -32,6 +33,7 @@ const STORAGE_KEY = "modesy_auth_user";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const router = useRouter();
 
@@ -98,6 +100,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (e) {
       console.error("Failed to parse auth user", e);
+    } finally {
+      setIsInitialized(true);
     }
 
     // 2. If Supabase is configured, listen to Supabase Auth State
@@ -290,6 +294,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isLoggedIn: !!user,
+        isInitialized,
         isLoginModalOpen,
         openLoginModal,
         closeLoginModal,
@@ -336,6 +341,7 @@ export function useAuth(): AuthContextType {
     return {
       user: null,
       isLoggedIn: false,
+      isInitialized: false,
       isLoginModalOpen: false,
       openLoginModal: () => {},
       closeLoginModal: () => {},

@@ -286,10 +286,10 @@ function CategoryPageContent({
   ]);
 
   // Role based links
-  const homeHref = role === "guest" ? "/" : `/${role}`;
+  const homeHref = role === "guest" ? "/guest" : `/${role}`;
   const productsHref =
     role === "guest"
-      ? `/category/${categorySlug}`
+      ? `/guest/category/${categorySlug}`
       : `/${role}/category/${categorySlug}`;
 
   return (
@@ -552,7 +552,7 @@ function CategoryPageContent({
 
                         {/* Product Image */}
                         <Link
-                          href={`/product/${product.id}`}
+                          href={role === "guest" ? `/guest/product/${product.id}` : `/product/${product.id}`}
                           className="block w-full h-full relative overflow-hidden"
                         >
                           <img
@@ -638,7 +638,7 @@ function CategoryPageContent({
                         <div>
                           {/* Title */}
                           <Link
-                            href={`/product/${product.id}`}
+                            href={role === "guest" ? `/guest/product/${product.id}` : `/product/${product.id}`}
                             className="block"
                           >
                             <h3 className="text-xs sm:text-[13px] font-medium text-gray-800 line-clamp-2 hover:text-[#00a99d] leading-snug transition-colors h-[2.3rem] overflow-hidden">

@@ -11,24 +11,23 @@ export default function GuestLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    // If authenticated user lands on the guest homepage, redirect to their role's landing page
-    if (pathname === "/guest") {
-      if (user?.role === "admin") {
-        router.replace("/admin");
-      } else if (user?.role === "vendor") {
-        router.replace("/vendor");
-      } else if (user?.role === "moderator") {
-        router.replace("/moderator");
-      } else if (user?.role === "member") {
-        router.replace("/member");
+    if (!isInitialized) return;
+    // If authenticated user lands on guest pages, redirect to their role's page
+    if (user) {
+      if (pathname === "/guest" || pathname === "/guest/") {
+        router.replace(`/${user.role}`);
+      } else if (pathname === "/guest/cart") {
+        router.replace(`/${user.role}/cart`);
+      } else if (pathname === "/guest/wishlist") {
+        router.replace(`/${user.role}/wishlist`);
       }
     }
-  }, [user, pathname, router]);
+  }, [user, isInitialized, pathname, router]);
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex flex-col font-sans text-gray-800">

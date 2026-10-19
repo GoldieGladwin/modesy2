@@ -6,9 +6,10 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function RootPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
 
   useEffect(() => {
+    if (!isInitialized) return;
     if (user?.role === "admin") {
       router.replace("/admin");
     } else if (user?.role === "vendor") {
@@ -20,7 +21,7 @@ export default function RootPage() {
     } else {
       router.replace("/guest");
     }
-  }, [user, router]);
+  }, [user, isInitialized, router]);
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center">
