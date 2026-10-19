@@ -35,7 +35,7 @@ export default function Header({
   onOpenLoginModal,
   currentUser,
   onLogout,
-  cartCount = 3,
+  cartCount,
 }: HeaderProps = {}) {
   const { totalCartItems } = useCart();
   const pathname = usePathname();

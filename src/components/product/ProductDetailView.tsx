@@ -319,14 +319,8 @@ export default function ProductDetailView({
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex flex-col font-sans text-gray-800 antialiased">
-      {/* Header (Logged in as Trendshop matching Screenshot) */}
+      {/* Header (Dynamic based on active auth state) */}
       <ModesyHeader
-        currentUser={{
-          name: "Trendshop",
-          email: "trendshop@gmail.com",
-          avatar: "/assets/img/trendshop-avatar.jpg",
-          role: "vendor",
-        }}
         onOpenLoginModal={() => setIsLoginModalOpen(true)}
       />
 

@@ -24,6 +24,8 @@ import {
   CategoryProduct,
 } from "@/data/categoryProducts";
 import { useCart } from "@/context/CartContext";
+import { getProducts } from "@/lib/supabase/products";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 interface CategoryPageViewProps {
   slug: string;
@@ -59,8 +61,10 @@ function CategoryPageContent({
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [keyword, setKeyword] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("most_recent");
-  const [wishlistState, setWishlistState] = useState<{ [key: number]: boolean }>({});
-  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
+  const [wishlistState, setWishlistState] = useState<{ [key: string | number]: boolean }>({});
+  const [hoveredProduct, setHoveredProduct] = useState<string | number | null>(null);
+  const [dbProducts, setDbProducts] = useState<CategoryProduct[] | null>(null);
+  const [isLoadingDb, setIsLoadingDb] = useState<boolean>(false);
 
   // Sync subcategory when URL search param changes
   useEffect(() => {
@@ -68,6 +72,95 @@ function CategoryPageContent({
       setSelectedSubCategory(initialSub);
     }
   }, [initialSub]);
+
+  // Fetch category products from Supabase
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchProducts() {
+      if (!isSupabaseConfigured()) return;
+      setIsLoadingDb(true);
+      try {
+        const { data, error } = await getProducts({
+          categorySlug,
+          status: "active",
+          limit: 100,
+        });
+
+        if (error || !data || data.length === 0) {
+          if (isMounted) setIsLoadingDb(false);
+          return;
+        }
+
+        const mapped: CategoryProduct[] = data.map((item: any, idx: number) => {
+          const primaryImg =
+            item.product_images?.find((img: any) => img.is_primary)?.image_url ||
+            item.product_images?.[0]?.image_url ||
+            "/images/products/midi-skirt.webp";
+          const secondaryImg =
+            item.product_images?.find((img: any) => !img.is_primary)?.image_url ||
+            item.product_images?.[1]?.image_url;
+
+          const numPrice = Number(item.price) || 0;
+          const origPrice = item.discount_rate
+            ? Math.round(numPrice / (1 - item.discount_rate / 100))
+            : undefined;
+
+          let subCatName = "";
+          if (item.categories?.name) {
+            const directMatch = category.subcategories?.find(
+              (s) => s.title.toLowerCase() === item.categories.name.toLowerCase()
+            );
+            if (directMatch) {
+              subCatName = directMatch.title;
+            } else {
+              const parentSub = category.subcategories?.find((s) =>
+                s.items.some(
+                  (subItem) =>
+                    subItem.toLowerCase() === item.categories.name.toLowerCase()
+                )
+              );
+              subCatName = parentSub ? parentSub.title : item.categories.name;
+            }
+          }
+
+          return {
+            id: item.id || 1000 + idx,
+            title: item.title,
+            seller: item.profiles?.username || "Trendshop",
+            image: primaryImg,
+            secondaryImage: secondaryImg && secondaryImg !== primaryImg ? secondaryImg : undefined,
+            rating: 5,
+            favorites: 0,
+            price: `$${numPrice}`,
+            originalPrice: origPrice ? `$${origPrice}` : undefined,
+            numericPrice: numPrice,
+            isDiscounted: !!item.discount_rate,
+            discountPercent: item.discount_rate ? `-${item.discount_rate}%` : undefined,
+            isFeatured: !!item.is_featured,
+            category: category.title,
+            categorySlug: categorySlug,
+            subCategory: subCatName || category.subcategories?.[0]?.title || "",
+            brand: "Trendshop",
+            sku: item.sku,
+            description: item.description,
+          };
+        });
+
+        if (isMounted && mapped.length > 0) {
+          setDbProducts(mapped);
+        }
+      } catch (err) {
+        console.error("Error fetching Supabase products for category:", err);
+      } finally {
+        if (isMounted) setIsLoadingDb(false);
+      }
+    }
+
+    fetchProducts();
+    return () => {
+      isMounted = false;
+    };
+  }, [categorySlug, category]);
 
   // Subcategories from category
   const subCategoryList = useMemo(() => {
@@ -88,21 +181,24 @@ function CategoryPageContent({
     );
   };
 
-  const handleWishlistToggle = (productId: number) => {
+  const handleWishlistToggle = (productId: string | number) => {
     setWishlistState((prev) => ({
       ...prev,
       [productId]: !prev[productId],
     }));
   };
 
-  // Get products for this category
+  // Get products for this category (Supabase database first, fallback to static registry)
   const productsForCategory = useMemo(() => {
+    if (dbProducts && dbProducts.length > 0) {
+      return dbProducts;
+    }
     return CATEGORY_PRODUCTS.filter(
       (p) =>
         p.categorySlug === categorySlug ||
         p.category.toLowerCase() === category.title.toLowerCase()
     );
-  }, [categorySlug, category.title]);
+  }, [dbProducts, categorySlug, category.title]);
 
   // Filtered & sorted products
   const filteredProducts = useMemo(() => {

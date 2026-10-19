@@ -335,17 +335,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             name: loggedUser.name,
           });
 
-          // Role-based redirection after login
+          // Redirect all roles to landing page after login
           if (res?.user) {
-            if (res.user.role === "admin") {
-              router.push("/admin/admin-panel");
-            } else if (res.user.role === "moderator") {
-              router.push("/moderator/admin-panel");
-            } else if (res.user.role === "vendor") {
-              router.push("/vendor/dashboard");
-            } else if (res.user.role === "member") {
-              router.push("/member/profile");
-            }
+            router.push("/");
           }
         }}
       />

@@ -1,214 +1,294 @@
-# Modesy Marketplace Clone — Arsitektur & Panduan Panel Admin
+# Modesy Multi-Vendor Marketplace — Dokumentasi Lengkap & Arsitektur
 
-Dokumentasi ini merangkum **struktur proyek, status file terkini, dan rancangan implementasi Modesy Admin Panel** berbasis Next.js App Router, Tailwind CSS, dan Lucide React agar rapi, terstruktur, dan mudah dipahami.
-
----
-
-## 📌 1. Gambaran Umum UI Modesy Admin Panel
-Berdasarkan referensi dashboard admin Modesy (`modesy.codingest.net/admin/`), interface admin dibagi menjadi 3 area utama:
-
-```
-+---------------------------------------------------------------------------------------+
-|  MODESY PANEL   | [=] Toggle   [View Site]   [English v]   [(Avatar) Admin v]         | <-- AdminHeader
-+-----------------+---------------------------------------------------------------------+
-| (Avatar) Admin  |                                                                     |
-| * Online        | [ 41 Orders ]   [ 47 Products ]   [ 0 Pending ]   [ 15 Members ]    | <-- 4 StatCard
-|                 +-----------------------------------+---------------------------------+
-| > NAVIGATION    |                                   |                                 |
-| > ORDERS        | Latest Orders                     | Latest Transactions             |
-| > PRODUCTS      | - #10041 | $60.20 | Processing    | - #10033 | $191.10 | Succeeded  | <-- Data Widgets
-| > PAYMENTS      | - #10040 | $138   | Processing    | - #10031 | $257    | Succeeded  |     (Baris 1)
-| > CONTENT       | [View All]                        | [View All]                      |
-| > MEMBERSHIP    +-----------------------------------+---------------------------------+
-| > MANAGEMENT    | Latest Products                   | Latest Pending Products         | <-- Data Widgets
-| > SETTINGS      | (Daftar produk terbaru)           | (Daftar produk approval)        |     (Baris 2)
-| [v Backup DB]   | [View All]                        | [View All]                      |
-+-----------------+-----------------------------------+---------------------------------+
-     ^
-AdminSidebar
-```
+Dokumentasi ini merangkum **struktur folder proyek, alur kerja (web flow), sistem autentikasi multi-role, integrasi database Supabase, dan manajemen aset produk** pada aplikasi Modesy Marketplace Clone berbasis Next.js 15 (App Router), Tailwind CSS, TypeScript, dan Supabase.
 
 ---
 
-## 📁 2. Peta Struktur File Lengkap Proyek
+## 📌 1. Daftar Perbaikan Bug & Fitur Terkini
 
-Berikut adalah struktur file lengkap proyek saat ini beserta statusnya:
+1. **Header Keranjang Tamu (Guest Cart Header Fixed)**:
+   - Pada saat pengguna bertatus *guest* (belum login) mengakses halaman keranjang belanja (`/cart`), header tidak lagi berubah secara otomatis menjadi akun vendor "Trendshop".
+   - Header tamu tetap konsisten menampilkan tombol **Login** dan **Register**, serta keranjang mencerminkan status belanja sebenarnya dari tamu.
+2. **Redirect Login Terpadu (Unified Post-Login Redirect)**:
+   - Apapun role akun yang melakukan login (**Admin**, **Vendor**, **Moderator**, maupun **Member/Buyer**), setelah proses autentikasi berhasil, sistem secara konsisten melakukan `router.push("/")` langsung ke **Landing Page utama**.
+   - Dari landing page, user dapat menjelajah produk dan mengakses panel kontrol masing-masing melalui dropdown profil di header.
+3. **Produk & Aset Gambar Database (Database Product Display & Local Assets)**:
+   - Semua aset gambar fisik di `public/images/products/` telah didaftarkan dan diintegrasikan ke database Supabase (`products` & `product_images`) serta katalog lokal (`CATEGORY_PRODUCTS`).
+   - Komponen katalog kategori (`CategoryPageView.tsx`) kini aktif mengambil data produk secara langsung dari Supabase via `getProducts()`, dengan mekanisme *graceful fallback* ke registry lokal jika database offline atau kosong.
 
-> **Keterangan Status:**
-> - 🟢 **[SUDAH ADA & AKTIF]** : File frontend/toko utama yang sudah berfungsi normal (jangan diubah).
-> - 🟡 **[SUDAH ADA, PERLU DIISI]** : File/folder sudah dibuat di proyek Anda, namun kodenya masih kosong (*0 bytes*) atau masih *placeholder*.
-> - 🔵 **[PERLU DITAMBAHKAN]** : File baru pendukung agar tampilan admin langsung hidup dengan data dummy.
+---
+
+## 📁 2. Struktur Folder Lengkap Proyek
+
+Berikut adalah rincian hierarki direktori proyek beserta peran masing-masing modul:
 
 ```text
 modesy-dupl/
-├── public/                                      # File aset statis (gambar, icon, logo)
+├── public/                                      # Aset statis publik (dapat diakses langsung via URL browser)
+│   ├── images/
+│   │   ├── products/                            # Aset gambar produk jualan lokal
+│   │   │   ├── puma-shoes.jpg                   # Sepatu olahraga Puma (kategori Shoes)
+│   │   │   ├── shoes-streetwear.jpg             # Sepatu streetwear pria
+│   │   │   ├── white-slides.jpg                 # Sandal santai putih
+│   │   │   ├── black-cap.jpg                    # Topi pelindung matahari (Jewelry & Accessories)
+│   │   │   ├── draft-breakfast-plate.jpg        # Piring keramik handmade (Home & Living)
+│   │   │   ├── draft-vintage-lock.jpg           # Gembok dekoratif antik & jam meja
+│   │   │   ├── draft-red-art.jpg                # Lukisan seni geometris merah (Graphics & Photos)
+│   │   │   ├── vacation-spots.jpg               # Cetak seni pemandangan tropis
+│   │   │   ├── grey-boots.webp & hover          # Sepatu boots abu-abu wanita
+│   │   │   ├── brown-bootie.webp & hover        # Sepatu boots cokelat kulit
+│   │   │   ├── midi-skirt.webp                  # Rok midi hitam bermotif bunga (Clothing)
+│   │   │   ├── floral-sundress.webp & hover     # Gaun floral musim panas
+│   │   │   ├── light-blue-shirt.webp & hover    # Kemeja biru muda wanita
+│   │   │   ├── women-lace-blouse.webp & hover   # Blus renda aneka warna
+│   │   │   ├── elegant-white-lace.webp          # Kain renda putih elegan
+│   │   │   ├── polka-dress.webp & hover         # Gaun polkadot navy
+│   │   │   ├── summer-top-lace.webp & hover     # Atasan musim panas
+│   │   │   ├── men-outerwear.webp               # Pakaian luaran pria
+│   │   │   ├── cobalt-man-tshirt.webp & hover   # Kaos pria cobalt
+│   │   │   ├── grey-couch.webp                  # Sofa abu-abu modern
+│   │   │   ├── pillow.webp & hover              # Bantal sofa dekoratif
+│   │   │   ├── kipling-bag.webp & hover         # Tas selempang wanita Kipling
+│   │   │   ├── black-backpack.webp & hover      # Ransel wanita hitam
+│   │   │   ├── scarves.webp & hover             # Syal wanita warna-warni
+│   │   │   ├── ship-art.webp                    # Ilustrasi kapal laut
+│   │   │   └── cat-art.webp & hover             # Koleksi seni ilustrasi kucing
+│   │   ├── logo.png, logo-dark.png              # Logo brand Modesy
+│   │   └── sliders/                             # Banner carousel landing page
+│   └── favicon.ico                              # Favicon web
+│
+├── supabase/                                    # Skrip migrasi dan konfigurasi database Supabase
+│   ├── schema.sql                               # Skema tabel (profiles, categories, products, product_images, dll.)
+│   └── seed.sql                                 # Data bibit (demo users, kategori 3-tingkat, katalog produk)
+│
 ├── src/
-│   │
-│   ├── types/
-│   │   └── 🟡 admin.ts                          # [SUDAH ADA - MASIH 0 BYTES]
-│   │                                            # Definisi interface: AdminStat, AdminOrder,
-│   │                                            # AdminTransaction, AdminNavItem, StatusBadge
-│   │
-│   ├── data/
-│   │   ├── 🟢 products.ts, categories.ts, dll.  # [SUDAH ADA] - Data katalog toko frontend
-│   │   └── 🔵 adminData.ts                      # [PERLU DITAMBAHKAN]
-│   │                                            # Data dummy angka metrik (41, 47, 0, 15),
-│   │                                            # daftar order/transaksi & menu lengkap sidebar
-│   │
-│   ├── components/
-│   │   ├── 🟢 home/                             # [SUDAH ADA] - Hero, NewArrivals, ClothingSection, dll.
-│   │   ├── 🟢 layout/                           # [SUDAH ADA] - Header, Navbar, Footer depan
-│   │   ├── 🟢 product/                          # [SUDAH ADA] - ProductCard, ProductGrid
+│   ├── app/                                     # Next.js 15 App Router (Routing halaman & layouts)
+│   │   ├── layout.tsx                           # Root layout (Membungkus AuthProvider, CartProvider, WishlistProvider)
+│   │   ├── globals.css                          # Konfigurasi Tailwind CSS dan token warna
+│   │   ├── page.tsx                             # Landing page utama Modesy
 │   │   │
-│   │   └── admin/                               # [FOLDER KOMPONEN ADMIN]
-│   │       ├── 🟡 AdminHeader.tsx               # [SUDAH ADA - MASIH 0 BYTES]
-│   │       │                                    # Topbar putih: Hamburger toggle, tombol "View Site",
-│   │       │                                    # dropdown bahasa & profil Admin
-│   │       │
-│   │       ├── 🟡 AdminSidebar.tsx              # [SUDAH ADA - MASIH 0 BYTES]
-│   │       │                                    # Sidebar gelap: Brand logo, user status online,
-│   │       │                                    # 8 grup menu accordion & tombol backup database
-│   │       │
-│   │       ├── 🟡 StatCard.tsx                  # [SUDAH ADA - MASIH 0 BYTES]
-│   │       │                                    # Kartu metrik: Angka besar + label + watermark icon
-│   │       │                                    # Warna: Hijau/Teal, Ungu, Merah, Kuning
-│   │       │
-│   │       ├── 🟡 StatusBadge.tsx               # [SUDAH ADA - MASIH 0 BYTES]
-│   │       │                                    # Pill badge untuk status (Processing, Succeeded, Pending)
-│   │       │
-│   │       ├── 🟡 DataTable.tsx                 # [SUDAH ADA - MASIH 0 BYTES]
-│   │       │                                    # Tabel reusable untuk pesanan & transaksi terbaru
-│   │       │
-│   │       └── 🔵 CardWrapper.tsx               # [TAMBAHAN OPSIONAL]
-│   │                                            # Container panel dengan header title, tombol (-) dan (x)
+│   │   ├── (auth)/                              # Rute autentikasi mandiri
+│   │   │   └── admin/login/page.tsx             # Halaman login khusus panel admin
+│   │   │
+│   │   ├── category/
+│   │   │   └── [slug]/page.tsx                  # Halaman produk dinamis berdasarkan slug kategori
+│   │   │
+│   │   ├── products/
+│   │   │   └── jewelry-accessories/page.tsx     # Alias rute produk kategori perhiasan & aksesori
+│   │   │
+│   │   ├── product/
+│   │   │   └── [id]/page.tsx                    # Halaman detail produk (spesifikasi, ulasan, varian)
+│   │   │
+│   │   ├── cart/page.tsx                        # Halaman keranjang belanja
+│   │   ├── wishlist/page.tsx                    # Halaman daftar barang favorit
+│   │   │
+│   │   ├── admin/                               # Panel Kontrol Admin (/admin)
+│   │   │   ├── layout.tsx                       # Layout admin (AdminSidebar + AdminHeader)
+│   │   │   ├── page.tsx                         # Dashboard ringkasan metrik & data widget
+│   │   │   ├── products/                        # Manajemen produk & persetujuan
+│   │   │   ├── orders/                          # Manajemen pesanan & transaksi
+│   │   │   ├── categories/                      # Pengaturan kategori produk
+│   │   │   └── users/                           # Manajemen akun & hak akses
+│   │   │
+│   │   ├── vendor/                              # Portal Khusus Toko / Penjual (/vendor)
+│   │   │   ├── layout.tsx                       # Layout dashboard vendor
+│   │   │   ├── page.tsx                         # Ringkasan penjualan vendor
+│   │   │   ├── products/                        # Produk jualan milik vendor
+│   │   │   └── profile/                         # Halaman profil toko publik vendor
+│   │   │
+│   │   ├── moderator/                           # Portal Moderator (/moderator)
+│   │   ├── member/                              # Area Pelanggan / Buyer (/member)
+│   │   └── guest/                               # Area Pratinjau Guest (/guest)
 │   │
-│   └── app/
-│       ├── 🟢 (auth)/, member/, vendor/, dll.   # [SUDAH ADA] - Routing frontend toko
-│       ├── 🟢 globals.css                       # [SUDAH ADA] - Konfigurasi tema Tailwind CSS
-│       ├── 🟢 page.tsx                          # [SUDAH ADA] - Halaman utama frontend (katalog)
-│       │
-│       └── admin/                               # [ROUTING AREA PANEL ADMIN]
-│           │
-│           ├── 🟡 layout.tsx                    # [SUDAH ADA - MASIH SKELETON]
-│           │                                    # Layout induk: Membungkus semua halaman admin
-│           │                                    # dengan AdminSidebar (kiri) + AdminHeader (atas)
-│           │
-│           ├── 🟡 page.tsx                      # [SUDAH ADA - MASIH PLACEHOLDER]
-│           │                                    # Dashboard Utama (/admin):
-│           │                                    # Menampilkan 4 StatCard dan Grid Tabel
-│           │
-│           │   # --- SUB-HALAMAN YANG SUDAH TERSEDIA DI PROYEK ANDA ---
-│           ├── 🟢 orders/                       # Kelola Pesanan
-│           │   ├── page.tsx                     # List pesanan
-│           │   ├── [id]/page.tsx                # Detail pesanan spesifik
-│           │   └── bank-transfers/page.tsx      # Pembayaran transfer bank
-│           │
-│           ├── 🟢 products/                     # Kelola Produk
-│           │   ├── page.tsx                     # List seluruh produk
-│           │   ├── [id]/page.tsx                # Edit produk
-│           │   └── pending/page.tsx             # Approval produk tertunda
-│           │
-│           ├── 🟢 categories/                   # Kelola Kategori
-│           │   ├── page.tsx                     # List kategori
-│           │   ├── create/page.tsx              # Tambah kategori
-│           │   └── custom-fields/page.tsx       # Atribut produk custom
-│           │
-│           ├── 🟢 earnings/                     # Pendapatan
-│           │   ├── page.tsx
-│           │   └── seller-balances/page.tsx
-│           │
-│           ├── 🟢 payouts/                      # Pencairan Dana
-│           │   ├── page.tsx
-│           │   └── settings/page.tsx
-│           │
-│           ├── 🟢 users/                        # Manajemen Pengguna & Vendor
-│           │   ├── page.tsx
-│           │   ├── roles/page.tsx
-│           │   ├── shop-requests/page.tsx
-│           │   └── vendors/page.tsx
-│           │
-│           ├── 🟢 settings/                     # Pengaturan Sistem
-│           │   ├── general/page.tsx
-│           │   ├── payments/page.tsx
-│           │   └── visual/page.tsx
-│           │
-│           ├── 🟢 pages/page.tsx                # Halaman Statis (Tentang Kami, dll)
-│           └── 🟢 slider/page.tsx               # Pengaturan Banner Carousel Depan
+│   ├── components/                              # Komponen UI Reusable
+│   │   ├── layout/                              # Komponen layout global
+│   │   │   ├── guest/
+│   │   │   │   ├── ModesyHeader.tsx             # Header utama responsif (SearchBar, Cart, Wishlist, Auth)
+│   │   │   │   ├── header.tsx                   # Sub-komponen baris atas header tamu
+│   │   │   │   └── ModesyFooter.tsx             # Footer informatif (Newsletter, Link bantuan, Hak cipta)
+│   │   │   └── admin/
+│   │   │       ├── AdminHeader.tsx              # Topbar navigasi admin
+│   │   │       ├── AdminSidebar.tsx             # Sidebar gelap dengan menu bertingkat
+│   │   │       ├── StatCard.tsx                 # Kartu angka statistik
+│   │   │       └── DataTable.tsx                # Tabel data pesanan/transaksi
+│   │   │
+│   │   ├── home/                                # Komponen halaman landing page
+│   │   │   ├── HeroSlider.tsx                   # Banner slider promosi
+│   │   │   ├── FeaturedCategories.tsx           # Grid kategori unggulan
+│   │   │   ├── NewArrivals.tsx                  # Tab produk terbaru
+│   │   │   ├── SpecialOffers.tsx                # Seksi penawaran diskon terbatas
+│   │   │   ├── ClothingSection.tsx              # Seksi produk busana
+│   │   │   └── BlogSection.tsx                  # Artikel berita & tips
+│   │   │
+│   │   ├── category/
+│   │   │   └── CategoryPageView.tsx             # View katalog: Fetch database, filter harga, brand, sort
+│   │   │
+│   │   ├── product/
+│   │   │   ├── ProductDetailView.tsx            # View produk lengkap (Gallery, Varian ukuran/warna, Ulasan)
+│   │   │   ├── ProductCard.tsx                  # Kartu produk individual
+│   │   │   └── ProductGrid.tsx                  # Grid responsif kartu produk
+│   │   │
+│   │   ├── cart/
+│   │   │   └── CartView.tsx                     # Tabel keranjang, kuantitas item, subtotal & checkout
+│   │   │
+│   │   ├── wishlist/
+│   │   │   └── WishlistView.tsx                 # Tampilan daftar produk tersimpan di wishlist
+│   │   │
+│   │   └── auth/
+│   │       ├── LoginModal.tsx                   # Modal pop-up login cepat dengan akun demo
+│   │       ├── LoginForm.tsx                    # Form input email & password
+│   │       └── AuthModal.tsx                    # Modal pendaftaran akun baru
+│   │
+│   ├── context/                                 # State Management React Context
+│   │   ├── AuthContext.tsx                      # Autentikasi multi-role (login/logout, redirect ke landing page)
+│   │   ├── CartContext.tsx                      # Manajemen keranjang (tambah, hapus, update qty, persistensi)
+│   │   └── WishlistContext.tsx                  # Manajemen favorit/wishlist
+│   │
+│   ├── data/                                    # Dataset Lokal & Registry Fallback
+│   │   ├── categories.ts                        # Daftar kategori, subkategori, dan slug URL
+│   │   ├── categoryProducts.ts                  # Koleksi produk kategori dengan referensi gambar lokal
+│   │   ├── productsRegistry.ts                  # Registry data detail produk untuk `/product/[id]`
+│   │   └── specialOffers.ts                     # Data produk diskon khusus
+│   │
+│   └── lib/                                     # Utilitas Eksternal & Integrasi API
+│       └── supabase/
+│           ├── client.ts                        # Inisialisasi Supabase Client (Browser/Server)
+│           ├── products.ts                      # Fungsi CRUD produk (`getProducts`, `getProductBySlugOrId`)
+│           ├── reviews.ts                       # Manajemen rating ulasan & komentar
+│           ├── wishlist.ts                      # Operasi wishlist di Supabase
+│           └── types.ts                         # Tipe data TypeScript skema tabel database
+│
+├── .env.local                                   # Konfigurasi Environment Variables (URL & Anon Key Supabase)
+├── next.config.ts                               # Konfigurasi Next.js
+├── tailwind.config.ts                           # Konfigurasi styling Tailwind CSS
+├── tsconfig.json                                # Konfigurasi kompilasi TypeScript
+└── package.json                                 # Dependensi proyek (React 19, Next.js 15, Supabase, Lucide)
 ```
 
 ---
 
-## 🧭 3. Rincian Elemen UI Sesuai Screenshot Modesy
+## 🔄 3. Urutan dan Alur Kerja Web (Web Flow & Sequence)
 
-### A. Top Navigation Bar (`AdminHeader.tsx`)
-| Elemen | Posisi | Deskripsi & Interaksi |
-| :--- | :--- | :--- |
-| **Hamburger Menu** | Kiri | Tombol untuk buka/tutup (collapse) sidebar di desktop & mobile |
-| **Button "View Site"** | Kanan | Tombol hijau pill dengan ikon eksternal untuk kembali ke halaman toko utama (`/`) |
-| **Language Dropdown** | Kanan | Dropdown bahasa aktif (default: *English*) |
-| **Admin Profile** | Kanan | Avatar bulat + teks "Admin" + icon caret dropdown |
-
-### B. Sidebar Navigasi (`AdminSidebar.tsx`)
-Berlatar gelap (`#222d32` / `#1e293b`) dengan susunan menu:
-1. **Header Sidebar**: Logo **"Modesy Panel"** dan Kartu Status Admin (Avatar, nama "Admin", status titik hijau "● Online").
-2. **Kategori Menu**:
-   - **NAVIGATION**: Home (Dashboard), Theme, Slider, Homepage Manager
-   - **ORDERS**: Orders (dropdown), Digital Sales, Refund Requests
-   - **PRODUCTS**: Products (dropdown), Quote Requests, Categories, Tags, Brands, Custom Fields
-   - **PAYMENTS**: Payments (dropdown), Earnings (dropdown), Payouts (dropdown)
-   - **CONTENT**: Pages, Blog (dropdown), Location (dropdown)
-   - **MEMBERSHIP**: Membership (dropdown), Roles & Permissions
-   - **MANAGEMENT TOOLS**: Help Center, Cache System, SEO Tools, Ad Spaces, Chat, Contact Messages, Reviews, Comments, Newsletter, Affiliate, Abuse Reports, Email Blacklist
-   - **SETTINGS**: Preferences, Settings (General, Payments, Visual)
-3. **Footer Sidebar**: Tombol biru/gelap **"Download Database Backup"** dengan ikon unduh.
-
-### C. Dashboard Page (`app/admin/page.tsx`)
-1. **4 Kartu Ringkasan (Stat Cards)**:
-   - **Orders**: `41` (Warna Hijau/Teal `#16a085`, ikon Shopping Cart di background)
-   - **Products**: `47` (Warna Ungu `#6c5ce7`, ikon Basket)
-   - **Pending Products**: `0` (Warna Merah/Coral `#e74c3c`, ikon Eye-Off)
-   - **Members**: `15` (Warna Oranye/Kuning `#f39c12`, ikon Users)
-2. **Widget Tabel Baris 1**:
-   - **Latest Orders**: Kolom `Order`, `Total`, `Status` (Badge Processing), `Date`, `Details` (tombol toska), dan tombol **"View All"** di footer.
-   - **Latest Transactions**: Kolom `Id`, `Order`, `Payment Amount`, `Payment Method`, `Status` (Badge Succeeded), `Date`, dan tombol **"View All"**.
-3. **Widget Tabel Baris 2**:
-   - **Latest Products**: Tabel ringkas produk terbaru + tombol **"View All"**.
-   - **Latest Pending Products**: Tabel produk menunggu kurasi + tombol **"View All"**.
+### A. Alur Kunjungan Tamu (Guest Journey)
+1. **Membuka Halaman Utama (`/`)**:
+   - Pengguna disambut oleh `ModesyHeader` yang menampilkan status **Guest** (Tersedia tombol **Login** dan **Register**).
+   - Menampilkan banner promosi, kategori unggulan, dan etalase produk terbaru.
+2. **Menjelajah Katalog Kategori (`/category/[slug]`)**:
+   - URL kategori diakses (contoh: `/category/shoes`, `/category/jewelry-accessories`).
+   - Komponen `CategoryPageView` secara otomatis memanggil `getProducts({ categorySlug: slug })` ke database **Supabase**.
+   - Sistem mencocokkan kategori dan subkategori, lalu menampilkan produk lengkap dengan gambar lokal dari `/images/products/`.
+   - Tamu dapat memfilter berdasarkan subkategori, rentang harga, nama brand, atau melakukan sorting (termurah, termahal, rating tertinggi).
+3. **Melihat Detail Produk (`/product/[id]`)**:
+   - Tamu mengklik produk, lalu diarahkan ke halaman detail produk.
+   - Mengambil data produk dari Supabase (berdasarkan UUID produk) atau registry lokal.
+   - Tamu dapat memilih varian ukuran/warna dan melihat ulasan pembeli.
+4. **Menambahkan ke Keranjang (`Add to Cart`)**:
+   - Tamu menekan tombol keranjang di kartu produk atau tombol `Add to Cart` di halaman detail.
+   - `CartContext` menyimpan item belanja ke *state* & *local storage*.
+   - Badge keranjang di header bertambah secara reaktif.
+5. **Mengakses Halaman Keranjang (`/cart`)**:
+   - Tamu mengklik ikon keranjang di header.
+   - **Header tetap berstatus Guest**: Tidak ada pergantian akun ke vendor Trendshop.
+   - Halaman `CartView` menampilkan rincian barang yang dimasukkan oleh tamu dengan kalkulasi subtotal dan total harga yang akurat.
 
 ---
 
-## 🛠️ 4. Panduan Tahapan Pengisian Kode (Step-by-Step)
-
-Ketika Anda siap mengisi kodenya, urutan pengerjaan yang paling mudah dan tidak membuat error adalah:
-
-```mermaid
-graph TD
-    A["1. src/types/admin.ts<br/>(Definisikan tipe data)"] --> B["2. src/data/adminData.ts<br/>(Siapkan data mock tampilan)"]
-    B --> C["3. src/components/admin/layout/<br/>(AdminSidebar & AdminHeader)"]
-    C --> D["4. src/app/admin/layout.tsx<br/>(Rakit shell pembungkus admin)"]
-    D --> E["5. src/components/admin/dashboard/<br/>(StatCard & DataTable)"]
-    E --> F["6. src/app/admin/page.tsx<br/>(Pasang widget di dashboard utama)"]
-```
-
-1. **Tahap 1: Tipe Data (`src/types/admin.ts`)**
-   - Menulis interface TypeScript untuk data order, transaksi, item sidebar, dan stat card.
-2. **Tahap 2: Mock Data (`src/data/adminData.ts`)**
-   - Menyediakan data stat (41, 47, 0, 15), riwayat pesanan dummy, dan array daftar menu sidebar.
-3. **Tahap 3: Navigasi & Shell (`AdminSidebar.tsx` & `AdminHeader.tsx`)**
-   - Mengisi komponen sidebar dan header lengkap dengan styling Tailwind dan ikon dari `lucide-react`.
-4. **Tahap 4: Admin Shell (`src/app/admin/layout.tsx`)**
-   - Menghubungkan sidebar dan header agar selalu muncul di semua rute `/admin/*`.
-5. **Tahap 5: Komponen Dashboard (`StatCard.tsx`, `DataTable.tsx`, `StatusBadge.tsx`)**
-   - Membuat komponen widget kartu metrik dan tabel.
-6. **Tahap 6: Dashboard Page (`src/app/admin/page.tsx`)**
-   - Memanggil `StatCard` dan `DataTable` agar halaman `/admin` menampilkan dashboard lengkap seperti pada tangkapan layar.
+### B. Alur Autentikasi & Routing Pasca-Login (Auth Flow)
+1. **Memicu Modal / Halaman Login**:
+   - Pengguna menekan tombol **Login** di header atau mengakses `/admin/login`.
+   - Tersedia akun demo bawaan untuk pengujian instan:
+     - 👑 **Admin**: `admin@modesy.com` / `admin123`
+     - 🏪 **Vendor**: `vendor@modesy.com` / `vendor123`
+     - 🛡️ **Moderator**: `moderator@modesy.com` / `moderator123`
+     - 👤 **Member / Buyer**: `member@modesy.com` / `member123`
+2. **Proses Autentikasi (`AuthContext`)**:
+   - Sistem memverifikasi kredensial ke Supabase Auth (atau mekanisme local session fallback).
+   - Informasi profil pengguna dan role tersimpan di session state.
+3. **Pengalihan Terpadu ke Landing Page (`router.push("/")`)**:
+   - **Semua role tanpa terkecuali** secara konsisten dialihkan ke **Landing Page (`/`)** setelah berhasil login.
+4. **Header Interaktif Pasca-Login**:
+   - Header kini menampilkan avatar dan nama pengguna yang login.
+   - Terdapat tombol dropdown menu dengan tautan cepat menuju panel kerja masing-masing role:
+     - Akun Admin: Menu **Admin Panel** (`/admin`)
+     - Akun Vendor: Menu **Dashboard Vendor** (`/vendor`) & **Kelola Produk**
+     - Akun Member: Menu **Pesanan Saya** & **Pengaturan Akun**
 
 ---
 
-## 🚀 Menjalankan Proyek
-Untuk melihat hasil proyek saat pengembangan:
-```bash
-npm run dev
+### C. Alur Integrasi Database & Gambar Produk (Database & Image Pipeline)
 ```
-Akses halaman admin di browser:
-👉 **`http://localhost:3000/admin`**
++------------------------------------+       +------------------------------------+
+|  Folder public/images/products/    |       |       Database Supabase            |
+|  - puma-shoes.jpg                  | <---> |  Tabel 'products'                  |
+|  - white-slides.jpg                |       |  Tabel 'product_images'            |
+|  - draft-breakfast-plate.jpg       |       |  (image_url: /images/products/...) |
+|  - draft-vintage-lock.jpg, dll.    |       +-----------------+------------------+
++------------------------------------+                         |
+                                                               v
+                                             +------------------------------------+
+                                             |  lib/supabase/products.ts          |
+                                             |  getProducts({ categorySlug })     |
+                                             +-----------------+------------------+
+                                                               |
+                                                               v
+                                             +------------------------------------+
+                                             |  CategoryPageView.tsx              |
+                                             |  - Render gambar produk lokal      |
+                                             |  - Filter subkategori & brand      |
+                                             |  - Fallback ke CATEGORY_PRODUCTS   |
+                                             +------------------------------------+
+```
+
+1. **Penyimpanan Aset Fisik**:
+   File gambar disimpan di `public/images/products/` sehingga dilayani langsung oleh server Next.js tanpa dependensi pihak ketiga atau risiko link eksternal rusak.
+2. **Pencatatan di Supabase**:
+   Tabel `product_images` menyimpan kolom `image_url` yang menunjuk ke path relatif `/images/products/<nama-file>`.
+3. **Konsumsi di Komponen Frontend**:
+   Komponen `CategoryPageView` memanggil `getProducts()`. Produk yang diterima langsung dimetakan ke format tampilan kartu produk, menghasilkan etalase katalog yang aktif, cepat, dan responsif.
+
+---
+
+## 🚀 4. Panduan Menjalankan Proyek Secara Lokal
+
+### Prasyarat
+- **Node.js**: Versi 18.18 atau lebih baru (disarankan Node.js v20/v22).
+- **Package Manager**: npm atau yarn.
+
+### Langkah Instalasi
+
+1. **Clone / Buka Direktori Proyek**:
+   ```bash
+   cd "d:\Next JS\modesy-dupl"
+   ```
+
+2. **Instal Dependensi**:
+   ```bash
+   npm install
+   ```
+
+3. **Periksa Konfigurasi Lingkungan (`.env.local`)**:
+   Pastikan file `.env.local` di root proyek memiliki konfigurasi Supabase Anda:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://ertnuoujouuochwqpwdh.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+   ```
+
+4. **Jalankan Server Pengembangan**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Akses Aplikasi di Browser**:
+   Buka [http://localhost:3000](http://localhost:3000) untuk mulai menggunakan Modesy Marketplace.
+
+---
+
+## 🛠️ 5. Skrip yang Tersedia
+
+| Perintah | Deskripsi |
+| :--- | :--- |
+| `npm run dev` | Menjalankan Next.js development server di port 3000 |
+| `npm run build` | Membuat bundel produksi aplikasi untuk *deployment* |
+| `npm run start` | Menjalankan server aplikasi Next.js dalam mode produksi |
+| `npm run lint` | Memeriksa kepatuhan kode dan deteksi *code smell* |
+| `npx tsc --noEmit` | Memverifikasi kepatuhan tipe data TypeScript di seluruh proyek |

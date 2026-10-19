@@ -52,16 +52,8 @@ export default function WishlistView() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans text-gray-800 antialiased">
-      {/* 1. Modesy Header */}
-      <ModesyHeader
-        currentUser={{
-          name: user?.name || "Trendshop",
-          email: user?.email || "trendshop@gmail.com",
-          avatar: user?.avatar || "/assets/img/trendshop-avatar.jpg",
-          role: user?.role || "vendor",
-        }}
-        cartCount={3}
-      />
+      {/* 1. Modesy Header (Dynamic based on active auth state) */}
+      <ModesyHeader />
 
       {/* 2. Main Content Area */}
       <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-6">

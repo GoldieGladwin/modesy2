@@ -65,8 +65,17 @@ const INITIAL_CART_ITEMS: CartItem[] = [
   },
 ];
 
+import { useCart } from "@/context/CartContext";
+
 export default function CartView() {
-  const [items, setItems] = useState<CartItem[]>(INITIAL_CART_ITEMS);
+  const {
+    cartItems,
+    totalCartItems,
+    totalCartPrice,
+    updateQuantity,
+    removeFromCart,
+  } = useCart();
+
   const [couponCode, setCouponCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState<number>(0);
   const [couponMessage, setCouponMessage] = useState<{
@@ -83,21 +92,16 @@ export default function CartView() {
     }, 2800);
   };
 
-  const handleUpdateQuantity = (id: number, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const newQty = Math.max(1, item.quantity + delta);
-          return { ...item, quantity: newQty };
-        }
-        return item;
-      })
-    );
+  const handleUpdateQuantity = (id: string | number, delta: number) => {
+    const item = cartItems.find((i) => String(i.id) === String(id));
+    if (item) {
+      updateQuantity(id, Math.max(1, item.quantity + delta));
+    }
   };
 
-  const handleRemoveItem = (id: number) => {
-    const itemToRemove = items.find((i) => i.id === id);
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  const handleRemoveItem = (id: string | number) => {
+    const itemToRemove = cartItems.find((i) => String(i.id) === String(id));
+    removeFromCart(id);
     if (itemToRemove) {
       showToast(`Removed "${itemToRemove.title}" from cart.`);
     }
@@ -131,7 +135,6 @@ export default function CartView() {
       });
       showToast("Coupon applied successfully!");
     } else {
-      // General demo coupon acceptance for user friendliness
       setDiscountPercent(10);
       setCouponMessage({
         text: `Coupon "${code}" applied (-10% off)!`,
@@ -150,25 +153,14 @@ export default function CartView() {
   };
 
   // Calculations
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0
-  );
+  const subtotal = totalCartPrice;
   const discountAmount = Math.round((subtotal * discountPercent) / 100);
   const total = Math.max(0, subtotal - discountAmount);
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans text-gray-800 antialiased">
-      {/* 1. Header (Trendshop logged in as in screenshot) */}
-      <ModesyHeader
-        currentUser={{
-          name: "Trendshop",
-          email: "trendshop@gmail.com",
-          avatar: "/assets/img/trendshop-avatar.jpg",
-          role: "vendor",
-        }}
-        cartCount={items.length}
-      />
+      {/* 1. Header (Dynamic based on active auth state) */}
+      <ModesyHeader cartCount={totalCartItems} />
 
       {/* Floating Toast Notification */}
       {toastMessage && (
@@ -181,10 +173,10 @@ export default function CartView() {
       {/* 2. Main Cart Content */}
       <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-8">
         <h1 className="text-[22px] font-bold text-[#222222] mb-6">
-          My Cart ({items.length})
+          My Cart ({totalCartItems})
         </h1>
 
-        {items.length === 0 ? (
+        {cartItems.length === 0 ? (
           /* Empty Cart State */
           <div className="bg-[#fcfcfc] border border-gray-200/80 rounded-[4px] p-12 text-center max-w-lg mx-auto my-12 shadow-xs">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
@@ -209,8 +201,12 @@ export default function CartView() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Column: Cart Items List */}
             <div className="lg:col-span-8 space-y-4">
-              {items.map((item) => {
-                const itemTotal = item.unitPrice * item.quantity;
+              {cartItems.map((item) => {
+                const unitPrice = item.numericPrice || (typeof item.price === "string" ? parseFloat(item.price.replace(/[^0-9.-]+/g, "")) || 0 : 0);
+                const itemTotal = unitPrice * item.quantity;
+                const productUrl = `/product/${item.id}`;
+                const sellerName = item.seller || "Trendshop";
+
                 return (
                   <div
                     key={item.id}
@@ -220,11 +216,11 @@ export default function CartView() {
                     <div className="flex items-start gap-4 flex-1 min-w-0">
                       {/* Product Image */}
                       <Link
-                        href={`/${item.slug}`}
+                        href={productUrl}
                         className="w-[84px] h-[84px] sm:w-[92px] sm:h-[92px] shrink-0 rounded-[3px] overflow-hidden border border-gray-100 bg-[#f7f7f7] block"
                       >
                         <img
-                          src={item.image}
+                          src={item.image || "/images/products/midi-skirt.webp"}
                           alt={item.title}
                           className="w-full h-full object-cover"
                         />
@@ -234,35 +230,18 @@ export default function CartView() {
                       <div className="flex-1 min-w-0 pr-2">
                         {/* Title */}
                         <Link
-                          href={`/${item.slug}`}
+                          href={productUrl}
                           className="font-medium text-[14.5px] text-[#222222] hover:text-[#00a99d] transition-colors line-clamp-2 leading-snug"
                         >
                           {item.title}
                         </Link>
 
-                        {/* Attributes (Color / Size) */}
-                        {item.attributes.length > 0 && (
-                          <div className="text-[13px] text-gray-700 mt-1 flex flex-wrap gap-x-2.5 items-center">
-                            {item.attributes.map((attr, idx) => (
-                              <span key={idx} className="inline-flex items-center gap-1">
-                                <span className="font-semibold text-gray-900">
-                                  {attr.label}:
-                                </span>
-                                <span className="text-gray-800">{attr.value}</span>
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
                         {/* Seller */}
                         <div className="text-[12px] text-gray-500 mt-1 flex items-center gap-1">
                           <span>Seller:</span>
-                          <Link
-                            href={item.seller.url}
-                            className="text-[#007bff] hover:underline font-normal"
-                          >
-                            {item.seller.name}
-                          </Link>
+                          <span className="text-[#007bff] font-normal">
+                            {sellerName}
+                          </span>
                         </div>
 
                         {/* Unit Price & Total */}
@@ -272,7 +251,7 @@ export default function CartView() {
                               Unit Price:
                             </span>
                             <span className="font-bold text-gray-900">
-                              ${item.unitPrice}
+                              ${unitPrice}
                             </span>
                           </div>
                           <div className="flex items-center gap-4">
