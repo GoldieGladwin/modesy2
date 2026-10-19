@@ -7,6 +7,13 @@ export const metadata: Metadata = {
   description: "View and manage products in your wishlist.",
 };
 
+const VENDOR_USER = {
+  name: "Trendshop",
+  email: "trendshop@gmail.com",
+  role: "vendor" as const,
+  avatar: "/assets/img/trendshop-avatar.jpg",
+};
+
 export default function VendorWishlistPage() {
-  return <WishlistView />;
+  return <WishlistView role="vendor" currentUser={VENDOR_USER} />;
 }

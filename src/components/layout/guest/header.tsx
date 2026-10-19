@@ -76,8 +76,16 @@ export default function Header({
 
   // Global Auth Integration
   const { user, isLoggedIn, openLoginModal, logout } = useAuth();
-  const effectiveUser = currentUser || user;
-  const effectiveIsLoggedIn = Boolean(currentUser || isLoggedIn);
+  const isGuestRoute = pathname?.startsWith("/guest");
+  const effectiveUser =
+    currentUser === null
+      ? null
+      : currentUser !== undefined
+      ? currentUser
+      : isGuestRoute
+      ? null
+      : user;
+  const effectiveIsLoggedIn = Boolean(effectiveUser);
 
   // Admin dropdown state
   const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
@@ -560,7 +568,7 @@ export default function Header({
                 </button>
                 <span className="text-[#333e48] text-[13px] mx-2">/</span>
                 <Link
-                  href="/register"
+                  href={isGuestRoute ? "/guest/register" : "/register"}
                   className="text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer text-[14px]"
                 >
                   Register
@@ -578,7 +586,7 @@ export default function Header({
           <div className="flex items-center flex-1 mr-8">
             {/* Logo */}
             <div className="shrink-0 mr-6">
-              <Link href="/" className="block">
+              <Link href={isGuestRoute ? "/guest" : "/"} className="block">
                 <img
                   src="/assets/img/logo.svg"
                   alt="Modesy"
@@ -626,7 +634,7 @@ export default function Header({
           <div className="flex items-center space-x-7 shrink-0">
             {/* Cart */}
             <Link
-              href="/cart"
+              href={isGuestRoute ? "/guest/cart" : "/cart"}
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 relative group"
             >
               <div className="relative mr-1.5 flex items-center">
@@ -657,7 +665,7 @@ export default function Header({
 
             {/* Wishlist */}
             <Link
-              href="/wishlist"
+              href={isGuestRoute ? "/guest/wishlist" : "/wishlist"}
               className="flex items-center text-[#555555] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0"
             >
               <div className="mr-1.5 flex items-center relative">
@@ -879,7 +887,7 @@ export default function Header({
 
             {/* Wishlist Icon Mobile */}
             <Link
-              href="/wishlist"
+              href={isGuestRoute ? "/guest/wishlist" : "/wishlist"}
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative flex items-center"
               aria-label="Wishlist"
             >
@@ -904,7 +912,7 @@ export default function Header({
 
             {/* Cart Icon */}
             <Link
-              href="/cart"
+              href={isGuestRoute ? "/guest/cart" : "/cart"}
               className="p-1 text-[#555] bg-transparent border-0 cursor-pointer relative flex items-center"
               aria-label="Cart"
             >
@@ -1004,17 +1012,22 @@ export default function Header({
             {/* Tab Content */}
             {mobileTab === "menu" ? (
               <div className="space-y-2 py-2">
-                {["Home", "Wishlist", "Contact", "Blog", "Sell on Modesy"].map(
-                  (item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      className="block w-full text-left py-2 text-[14px] text-[#333] hover:text-[#00a99d] transition-colors border-b border-gray-100 last:border-0"
-                    >
-                      {item}
-                    </button>
-                  )
-                )}
+                {[
+                  { title: "Home", href: isGuestRoute ? "/guest" : "/" },
+                  { title: "Wishlist", href: isGuestRoute ? "/guest/wishlist" : "/wishlist" },
+                  { title: "Contact", href: "/guest/contact" },
+                  { title: "Blog", href: isGuestRoute ? "/guest/blog" : "/blog" },
+                  { title: "Sell on Modesy", href: isGuestRoute ? "/guest/start-selling" : "/start-selling" },
+                ].map((item) => (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block w-full text-left py-2 text-[14px] text-[#333] hover:text-[#00a99d] transition-colors border-b border-gray-100 last:border-0"
+                  >
+                    {item.title}
+                  </Link>
+                ))}
                 {effectiveIsLoggedIn ? (
                   <div className="p-3 bg-gray-50 rounded border border-gray-200 my-2">
                     <div className="flex items-center space-x-2.5 mb-2.5 pb-2.5 border-b border-gray-200">

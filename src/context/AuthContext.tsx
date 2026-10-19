@@ -88,7 +88,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setUser(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Clean up legacy auto-injected mock vendor user
+        if (parsed?.id === "00000000-0000-0000-0000-000000000002" && parsed?.email === "trendshop@gmail.com") {
+          localStorage.removeItem(STORAGE_KEY);
+        } else {
+          setUser(parsed);
+        }
       }
     } catch (e) {
       console.error("Failed to parse auth user", e);
@@ -120,39 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    // 3. Fallback dev mode for /vendor or /dashboard
     if (typeof window !== "undefined") {
-      const isExplicitLogout = sessionStorage.getItem("modesy_explicit_logout") === "true";
-      if (
-        !isExplicitLogout &&
-        (window.location.pathname.startsWith("/vendor") ||
-          window.location.pathname.startsWith("/dashboard"))
-      ) {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        let parsed: User | null = null;
-        try {
-          if (stored) parsed = JSON.parse(stored);
-        } catch (e) {
-          console.error(e);
-        }
-        if (!parsed || parsed.role !== "vendor") {
-          const vendorUser: User = {
-            id: "00000000-0000-0000-0000-000000000002",
-            name: "Trendshop",
-            email: "trendshop@gmail.com",
-            role: "vendor",
-            avatar: "/assets/img/trendshop-avatar.jpg",
-            is_vendor: true,
-          };
-          setUser(vendorUser);
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(vendorUser));
-          } catch (e) {
-            console.error(e);
-          }
-        }
-      }
-
       const params = new URLSearchParams(window.location.search);
       if (params.get("login") === "true" || params.get("action") === "login") {
         setIsLoginModalOpen(true);

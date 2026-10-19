@@ -9,7 +9,7 @@ export default function GuestLayout({
 }) {
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex flex-col font-sans text-gray-800">
-      <ModesyHeader />
+      <ModesyHeader currentUser={null} />
       <div className="flex-1 w-full">{children}</div>
       <ModesyFooter />
     </div>

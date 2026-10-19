@@ -12,10 +12,37 @@ import { Heart, Trash2, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 
-export default function WishlistView() {
+interface WishlistViewProps {
+  role?: "guest" | "member" | "vendor" | "admin";
+  hideHeaderFooter?: boolean;
+  currentUser?: {
+    email: string;
+    name: string;
+    avatar?: string;
+    role?: "admin" | "vendor" | "member" | "moderator";
+  } | null;
+}
+
+export default function WishlistView({
+  role = "guest",
+  hideHeaderFooter = false,
+  currentUser,
+}: WishlistViewProps = {}) {
   const { addToCart } = useCart();
   const { wishlistIds, removeFromWishlist } = useWishlist();
   const [products, setProducts] = useState<any[]>([]);
+
+  const homeUrl =
+    role === "guest"
+      ? "/guest"
+      : role === "vendor"
+      ? "/vendor"
+      : role === "member"
+      ? "/member"
+      : "/";
+
+  const productUrl = (slugOrId: string | number) =>
+    role === "guest" ? `/guest/product/${slugOrId}` : `/product/${slugOrId}`;
 
   useEffect(() => {
     const prods = getWishlistProducts(wishlistIds);
@@ -30,34 +57,29 @@ export default function WishlistView() {
     await removeFromWishlist(productId);
   };
 
-  return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-gray-800 antialiased">
-      {/* 1. Modesy Header (Dynamic based on active auth state) */}
-      <ModesyHeader />
-
-      {/* 2. Main Content Area */}
-      <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-6">
-        {/* Breadcrumb: Home / Wishlist */}
-        <nav
-          className="text-[12px] text-gray-500 mb-3 flex items-center gap-1.5 font-normal"
-          aria-label="Breadcrumb"
+  const content = (
+    <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 py-6">
+      {/* Breadcrumb: Home / Wishlist */}
+      <nav
+        className="text-[12px] text-gray-500 mb-3 flex items-center gap-1.5 font-normal"
+        aria-label="Breadcrumb"
+      >
+        <Link
+          href={homeUrl}
+          className="text-gray-500 hover:text-[#00a99d] transition-colors"
         >
-          <Link
-            href="/"
-            className="text-gray-500 hover:text-[#00a99d] transition-colors"
-          >
-            Home
-          </Link>
-          <span className="text-gray-400">/</span>
-          <span className="text-gray-600">Wishlist</span>
-        </nav>
+          Home
+        </Link>
+        <span className="text-gray-400">/</span>
+        <span className="text-gray-600">Wishlist</span>
+      </nav>
 
-        {/* Heading: Wishlist */}
-        <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
-          <h1 className="text-[22px] font-bold text-[#222222]">
-            Wishlist ({products.length})
-          </h1>
-        </div>
+      {/* Heading: Wishlist */}
+      <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
+        <h1 className="text-[22px] font-bold text-[#222222]">
+          Wishlist ({products.length})
+        </h1>
+      </div>
 
         {/* Products Grid or Empty State */}
         {products.length === 0 ? (
@@ -73,7 +95,7 @@ export default function WishlistView() {
               >
                 {/* Image */}
                 <div className="relative aspect-square w-full bg-gray-50 overflow-hidden">
-                  <Link href={`/product/${p.slug || p.id}`}>
+                  <Link href={productUrl(p.slug || p.id)}>
                     <img
                       src={p.image}
                       alt={p.title}
@@ -103,7 +125,7 @@ export default function WishlistView() {
                       {p.category}
                     </span>
                     <Link
-                      href={`/product/${p.id}`}
+                      href={productUrl(p.slug || p.id)}
                       className="text-[13px] font-medium text-gray-800 hover:text-[#00a99d] line-clamp-2 leading-tight mb-2 transition"
                     >
                       {p.title}
@@ -146,6 +168,27 @@ export default function WishlistView() {
           </div>
         )}
       </main>
+  );
+
+  if (hideHeaderFooter) {
+    return content;
+  }
+
+  return (
+    <div className="min-h-screen bg-white flex flex-col font-sans text-gray-800 antialiased">
+      {/* 1. Modesy Header */}
+      <ModesyHeader
+        currentUser={
+          currentUser !== undefined
+            ? currentUser
+            : role === "guest"
+            ? null
+            : undefined
+        }
+      />
+
+      {/* 2. Main Content Area */}
+      {content}
 
       {/* 3. Footer */}
       <ModesyFooter />
