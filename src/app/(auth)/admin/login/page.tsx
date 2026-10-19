@@ -49,7 +49,14 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push("/");
+      const role = res?.user?.role || (isModerator ? "moderator" : "admin");
+      if (role === "admin") {
+        router.push("/admin");
+      } else if (role === "moderator") {
+        router.push("/moderator");
+      } else {
+        router.push("/admin");
+      }
     } catch (err: any) {
       setError(err?.message || "Login failed.");
       setIsLoading(false);

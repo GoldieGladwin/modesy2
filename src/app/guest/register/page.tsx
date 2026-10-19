@@ -28,8 +28,9 @@ export default function RegisterPage() {
         <RegisterForm
           onOpenLoginModal={openLoginModal}
           onSuccess={async (user) => {
-            await login(user);
-            setTimeout(() => router.push("/guest"), 800);
+            const res = await login(user);
+            const role = res?.user?.role || "member";
+            setTimeout(() => router.push(`/${role}`), 800);
           }}
         />
       </main>
