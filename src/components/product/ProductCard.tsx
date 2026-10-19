@@ -101,9 +101,13 @@ export default function ProductCard({ product }: ProductCardProps) {
               e.stopPropagation();
               await toggleWishlist(product.id);
             }}
-            className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-700 hover:text-rose-500 hover:border-rose-300 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
-            title="Add to wishlist"
-            aria-label="Add to wishlist"
+            className={`w-8 h-8 rounded-full bg-white border shadow-md flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer ${
+              isWishlisted
+                ? "text-rose-500 border-rose-300"
+                : "text-gray-700 border-gray-200 hover:text-rose-500 hover:border-rose-300"
+            }`}
+            title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           >
             <Heart
               className={`w-3.5 h-3.5 transition-colors duration-200 ${
@@ -160,13 +164,13 @@ export default function ProductCard({ product }: ProductCardProps) {
             >
               <Heart
                 className={`w-3 h-3 transition-colors ${
-                  isWishlisted || product.favorites > 0
-                    ? "fill-rose-400 text-rose-400 stroke-none"
+                  isWishlisted
+                    ? "fill-rose-500 text-rose-500 stroke-none"
                     : "text-gray-300 stroke-[1.5]"
                 }`}
               />
               <span className={isWishlisted ? "text-rose-500 font-semibold" : ""}>
-                {isWishlisted ? product.favorites + 1 : product.favorites}
+                {product.favorites + (isWishlisted ? 1 : 0)}
               </span>
             </button>
           </div>

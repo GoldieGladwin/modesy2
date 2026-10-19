@@ -65,6 +65,38 @@ export function saveLocalWishlistIds(ids: string[]): void {
   }
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function resolveProductUuid(productId: string | number): Promise<string | null> {
+  const str = String(productId).trim();
+  if (UUID_REGEX.test(str)) return str;
+  if (!isSupabaseConfigured()) return null;
+
+  try {
+    // If it's a numeric id like "37"
+    if (/^\d+$/.test(str)) {
+      const { data } = await supabase
+        .from("products")
+        .select("id")
+        .ilike("slug", `%-${str}`)
+        .maybeSingle();
+      if (data?.id) return data.id;
+    }
+
+    // Try exact slug lookup
+    const { data } = await supabase
+      .from("products")
+      .select("id")
+      .eq("slug", str)
+      .maybeSingle();
+    if (data?.id) return data.id;
+  } catch (err) {
+    console.warn("Could not resolve product UUID:", err);
+  }
+
+  return null;
+}
+
 export async function getWishlistProductIds(userId?: string | null): Promise<string[]> {
   const localIds = getLocalWishlistIds();
 
@@ -72,11 +104,20 @@ export async function getWishlistProductIds(userId?: string | null): Promise<str
     try {
       const { data, error } = await supabase
         .from("wishlists")
-        .select("product_id")
+        .select(`
+          product_id,
+          products ( id, slug )
+        `)
         .eq("user_id", userId);
 
       if (!error && data) {
-        const dbIds = data.map((row: any) => String(row.product_id));
+        const dbIds = data
+          .map((row: any) => {
+            const slug = row.products?.slug;
+            if (slug) return normalizeWishlistId(slug);
+            return normalizeWishlistId(row.product_id);
+          })
+          .filter(Boolean);
         const merged = Array.from(new Set([...localIds, ...dbIds]));
         saveLocalWishlistIds(merged);
         return merged;

@@ -390,7 +390,9 @@ export default function SpecialOffers() {
                       <button
                         type="button"
                         onMouseDown={(e) => e.stopPropagation()}
+                        onMouseUp={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
                         aria-label={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
                         title={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
                         onClick={async (e) => {
@@ -415,7 +417,9 @@ export default function SpecialOffers() {
                       <button
                         type="button"
                         onMouseDown={(e) => e.stopPropagation()}
+                        onMouseUp={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
                         aria-label="Add to cart"
                         title="Add to cart"
                         onClick={(e) => {
@@ -472,7 +476,9 @@ export default function SpecialOffers() {
                         <button
                           type="button"
                           onMouseDown={(e) => e.stopPropagation()}
+                          onMouseUp={(e) => e.stopPropagation()}
                           onTouchStart={(e) => e.stopPropagation()}
+                          onTouchEnd={(e) => e.stopPropagation()}
                           aria-label={isInWishlist(product.id) ? "Unlike" : "Like"}
                           title={isInWishlist(product.id) ? "Unlike" : "Like"}
                           onClick={async (e) => {

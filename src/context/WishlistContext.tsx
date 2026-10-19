@@ -6,6 +6,7 @@ import {
   saveLocalWishlistIds,
   getWishlistProductIds,
   normalizeWishlistId,
+  resolveProductUuid,
   WISHLIST_CHANGE_EVENT,
 } from "@/lib/supabase/wishlist";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
@@ -74,11 +75,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
       if (isSupabaseConfigured() && user?.id) {
         try {
-          await supabase
-            .from("wishlists")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("product_id", target);
+          const productUuid = await resolveProductUuid(productId);
+          if (productUuid) {
+            await supabase
+              .from("wishlists")
+              .delete()
+              .eq("user_id", user.id)
+              .eq("product_id", productUuid);
+          }
         } catch (err) {
           console.warn("Failed to delete wishlist item from Supabase:", err);
         }
@@ -103,22 +107,25 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       setWishlistIds(nextIds);
       saveLocalWishlistIds(nextIds);
 
-      // Persist in Supabase directly
+      // Persist in Supabase directly using resolved product UUID
       if (isSupabaseConfigured() && user?.id) {
         try {
-          if (nextWishlisted) {
-            await supabase
-              .from("wishlists")
-              .upsert(
-                { user_id: user.id, product_id: target },
-                { onConflict: "user_id,product_id" }
-              );
-          } else {
-            await supabase
-              .from("wishlists")
-              .delete()
-              .eq("user_id", user.id)
-              .eq("product_id", target);
+          const productUuid = await resolveProductUuid(productId);
+          if (productUuid) {
+            if (nextWishlisted) {
+              await supabase
+                .from("wishlists")
+                .upsert(
+                  { user_id: user.id, product_id: productUuid },
+                  { onConflict: "user_id,product_id" }
+                );
+            } else {
+              await supabase
+                .from("wishlists")
+                .delete()
+                .eq("user_id", user.id)
+                .eq("product_id", productUuid);
+            }
           }
         } catch (err) {
           console.warn("Failed to persist wishlist change in Supabase:", err);

@@ -457,10 +457,22 @@ export default function NewArrivals() {
                       </div>
 
                       {/* Jumlah Likes / Hati */}
-                      <div className="flex items-center gap-1 text-gray-400 font-medium">
-                        <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
-                        <span>{(Number(product.likes) || 0) + (isLiked ? 1 : 0)}</span>
-                      </div>
+                      <button
+                        type="button"
+                        aria-label={isLiked ? "Unlike" : "Like"}
+                        title={isLiked ? "Unlike" : "Like"}
+                        onClick={(e) => toggleWishlist(product.id, e)}
+                        className="flex items-center gap-1 text-gray-400 hover:text-rose-500 font-medium cursor-pointer bg-transparent border-0 p-0 transition-colors"
+                      >
+                        <Heart
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
+                            isLiked ? "fill-rose-500 text-rose-500" : "text-gray-400"
+                          }`}
+                        />
+                        <span className={isLiked ? "text-rose-500 font-semibold" : ""}>
+                          {(Number(product.likes) || 0) + (isLiked ? 1 : 0)}
+                        </span>
+                      </button>
                     </div>
                   </div>
 
