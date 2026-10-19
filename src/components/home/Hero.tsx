@@ -85,8 +85,7 @@ export default function Hero({
                     ? "Timeless, modern, and feminine pieces made with quality materials and craftsmanship"
                     : "Discover quality premium basics and trendy essentials at surprisingly affordable prices",
                 buttonText: idx === 0 ? "Buy Now" : "Explore Now",
-                buttonLink:
-                  s.link_url && s.link_url !== "#" ? s.link_url : defaultLink,
+                buttonLink: defaultLink,
                 imageDesktop: s.image_url,
                 imageMobile: s.image_url,
               };

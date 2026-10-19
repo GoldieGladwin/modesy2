@@ -13,7 +13,7 @@ import { useWishlist } from "@/context/WishlistContext";
 
 export default function WishlistView() {
   const { addToCart } = useCart();
-  const { wishlistIds, toggleWishlist } = useWishlist();
+  const { wishlistIds, removeFromWishlist } = useWishlist();
   const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
@@ -22,7 +22,8 @@ export default function WishlistView() {
   }, [wishlistIds]);
 
   const handleRemove = async (productId: string | number) => {
-    await toggleWishlist(productId);
+    setProducts((prev) => prev.filter((item) => String(item.id) !== String(productId)));
+    await removeFromWishlist(productId);
   };
 
   return (

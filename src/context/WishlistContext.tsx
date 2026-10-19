@@ -4,10 +4,10 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import {
   getLocalWishlistIds,
   saveLocalWishlistIds,
-  toggleWishlist as toggleWishlistLib,
   getWishlistProductIds,
   WISHLIST_CHANGE_EVENT,
 } from "@/lib/supabase/wishlist";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { useAuth } from "./AuthContext";
 
 interface WishlistContextType {
@@ -15,6 +15,7 @@ interface WishlistContextType {
   totalWishlistItems: number;
   isInWishlist: (productId: string | number) => boolean;
   toggleWishlist: (productId: string | number) => Promise<boolean>;
+  removeFromWishlist: (productId: string | number) => Promise<void>;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -63,6 +64,28 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     [wishlistIds]
   );
 
+  const removeFromWishlist = useCallback(
+    async (productId: string | number) => {
+      const idStr = String(productId);
+      const nextIds = wishlistIds.filter((id) => id !== idStr);
+      setWishlistIds(nextIds);
+      saveLocalWishlistIds(nextIds);
+
+      if (isSupabaseConfigured() && user?.id) {
+        try {
+          await supabase
+            .from("wishlists")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("product_id", idStr);
+        } catch (err) {
+          console.warn("Failed to delete wishlist item from Supabase:", err);
+        }
+      }
+    },
+    [wishlistIds, user?.id]
+  );
+
   const toggleWishlist = useCallback(
     async (productId: string | number): Promise<boolean> => {
       const idStr = String(productId);
@@ -71,17 +94,32 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
       // Optimistic update
       const nextIds = nextWishlisted
-        ? [...wishlistIds, idStr]
+        ? [...wishlistIds.filter((id) => id !== idStr), idStr]
         : wishlistIds.filter((id) => id !== idStr);
 
       setWishlistIds(nextIds);
       saveLocalWishlistIds(nextIds);
 
-      // Call library to persist in Supabase if logged in
-      try {
-        await toggleWishlistLib(productId, user?.id);
-      } catch (err) {
-        console.warn("Failed to persist wishlist change:", err);
+      // Persist in Supabase directly
+      if (isSupabaseConfigured() && user?.id) {
+        try {
+          if (nextWishlisted) {
+            await supabase
+              .from("wishlists")
+              .upsert(
+                { user_id: user.id, product_id: idStr },
+                { onConflict: "user_id,product_id" }
+              );
+          } else {
+            await supabase
+              .from("wishlists")
+              .delete()
+              .eq("user_id", user.id)
+              .eq("product_id", idStr);
+          }
+        } catch (err) {
+          console.warn("Failed to persist wishlist change in Supabase:", err);
+        }
       }
 
       return nextWishlisted;
@@ -96,6 +134,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         totalWishlistItems: mounted ? wishlistIds.length : 0,
         isInWishlist,
         toggleWishlist,
+        removeFromWishlist,
       }}
     >
       {children}
@@ -111,6 +150,7 @@ export function useWishlist(): WishlistContextType {
       totalWishlistItems: 0,
       isInWishlist: () => false,
       toggleWishlist: async () => false,
+      removeFromWishlist: async () => {},
     };
   }
   return context;
