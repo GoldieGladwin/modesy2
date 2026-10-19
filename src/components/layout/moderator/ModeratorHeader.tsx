@@ -26,7 +26,7 @@ import {
 export default function ModeratorHeader() {
   const { totalCartItems } = useCart();
   const { totalWishlistItems } = useWishlist();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
@@ -285,11 +285,11 @@ export default function ModeratorHeader() {
                 className="flex items-center gap-2 text-[#333] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
               >
                 <img
-                  src="/assets/img/roger-avatar.jpg"
-                  alt="Roger Novak"
+                  src={user?.avatar || "/assets/img/roger-avatar.jpg"}
+                  alt={user?.name || "Roger Novak"}
                   className="w-[26px] h-[26px] rounded-full object-cover shrink-0 ring-1 ring-black/10"
                 />
-                <span className="font-normal text-[14px] text-[#333]">Roger Novak</span>
+                <span className="font-normal text-[14px] text-[#333]">{user?.name || "Roger Novak"}</span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 text-gray-500 transition-transform ${
                     modDropdownOpen ? "rotate-180" : ""
@@ -658,13 +658,13 @@ export default function ModeratorHeader() {
                 <div className="p-3 bg-gray-50 rounded border border-gray-200 mb-2">
                   <div className="flex items-center space-x-2.5 mb-2.5 pb-2.5 border-b border-gray-200">
                     <img
-                      src="/assets/img/roger-avatar.jpg"
-                      alt="Roger Novak"
+                      src={user?.avatar || "/assets/img/roger-avatar.jpg"}
+                      alt={user?.name || "Roger Novak"}
                       className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-black/10"
                     />
                     <div>
                       <div className="text-[14px] font-semibold text-gray-800">
-                        Roger Novak
+                        {user?.name || "Roger Novak"}
                       </div>
                       <div className="text-[11px] text-gray-500">
                         Member / Moderator

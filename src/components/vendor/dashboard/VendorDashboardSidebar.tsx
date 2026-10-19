@@ -3,6 +3,7 @@
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   Home,
   FileText,
@@ -31,6 +32,7 @@ function VendorDashboardSidebarContent({
   isOpen,
   onClose,
 }: VendorDashboardSidebarProps) {
+  const { user } = useAuth();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -77,17 +79,17 @@ function VendorDashboardSidebarContent({
 
       {/* 2. Scrollable Body: Profile Box + All Menu Sections */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {/* User Profile Box (Hi, Trendshop) */}
+        {/* User Profile Box */}
         <div className="p-6 flex flex-col items-center border-b border-[#f4f4f4]">
           <div className="w-[78px] h-[78px] rounded-full overflow-hidden shrink-0 shadow-xs border border-gray-200">
             <img
-              src="/assets/img/trendshop-avatar.jpg"
-              alt="Trendshop"
+              src={user?.avatar || "/assets/img/trendshop-avatar.jpg"}
+              alt={user?.name || "Trendshop"}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="text-[15px] font-bold text-gray-800 mt-3 text-center">
-            Hi, Trendshop
+            Hi, {user?.name || "Trendshop"}
           </div>
         </div>
 

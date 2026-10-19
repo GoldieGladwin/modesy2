@@ -18,6 +18,7 @@ import VendorHeader from "@/components/layout/vendor/VendorHeader";
 import ModesyFooter from "@/components/layout/guest/ModesyFooter";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
 
 export type ProfileTabType =
   | "products"
@@ -580,6 +581,38 @@ function VendorPublicProfileInner({
   initialTab = "products",
   slug = "daniel_jones",
 }: VendorPublicProfileViewProps) {
+  const { user } = useAuth();
+  const [profileData, setProfileData] = useState<{
+    shopName?: string;
+    avatar?: string;
+    coverImage?: string;
+    email?: string;
+  }>({});
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const cached = localStorage.getItem("modesy_profile_settings_vendor");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        const fullName = [parsed.firstName, parsed.lastName].filter(Boolean).join(" ");
+        setProfileData({
+          shopName: parsed.shopName || fullName || undefined,
+          avatar: parsed.avatar || undefined,
+          coverImage: parsed.coverImage || undefined,
+          email: parsed.email || undefined,
+        });
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  const displayName = profileData.shopName || (user?.role === "vendor" ? user.name : "Trendshop");
+  const displayAvatar = profileData.avatar || (user?.role === "vendor" && user.avatar ? user.avatar : "/assets/img/trendshop-avatar.jpg");
+  const displayCover = profileData.coverImage || "/images/banners/vendor-cover.jpg";
+  const displayEmail = profileData.email || (user?.role === "vendor" && user.email ? user.email : "trendshop@gmail.com");
+
   const [activeTab, setActiveTab] = useState<ProfileTabType>(initialTab);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [minPrice, setMinPrice] = useState("");
@@ -740,8 +773,8 @@ function VendorPublicProfileInner({
       {/* 2. Cover Banner */}
       <div className="relative w-full h-56 sm:h-72 md:h-80 overflow-hidden bg-gray-200">
         <img
-          src="/images/banners/vendor-cover.jpg"
-          alt="Trendshop Cover Banner"
+          src={displayCover}
+          alt={`${displayName} Cover Banner`}
           className="w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-black/10" />
@@ -755,8 +788,8 @@ function VendorPublicProfileInner({
             {/* Avatar */}
             <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-[4px] border border-gray-200 bg-white p-1 shadow-xs shrink-0 overflow-hidden">
               <img
-                src="/assets/img/trendshop-avatar.jpg"
-                alt="Trendshop"
+                src={displayAvatar}
+                alt={displayName}
                 className="w-full h-full object-cover rounded-[2px]"
               />
             </div>
@@ -765,7 +798,7 @@ function VendorPublicProfileInner({
             <div className="flex-1 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
-                  Trendshop
+                  {displayName}
                 </h1>
                 {/* Blue Verified Badge */}
                 <BadgeCheck className="w-5 h-5 text-[#1da1f2] fill-[#1da1f2] stroke-white" />
@@ -825,10 +858,10 @@ function VendorPublicProfileInner({
                 <div className="flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-gray-400" />
                   <a
-                    href="mailto:trendshop@gmail.com"
+                    href={`mailto:${displayEmail}`}
                     className="text-gray-600 hover:text-[#20c997] transition-colors"
                   >
-                    trendshop@gmail.com
+                    {displayEmail}
                   </a>
                 </div>
               </div>

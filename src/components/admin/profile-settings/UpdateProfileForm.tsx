@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Camera, Trash2, Check } from "lucide-react";
 import { ProfileSettingsData } from "./types";
 import { initialProfileData } from "./mockData";
+import { useAuth } from "@/context/AuthContext";
 
 interface UpdateProfileFormProps {
   onSaved?: (data: ProfileSettingsData) => void;
@@ -13,11 +14,39 @@ interface UpdateProfileFormProps {
 export const UpdateProfileForm: React.FC<UpdateProfileFormProps> = ({
   onSaved,
 }) => {
+  const { user, updateUser } = useAuth();
   const [formData, setFormData] = useState<ProfileSettingsData>(initialProfileData);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Load persistent profile settings per user
+  useEffect(() => {
+    if (!user) return;
+    const userScope = user.id || user.email || "admin";
+    const storageKey = `modesy_profile_settings_${userScope}`;
+    try {
+      const cached = localStorage.getItem(storageKey);
+      if (cached) {
+        setFormData(JSON.parse(cached));
+        return;
+      }
+    } catch {}
+
+    const nameParts = (user.name || "").trim().split(" ");
+    const first = nameParts[0] || "";
+    const last = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+    setFormData((prev) => ({
+      ...prev,
+      email: user.email || prev.email,
+      firstName: first || prev.firstName,
+      lastName: last || prev.lastName,
+      avatarUrl: user.avatar || prev.avatarUrl,
+      slug: (user.name || "admin").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    }));
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -46,22 +75,28 @@ export const UpdateProfileForm: React.FC<UpdateProfileFormProps> = ({
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setFormData((prev) => ({
-        ...prev,
-        coverImageUrl: url,
-      }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({
+          ...prev,
+          coverImageUrl: reader.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setFormData((prev) => ({
-        ...prev,
-        avatarUrl: url,
-      }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({
+          ...prev,
+          avatarUrl: reader.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -72,8 +107,27 @@ export const UpdateProfileForm: React.FC<UpdateProfileFormProps> = ({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const fullName = `${formData.firstName} ${formData.lastName}`.trim() || formData.firstName || user?.name || "Admin";
+
+    if (updateUser) {
+      await updateUser({
+        name: fullName,
+        avatar: formData.avatarUrl,
+      });
+    }
+
+    if (user) {
+      const userScope = user.id || user.email || "admin";
+      const storageKey = `modesy_profile_settings_${userScope}`;
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(formData));
+      } catch (err) {
+        console.error("Failed to save profile settings to storage", err);
+      }
+    }
+
     if (onSaved) {
       onSaved(formData);
     }

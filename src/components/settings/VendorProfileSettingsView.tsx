@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import ModesyHeader from '@/components/layout/guest/ModesyHeader';
 import ModesyFooter from '@/components/layout/guest/ModesyFooter';
+import { useAuth } from '@/context/AuthContext';
 
 export type SettingsTab =
   | 'profile'
@@ -54,6 +55,9 @@ export default function VendorProfileSettingsView({
 }: VendorProfileSettingsViewProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { user, updateUser } = useAuth();
+  const coverInputRef = React.useRef<HTMLInputElement>(null);
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
 
   const determineTab = (): SettingsTab => {
     if (pathname) {
@@ -93,6 +97,33 @@ export default function VendorProfileSettingsView({
     avatar: '/assets/img/trendshop-avatar.jpg',
     coverImage: '/images/banners/vendor-cover.jpg',
   });
+
+  // Load persistent profile settings per user
+  useEffect(() => {
+    if (!user) return;
+    const userScope = user.id || user.email || 'user';
+    const storageKey = `modesy_profile_settings_${userScope}`;
+    try {
+      const cached = localStorage.getItem(storageKey);
+      if (cached) {
+        setProfileForm(JSON.parse(cached));
+        return;
+      }
+    } catch {}
+
+    const nameParts = (user.name || '').trim().split(' ');
+    const first = nameParts[0] || '';
+    const last = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+    setProfileForm((prev) => ({
+      ...prev,
+      email: user.email || prev.email,
+      firstName: first || prev.firstName,
+      lastName: last || prev.lastName,
+      avatar: user.avatar || prev.avatar,
+      slug: (user.name || 'user').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    }));
+  }, [user]);
 
   // Location form state matching Screenshot 3
   const [locationForm, setLocationForm] = useState({
@@ -205,8 +236,51 @@ export default function VendorProfileSettingsView({
     }
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileForm((prev) => ({ ...prev, avatar: reader.result as string }));
+        showToast('Avatar image selected. Click Save Changes to apply.');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileForm((prev) => ({ ...prev, coverImage: reader.result as string }));
+        showToast('Cover photo selected. Click Save Changes to apply.');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    const full = `${profileForm.firstName} ${profileForm.lastName}`.trim() || profileForm.firstName || user?.name || 'User';
+
+    if (updateUser) {
+      await updateUser({
+        name: full,
+        avatar: profileForm.avatar,
+      });
+    }
+
+    if (user) {
+      const userScope = user.id || user.email || 'user';
+      const storageKey = `modesy_profile_settings_${userScope}`;
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(profileForm));
+      } catch (err) {
+        console.error('Failed to save profile settings to storage', err);
+      }
+    }
+
     showToast('Your profile changes have been saved successfully!');
   };
 
@@ -427,10 +501,18 @@ export default function VendorProfileSettingsView({
                     />
 
                     {/* Top Right Action Buttons on Banner */}
+                    {/* Top Right Action Buttons on Banner */}
                     <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+                      <input
+                        type="file"
+                        ref={coverInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleCoverChange}
+                      />
                       <button
                         type="button"
-                        onClick={() => showToast('Select new cover image from file dialog (Demo)')}
+                        onClick={() => coverInputRef.current?.click()}
                         title="Change Cover"
                         className="w-7 h-7 rounded-full bg-[#00a99d] hover:bg-[#008f85] text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
                       >
@@ -452,6 +534,13 @@ export default function VendorProfileSettingsView({
 
                   {/* Circular Avatar overlapping banner */}
                   <div className="absolute -bottom-10 left-6 flex items-end">
+                    <input
+                      type="file"
+                      ref={avatarInputRef}
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarChange}
+                    />
                     <div className="relative w-28 h-28 rounded-full border-4 border-white overflow-hidden shadow-sm bg-[#f5d76e]">
                       <Image
                         src={profileForm.avatar}
@@ -463,7 +552,7 @@ export default function VendorProfileSettingsView({
                     {/* Change Avatar Button */}
                     <button
                       type="button"
-                      onClick={() => showToast('Select new avatar image from file dialog (Demo)')}
+                      onClick={() => avatarInputRef.current?.click()}
                       title="Change Avatar"
                       className="w-7 h-7 -ml-6 mb-1 rounded-full bg-[#00a99d] hover:bg-[#008f85] text-white flex items-center justify-center border-2 border-white transition-colors cursor-pointer z-10 shadow-xs"
                     >

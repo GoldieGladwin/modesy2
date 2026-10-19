@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Search, Send, Trash2, X, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface MessageEntry {
   id: string;
@@ -23,6 +24,9 @@ interface ChatConversation {
 }
 
 export default function MemberMessagesView() {
+  const { user } = useAuth();
+  const displayName = user?.name || "Peter Jone";
+  const displayAvatar = user?.avatar || "/images/peter-jone-avatar.jpg";
   const [searchQuery, setSearchQuery] = useState("");
   const [activeChatId, setActiveChatId] = useState<string>("chat-1");
   const [inputMessage, setInputMessage] = useState("");
@@ -269,8 +273,8 @@ export default function MemberMessagesView() {
               <div className="relative">
                 <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 border border-gray-100">
                   <img
-                    src="/images/peter-jone-avatar.jpg"
-                    alt="Peter Jone"
+                    src={displayAvatar}
+                    alt={displayName}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -279,7 +283,7 @@ export default function MemberMessagesView() {
               </div>
               <div>
                 <h3 className="text-[14px] font-bold text-gray-900 leading-tight">
-                  Peter Jone
+                  {displayName}
                 </h3>
               </div>
             </div>

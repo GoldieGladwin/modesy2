@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface ReviewItem {
   id: string;
@@ -16,6 +17,9 @@ interface ReviewItem {
 }
 
 export default function MemberProfileView() {
+  const { user } = useAuth();
+  const displayName = user?.name || "Peter Jone";
+  const displayAvatar = user?.avatar || "/images/peter-jone-avatar.jpg";
   const [activeTab, setActiveTab] = useState<"followers" | "following" | "reviews">("followers");
   const [reviews, setReviews] = useState<ReviewItem[]>([
     {
@@ -92,8 +96,8 @@ export default function MemberProfileView() {
             {/* Square Landscape Avatar */}
             <div className="w-[125px] h-[125px] sm:w-[135px] sm:h-[135px] rounded-[4px] overflow-hidden shrink-0 border border-gray-100 shadow-sm">
               <img
-                src="/images/peter-jone-avatar.jpg"
-                alt="Peter Jone"
+                src={displayAvatar}
+                alt={displayName}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -101,7 +105,7 @@ export default function MemberProfileView() {
             {/* Profile Info */}
             <div className="flex-1">
               <h1 className="text-[24px] sm:text-[26px] font-bold text-[#222] tracking-tight leading-tight">
-                Peter Jone
+                {displayName}
               </h1>
 
               <div className="flex items-center gap-2 mt-1.5 text-[13px] text-gray-500 font-normal">

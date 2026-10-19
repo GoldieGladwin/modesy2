@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   X,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 type SettingsTab =
   | "update-profile"
@@ -57,6 +58,7 @@ interface ShippingAddressItem {
 export default function MemberSettingsView() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user, updateUser } = useAuth();
 
   // Active Tab from query param or default to "update-profile"
   const tabParam = (searchParams?.get("tab") as SettingsTab) || "update-profile";
@@ -94,26 +96,102 @@ export default function MemberSettingsView() {
   const [showEmail, setShowEmail] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
 
+  // Load persistent profile settings per user
+  useEffect(() => {
+    if (!user) return;
+    const userScope = user.id || user.email || "member";
+    const storageKey = `modesy_profile_settings_${userScope}`;
+    try {
+      const cached = localStorage.getItem(storageKey);
+      if (cached) {
+        const p = JSON.parse(cached);
+        if (p.avatarImage) setAvatarImage(p.avatarImage);
+        if (p.coverImage) setCoverImage(p.coverImage);
+        if (p.emailAddress) setEmailAddress(p.emailAddress);
+        if (p.slug) setSlug(p.slug);
+        if (p.firstName) setFirstName(p.firstName);
+        if (p.lastName) setLastName(p.lastName);
+        if (p.phoneNumber) setPhoneNumber(p.phoneNumber);
+        if (p.taxRegNumber) setTaxRegNumber(p.taxRegNumber);
+        if (p.coverType) setCoverType(p.coverType);
+        if (p.notifyOnMessage !== undefined) setNotifyOnMessage(p.notifyOnMessage);
+        if (p.showEmail !== undefined) setShowEmail(p.showEmail);
+        if (p.showPhone !== undefined) setShowPhone(p.showPhone);
+        return;
+      }
+    } catch {}
+
+    const nameParts = (user.name || "").trim().split(" ");
+    const first = nameParts[0] || "";
+    const last = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+    if (first) setFirstName(first);
+    if (last) setLastName(last);
+    if (user.email) setEmailAddress(user.email);
+    if (user.avatar) setAvatarImage(user.avatar);
+    setSlug((user.name || "member").toLowerCase().replace(/[^a-z0-9]+/g, "-"));
+  }, [user]);
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatarImage(url);
-      showToast("Avatar image selected. Click 'Save Changes' to apply.");
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarImage(reader.result as string);
+        showToast("Avatar image selected. Click 'Save Changes' to apply.");
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setCoverImage(url);
-      showToast("Cover photo selected. Click 'Save Changes' to apply.");
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverImage(reader.result as string);
+        showToast("Cover photo selected. Click 'Save Changes' to apply.");
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    const full = `${firstName} ${lastName}`.trim() || firstName || user?.name || "Member";
+
+    if (updateUser) {
+      await updateUser({
+        name: full,
+        avatar: avatarImage,
+      });
+    }
+
+    if (user) {
+      const userScope = user.id || user.email || "member";
+      const storageKey = `modesy_profile_settings_${userScope}`;
+      try {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            avatarImage,
+            coverImage,
+            emailAddress,
+            slug,
+            firstName,
+            lastName,
+            phoneNumber,
+            taxRegNumber,
+            coverType,
+            notifyOnMessage,
+            showEmail,
+            showPhone,
+          })
+        );
+      } catch (err) {
+        console.error("Failed to save profile to storage", err);
+      }
+    }
+
     showToast("Profile updated successfully!");
   };
 

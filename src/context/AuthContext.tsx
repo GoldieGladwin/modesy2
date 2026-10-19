@@ -24,6 +24,7 @@ interface AuthContextType {
   closeLoginModal: () => void;
   login: (userData?: Partial<User> & { password?: string }) => Promise<{ success: boolean; error?: string; user?: User }>;
   register: (userData: { email: string; password?: string; name?: string; role?: string }) => Promise<void>;
+  updateUser: (data: Partial<User>) => Promise<boolean>;
   logout: () => Promise<void> | void;
 }
 
@@ -130,14 +131,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("login") === "true" || params.get("action") === "login") {
-        setIsLoginModalOpen(true);
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, "", newUrl);
+    const handleAuthChange = (e: any) => {
+      if (e?.detail) {
+        setUser(e.detail);
+      } else {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) setUser(JSON.parse(stored));
+        } catch {}
       }
-    }
+    };
+    window.addEventListener("modesy_auth_change", handleAuthChange);
+    window.addEventListener("storage", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("modesy_auth_change", handleAuthChange);
+      window.removeEventListener("storage", handleAuthChange);
+    };
   }, []);
 
   const login = async (
@@ -268,6 +278,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await login({ email: userData.email, name: userData.name, role: (userData.role as any) || "member" });
   };
 
+  const updateUser = async (data: Partial<User>): Promise<boolean> => {
+    if (!user) return false;
+
+    const updatedUser: User = {
+      ...user,
+      ...data,
+      name: data.name !== undefined ? data.name : user.name,
+      avatar: data.avatar !== undefined ? data.avatar : user.avatar,
+    };
+
+    setUser(updatedUser);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
+      window.dispatchEvent(
+        new CustomEvent("modesy_auth_change", { detail: updatedUser })
+      );
+    } catch (e) {
+      console.error("Failed to store updated user", e);
+    }
+
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        const names = (data.name || "").trim().split(" ");
+        const firstName = data.name ? names[0] : undefined;
+        const lastName = data.name && names.length > 1 ? names.slice(1).join(" ") : undefined;
+
+        const updatePayload: any = {};
+        if (data.name) updatePayload.username = data.name;
+        if (firstName) updatePayload.first_name = firstName;
+        if (lastName) updatePayload.last_name = lastName;
+        if (data.avatar) updatePayload.avatar_url = data.avatar;
+
+        if (Object.keys(updatePayload).length > 0) {
+          await supabase.from("profiles").update(updatePayload).eq("id", user.id);
+        }
+      } catch (err) {
+        console.warn("Could not sync profile update to Supabase:", err);
+      }
+    }
+
+    return true;
+  };
+
   const logout = async () => {
     if (isSupabaseConfigured()) {
       try {
@@ -300,6 +353,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         closeLoginModal,
         login,
         register,
+        updateUser,
         logout,
       }}
     >
@@ -347,6 +401,7 @@ export function useAuth(): AuthContextType {
       closeLoginModal: () => {},
       login: async () => ({ success: false }),
       register: async () => {},
+      updateUser: async () => false,
       logout: () => {},
     };
   }

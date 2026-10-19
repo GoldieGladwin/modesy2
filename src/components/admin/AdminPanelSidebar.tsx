@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   Home,
   Palette,
@@ -331,6 +332,7 @@ interface SidebarProps {
 }
 
 export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
+  const { user } = useAuth();
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = React.useState<Record<string, boolean>>({
     Blog: true,
@@ -388,20 +390,28 @@ export default function AdminPanelSidebar({ isOpen, onClose }: SidebarProps) {
         </Link>
       </div>
 
-      {/* 2. USER PROFILE: Avatar Nebula + "Admin" + "● Online" */}
+      {/* 2. USER PROFILE: Avatar + Name + "● Online" */}
       <div className="px-6 py-2 flex items-center gap-4 shrink-0">
-        {/* Nebula Avatar Circle */}
-        <div className="w-[50px] h-[50px] rounded-full overflow-hidden shrink-0 relative bg-slate-900 shadow-sm ring-1 ring-white/10">
-          <div className="absolute inset-0 bg-gradient-to-tr from-purple-700 via-pink-500 to-cyan-400 opacity-95" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_35%,rgba(255,255,255,0.4),transparent_60%)]" />
-          <div className="absolute w-5 h-5 rounded-full bg-cyan-300/40 blur-[2px] top-1 right-1.5" />
-          <div className="absolute w-6 h-6 rounded-full bg-pink-500/50 blur-[3px] bottom-1 left-1" />
-          <div className="absolute w-2 h-2 rounded-full bg-white/80 blur-[1px] top-3 left-3" />
-        </div>
+        {user?.avatar ? (
+          <img
+            src={user.avatar}
+            alt={user.name || "Admin"}
+            className="w-[50px] h-[50px] rounded-full object-cover shrink-0 ring-1 ring-white/10 shadow-sm"
+          />
+        ) : (
+          /* Nebula Avatar Circle */
+          <div className="w-[50px] h-[50px] rounded-full overflow-hidden shrink-0 relative bg-slate-900 shadow-sm ring-1 ring-white/10">
+            <div className="absolute inset-0 bg-gradient-to-tr from-purple-700 via-pink-500 to-cyan-400 opacity-95" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_35%,rgba(255,255,255,0.4),transparent_60%)]" />
+            <div className="absolute w-5 h-5 rounded-full bg-cyan-300/40 blur-[2px] top-1 right-1.5" />
+            <div className="absolute w-6 h-6 rounded-full bg-pink-500/50 blur-[3px] bottom-1 left-1" />
+            <div className="absolute w-2 h-2 rounded-full bg-white/80 blur-[1px] top-3 left-3" />
+          </div>
+        )}
 
         <div className="flex flex-col min-w-0">
           <span className="text-white font-semibold text-[15px] leading-tight truncate">
-            Admin
+            {user?.name || "Admin"}
           </span>
           <span className="text-[12px] text-[#cbd5e1] flex items-center gap-2 mt-1 font-normal">
             <span className="w-2.5 h-2.5 rounded-full bg-[#48bb78] shrink-0 inline-block" />

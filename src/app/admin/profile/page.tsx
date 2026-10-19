@@ -17,6 +17,7 @@ import {
   Rss,
   Share2,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface Product {
   id: number;
@@ -284,6 +285,10 @@ type ProfileTab =
   | "shop-policies";
 
 export default function AdminProfilePage() {
+  const { user } = useAuth();
+  const displayName = user?.name || "Admin";
+  const displayAvatar = user?.avatar || "/assets/img/admin-avatar.jpg";
+  const displayEmail = user?.email || "admin@gmail.com";
   const [activeTab, setActiveTab] = useState<ProfileTab>("products");
   const [showPhone, setShowPhone] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -349,8 +354,8 @@ export default function AdminProfilePage() {
             {/* Square Rounded Avatar */}
             <div className="shrink-0">
               <img
-                src="/assets/img/admin-avatar.jpg"
-                alt="Admin"
+                src={displayAvatar}
+                alt={displayName}
                 className="w-[140px] h-[140px] sm:w-[150px] sm:h-[150px] object-cover rounded-[4px] shadow-xs border border-gray-100"
               />
             </div>
@@ -360,7 +365,7 @@ export default function AdminProfilePage() {
               {/* Name & Verified Badge */}
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-[22px] sm:text-[24px] font-bold text-[#222222] tracking-tight">
-                  Admin
+                  {displayName}
                 </h1>
                 <span
                   title="Verified Vendor"
@@ -416,10 +421,10 @@ export default function AdminProfilePage() {
                 <div className="flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-[#555555]" />
                   <a
-                    href="mailto:admin@gmail.com"
+                    href={`mailto:${displayEmail}`}
                     className="hover:text-[#00a99d] transition-colors text-[#555555]"
                   >
-                    admin@gmail.com
+                    {displayEmail}
                   </a>
                 </div>
               </div>

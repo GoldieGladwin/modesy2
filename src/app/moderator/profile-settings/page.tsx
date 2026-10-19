@@ -20,6 +20,7 @@ import {
   X,
   Receipt,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 type ProfileTab =
   | "update-profile"
@@ -120,6 +121,7 @@ interface AddressItem {
 }
 
 export default function ModeratorProfileSettingsPage() {
+  const { user, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState<ProfileTab>("update-profile");
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -140,6 +142,37 @@ export default function ModeratorProfileSettingsPage() {
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Load persistent profile settings per user
+  useEffect(() => {
+    if (!user) return;
+    const userScope = user.id || user.email || "moderator";
+    const storageKey = `modesy_profile_settings_${userScope}`;
+    try {
+      const cached = localStorage.getItem(storageKey);
+      if (cached) {
+        const p = JSON.parse(cached);
+        if (p.firstName) setFirstName(p.firstName);
+        if (p.lastName) setLastName(p.lastName);
+        if (p.phoneNumber) setPhoneNumber(p.phoneNumber);
+        if (p.taxRegistrationNumber) setTaxRegistrationNumber(p.taxRegistrationNumber);
+        if (p.coverImageType) setCoverImageType(p.coverImageType);
+        if (p.emailOnMessage !== undefined) setEmailOnMessage(p.emailOnMessage);
+        if (p.showEmail !== undefined) setShowEmail(p.showEmail);
+        if (p.showPhone !== undefined) setShowPhone(p.showPhone);
+        if (p.avatarImage) setAvatarImage(p.avatarImage);
+        if (p.coverImage) setCoverImage(p.coverImage);
+        return;
+      }
+    } catch {}
+
+    const nameParts = (user.name || "").trim().split(" ");
+    const first = nameParts[0] || "";
+    const last = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+    if (first) setFirstName(first);
+    if (last) setLastName(last);
+    if (user.avatar) setAvatarImage(user.avatar);
+  }, [user]);
 
   // Location State
   const [locationCountry, setLocationCountry] = useState("");
@@ -223,22 +256,59 @@ export default function ModeratorProfileSettingsPage() {
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setCoverImage(url);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatarImage(url);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   // Form submit handlers
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    const full = `${firstName} ${lastName}`.trim() || firstName || user?.name || "Moderator";
+
+    if (updateUser) {
+      await updateUser({
+        name: full,
+        avatar: avatarImage,
+      });
+    }
+
+    if (user) {
+      const userScope = user.id || user.email || "moderator";
+      const storageKey = `modesy_profile_settings_${userScope}`;
+      try {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            firstName,
+            lastName,
+            phoneNumber,
+            taxRegistrationNumber,
+            coverImageType,
+            emailOnMessage,
+            showEmail,
+            showPhone,
+            avatarImage,
+            coverImage,
+          })
+        );
+      } catch (err) {}
+    }
+
     showNotification("Profile has been saved successfully!");
   };
 

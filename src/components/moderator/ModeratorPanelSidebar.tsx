@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   Home,
   Sliders,
@@ -133,6 +134,7 @@ interface SidebarProps {
 }
 
 export default function ModeratorPanelSidebar({ isOpen, onClose }: SidebarProps) {
+  const { user } = useAuth();
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
     Products: true,
@@ -178,16 +180,16 @@ export default function ModeratorPanelSidebar({ isOpen, onClose }: SidebarProps)
         </Link>
       </div>
 
-      {/* 2. USER PROFILE: Roger Novak + "● Online" (Matching Admin styling) */}
+      {/* 2. USER PROFILE: Dynamic User + "● Online" */}
       <div className="px-6 py-2 flex items-center gap-4 shrink-0">
         <img
-          src="/assets/img/roger-avatar.jpg"
-          alt="Roger Novak"
+          src={user?.avatar || "/assets/img/roger-avatar.jpg"}
+          alt={user?.name || "Roger Novak"}
           className="w-[50px] h-[50px] rounded-full object-cover shrink-0 ring-1 ring-white/10 shadow-sm"
         />
         <div className="flex flex-col min-w-0">
           <span className="text-white font-semibold text-[15px] leading-tight truncate">
-            Roger Novak
+            {user?.name || "Roger Novak"}
           </span>
           <span className="text-[12px] text-[#cbd5e1] flex items-center gap-2 mt-1 font-normal">
             <span className="w-2.5 h-2.5 rounded-full bg-[#48bb78] shrink-0 inline-block" />

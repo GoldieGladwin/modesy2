@@ -2,6 +2,7 @@
 
 import React from "react";
 import ModesyHeader from "@/components/layout/guest/ModesyHeader";
+import { useAuth } from "@/context/AuthContext";
 
 const DEFAULT_VENDOR = {
   name: "Trendshop",
@@ -20,7 +21,9 @@ interface VendorHeaderProps {
 }
 
 export default function VendorHeader({
-  currentUser = DEFAULT_VENDOR,
+  currentUser,
 }: VendorHeaderProps = {}) {
-  return <ModesyHeader currentUser={currentUser || DEFAULT_VENDOR} />;
+  const { user } = useAuth();
+  const effective = currentUser !== undefined ? currentUser : (user || DEFAULT_VENDOR);
+  return <ModesyHeader currentUser={effective} />;
 }

@@ -82,7 +82,7 @@ export default function AdminHeader() {
     { name: "Arabic", flag: "/assets/img/flag_ar.png" },
   ];
 
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   // Daftar menu dropdown profil admin sesuai urutan
   const adminProfileMenus = [
@@ -352,11 +352,11 @@ export default function AdminHeader() {
               >
                 {/* Dandelion Avatar Circle matching Modesy photo */}
                 <img
-                  src="/assets/img/admin-avatar.jpg"
-                  alt="Admin"
+                  src={user?.avatar || "/assets/img/admin-avatar.jpg"}
+                  alt={user?.name || "Admin"}
                   className="w-[26px] h-[26px] rounded-full object-cover shrink-0 ring-1 ring-black/10"
                 />
-                <span className="font-medium text-[14px] text-[#333]">Admin</span>
+                <span className="font-medium text-[14px] text-[#333]">{user?.name || "Admin"}</span>
                 <svg
                   width="10"
                   height="6"
@@ -848,13 +848,13 @@ export default function AdminHeader() {
                 <div className="p-3 bg-gray-50 rounded border border-gray-200 mb-2">
                   <div className="flex items-center space-x-2.5 mb-2.5 pb-2.5 border-b border-gray-200">
                     <img
-                      src="/assets/img/admin-avatar.jpg"
-                      alt="Admin"
+                      src={user?.avatar || "/assets/img/admin-avatar.jpg"}
+                      alt={user?.name || "Admin"}
                       className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-black/10"
                     />
                     <div>
                       <div className="text-[14px] font-semibold text-gray-800">
-                        Admin
+                        {user?.name || "Admin"}
                       </div>
                       <div className="text-[11px] text-gray-500">
                         Administrator

@@ -26,6 +26,7 @@ interface NavbarProps {
 
 export default function AdminPanelNavbar({ onToggleSidebar }: NavbarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -199,13 +200,13 @@ export default function AdminPanelNavbar({ onToggleSidebar }: NavbarProps) {
           >
             {/* Dandelion Avatar Circle */}
             <img
-              src="/assets/img/admin-avatar.jpg"
-              alt="Admin"
+              src={user?.avatar || "/assets/img/admin-avatar.jpg"}
+              alt={user?.name || "Admin"}
               className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-black/10"
             />
 
             <span className="font-medium text-xs text-gray-700 hidden sm:inline">
-              Admin
+              {user?.name || "Admin"}
             </span>
             <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
           </button>

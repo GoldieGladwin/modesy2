@@ -40,7 +40,7 @@ export default function ModeratorPanelNavbar({ onToggleSidebar }: NavbarProps) {
     { name: "Arabic", flag: "/assets/img/flag_ar.png" },
   ];
 
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   // Moderator dropdown menus (strictly pointing to /moderator/*)
   const profileMenus = [
@@ -194,12 +194,12 @@ export default function ModeratorPanelNavbar({ onToggleSidebar }: NavbarProps) {
             className="flex items-center gap-2 py-1 px-1.5 rounded hover:bg-gray-50 transition cursor-pointer"
           >
             <img
-              src="/assets/img/roger-avatar.jpg"
-              alt="Roger Novak"
+              src={user?.avatar || "/assets/img/roger-avatar.jpg"}
+              alt={user?.name || "Roger Novak"}
               className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-black/10"
             />
             <span className="font-medium text-xs text-gray-700 hidden sm:inline">
-              Roger Novak
+              {user?.name || "Roger Novak"}
             </span>
             <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
           </button>

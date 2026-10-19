@@ -2,10 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 type ProfileTab = "followers" | "following" | "reviews";
 
 export default function ModeratorProfilePage() {
+  const { user } = useAuth();
+  const displayName = user?.name || "Roger Novak";
+  const displayAvatar = user?.avatar || "/assets/img/roger-avatar.jpg";
   const [activeTab, setActiveTab] = useState<ProfileTab>("followers");
 
   const tabLabels: Record<ProfileTab, string> = {
@@ -33,11 +37,11 @@ export default function ModeratorProfilePage() {
 
         {/* 2. User Info Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
-          {/* Avatar (Matching magical forest painting in screenshot, rounded-sm) */}
+          {/* Avatar */}
           <div className="shrink-0">
             <img
-              src="/assets/img/roger-avatar.jpg"
-              alt="Roger Novak"
+              src={displayAvatar}
+              alt={displayName}
               className="w-[135px] h-[135px] object-cover rounded-[4px] shadow-xs border border-gray-100"
             />
           </div>
@@ -45,7 +49,7 @@ export default function ModeratorProfilePage() {
           {/* Profile Name & Status */}
           <div className="space-y-2">
             <h1 className="text-[24px] font-bold text-[#222222] tracking-tight">
-              Roger Novak
+              {displayName}
             </h1>
 
             {/* Online Status Dot */}

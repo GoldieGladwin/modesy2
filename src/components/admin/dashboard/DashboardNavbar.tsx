@@ -17,6 +17,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface DashboardNavbarProps {
   onToggleSidebar: () => void;
@@ -24,6 +25,7 @@ interface DashboardNavbarProps {
 
 export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("English");
@@ -197,7 +199,7 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
             </div>
 
             <span className="font-medium text-xs text-gray-700 hidden sm:inline">
-              Admin
+              {user?.name || "Admin"}
             </span>
             <ChevronDown className="w-3 h-3 text-gray-400" />
           </button>

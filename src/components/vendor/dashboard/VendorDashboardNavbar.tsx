@@ -27,7 +27,7 @@ export default function VendorDashboardNavbar({
 }: VendorDashboardNavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -199,14 +199,14 @@ export default function VendorDashboardNavbar({
           >
             <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-gray-200">
               <img
-                src="/assets/img/trendshop-avatar.jpg"
-                alt="Trendshop"
+                src={user?.avatar || "/assets/img/trendshop-avatar.jpg"}
+                alt={user?.name || "Trendshop"}
                 className="w-full h-full object-cover"
               />
             </div>
 
             <span className="font-medium text-xs text-gray-700 hidden sm:inline">
-              Trendshop
+              {user?.name || "Trendshop"}
             </span>
             <ChevronDown className="w-3 h-3 text-gray-400" />
           </button>

@@ -22,8 +22,10 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function MemberHeader() {
+  const { user } = useAuth();
   const { totalCartItems } = useCart();
   const { totalWishlistItems } = useWishlist();
   const router = useRouter();
@@ -230,11 +232,11 @@ export default function MemberHeader() {
                 className="flex items-center gap-2 text-[#333] hover:text-[#00a99d] font-medium text-[14px] cursor-pointer bg-transparent border-0 p-0"
               >
                 <img
-                  src="/images/peter-jone-avatar.jpg"
-                  alt="Peter Jone"
+                  src={user?.avatar || "/images/peter-jone-avatar.jpg"}
+                  alt={user?.name || "Member"}
                   className="w-6 h-6 rounded-full object-cover ring-1 ring-black/10"
                 />
-                <span>Peter Jone</span>
+                <span>{user?.name || "Member"}</span>
                 <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
               </button>
 
@@ -508,8 +510,8 @@ export default function MemberHeader() {
           </Link>
           <Link href="/member/profile" className="w-7 h-7 rounded-full overflow-hidden border border-gray-200 block">
             <img
-              src="/images/peter-jone-avatar.jpg"
-              alt="Peter Jone"
+              src={user?.avatar || "/images/peter-jone-avatar.jpg"}
+              alt={user?.name || "Member"}
               className="w-full h-full object-cover"
             />
           </Link>
