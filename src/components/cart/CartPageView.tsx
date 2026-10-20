@@ -16,6 +16,7 @@ import {
 import { useCart } from "@/context/CartContext";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface CartPageViewProps {
   role?: "guest" | "member" | "vendor" | "admin" | "moderator";
@@ -25,6 +26,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
   const router = useRouter();
   const { user } = useAuth();
   const { currency, formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const {
     cartItems,
     totalCartItems,
@@ -49,54 +51,20 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
       ? "/vendor"
       : "/guest";
 
+  const checkoutUrl =
+    role === "guest"
+      ? "/guest/checkout"
+      : role === "admin"
+      ? "/admin/checkout"
+      : role === "moderator"
+      ? "/moderator/checkout"
+      : role === "member"
+      ? "/member/checkout"
+      : "/checkout";
+
   const handleCheckout = () => {
     if (cartItems.length === 0) return;
-
-    setIsCheckingOut(true);
-
-    setTimeout(() => {
-      const orderNumber = Math.floor(100000 + Math.random() * 900000);
-      const orderDate = new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-
-      const newOrder = {
-        id: orderNumber,
-        orderNumber: String(orderNumber),
-        total: totalCartPrice,
-        currency: currency.symbol.trim() || "$",
-        paymentStatus: "Payment Received",
-        orderStatus: "Processing",
-        date: orderDate,
-        itemsCount: totalCartItems,
-        items: [...cartItems],
-      };
-
-      try {
-        const key = `modesy_orders_${role}`;
-        const existing = localStorage.getItem(key);
-        const parsed = existing ? JSON.parse(existing) : [];
-        localStorage.setItem(key, JSON.stringify([newOrder, ...parsed]));
-      } catch (e) {
-        console.error("Failed to save order", e);
-      }
-
-      // 1. Clear cart state & localStorage
-      clearCart();
-      setIsCheckingOut(false);
-      setCheckoutSuccess(true);
-
-      // 2. Redirect to order details or orders page
-      setTimeout(() => {
-        if (role === "guest") {
-          router.push(`/order-details/${orderNumber}`);
-        } else {
-          router.push(`/${role}/orders`);
-        }
-      }, 1500);
-    }, 1000);
+    router.push(checkoutUrl);
   };
 
   if (cartItems.length === 0 && !checkoutSuccess) {
@@ -104,10 +72,10 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <nav className="text-xs text-gray-500 mb-6 flex items-center gap-1.5">
           <Link href={homeUrl} className="hover:text-[#00a99d]">
-            Home
+            {t("Home")}
           </Link>
           <span>/</span>
-          <span className="text-gray-800 font-medium">Cart</span>
+          <span className="text-gray-800 font-medium">{t("Cart")}</span>
         </nav>
 
         <div className="bg-white border border-gray-200 rounded-sm p-10 text-center max-w-lg mx-auto shadow-xs">
@@ -115,7 +83,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
             <ShoppingCart className="w-10 h-10 text-gray-400 stroke-[1.5]" />
           </div>
           <h1 className="text-xl font-bold text-gray-800 mb-2">
-            Your cart is empty
+            {t("Your cart is currently empty")}
           </h1>
           <p className="text-xs text-gray-500 mb-6">
             Looks like you haven&apos;t added any items to your cart yet.
@@ -124,7 +92,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
             href={homeUrl}
             className="inline-flex items-center gap-2 bg-[#00a99d] text-white px-6 py-2.5 rounded text-xs sm:text-sm font-bold hover:bg-[#008f85] transition shadow-xs"
           >
-            <span>Continue Shopping</span>
+            <span>{t("Continue Shopping")}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -134,35 +102,16 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Checkout Success Modal Overlay */}
-      {checkoutSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-md p-8 max-w-md w-full text-center shadow-2xl animate-fadeIn">
-            <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100">
-              <CheckCircle2 className="w-10 h-10 text-[#00a99d]" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Order Confirmed!</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Thank you for your purchase. Your cart has been cleared and your order is being processed.
-            </p>
-            <div className="flex items-center justify-center gap-2 text-xs text-[#00a99d] font-semibold">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Redirecting to order confirmation...</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Breadcrumb */}
       <nav className="text-xs text-gray-500 mb-6 flex items-center gap-1.5">
         <Link href={homeUrl} className="hover:text-[#00a99d]">
-          Home
+          {t("Home")}
         </Link>
         <span>/</span>
-        <span className="text-gray-800 font-medium">Cart ({totalCartItems})</span>
+        <span className="text-gray-800 font-medium">{t("Cart")} ({totalCartItems})</span>
       </nav>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Shopping Cart</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t("Shopping Cart")}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Cart Items Table */}
@@ -171,11 +120,11 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  <th className="py-3 px-4">Product</th>
-                  <th className="py-3 px-4">Price</th>
-                  <th className="py-3 px-4 text-center">Quantity</th>
-                  <th className="py-3 px-4 text-right">Total</th>
-                  <th className="py-3 px-4 text-center">Action</th>
+                  <th className="py-3 px-4">{t("Product")}</th>
+                  <th className="py-3 px-4">{t("Price")}</th>
+                  <th className="py-3 px-4 text-center">{t("Quantity")}</th>
+                  <th className="py-3 px-4 text-right">{t("Total")}</th>
+                  <th className="py-3 px-4 text-center">{t("Action", "Action")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
@@ -281,7 +230,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-[#00a99d] transition cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Continue Shopping</span>
+              <span>{t("Continue Shopping")}</span>
             </Link>
 
             <button
@@ -289,7 +238,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
               onClick={clearCart}
               className="text-xs text-red-600 hover:text-red-700 font-semibold transition cursor-pointer"
             >
-              Clear Cart
+              {t("Clear Cart")}
             </button>
           </div>
         </div>
@@ -297,24 +246,24 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
         {/* Order Summary */}
         <div className="lg:col-span-4 bg-white border border-gray-200 rounded-sm p-6 shadow-xs">
           <h2 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4">
-            Order Summary
+            {t("Order Summary")}
           </h2>
 
           <div className="space-y-3 text-sm">
             <div className="flex justify-between text-gray-600">
-              <span>Items Total ({totalCartItems}):</span>
+              <span>{t("Items Total")} ({totalCartItems}):</span>
               <span className="font-semibold text-gray-900">
                 {formattedTotalPrice}
               </span>
             </div>
 
             <div className="flex justify-between text-gray-600">
-              <span>Shipping:</span>
-              <span className="text-xs text-gray-500">Calculated at checkout</span>
+              <span>{t("Shipping")}:</span>
+              <span className="text-xs text-gray-500">{t("Calculated at checkout")}</span>
             </div>
 
             <div className="border-t border-gray-200 pt-3 flex justify-between text-base font-bold text-gray-900">
-              <span>Estimated Total:</span>
+              <span>{t("Estimated Total")}:</span>
               <span className="text-[#00a99d] text-lg font-bold">
                 {formattedTotalPrice}
               </span>
@@ -327,18 +276,11 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
             onClick={handleCheckout}
             className="w-full mt-6 py-3 px-4 bg-[#00a99d] hover:bg-[#008f85] disabled:opacity-75 text-white font-bold text-sm rounded transition shadow-xs text-center cursor-pointer flex items-center justify-center gap-2"
           >
-            {isCheckingOut ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Processing Order...</span>
-              </>
-            ) : (
-              <span>Proceed to Checkout</span>
-            )}
+            <span>{t("Proceed to Checkout")}</span>
           </button>
 
           <p className="text-[11px] text-gray-400 text-center mt-3">
-            Secure checkout powered by Modesy
+            {t("Secure checkout powered by Modesy")}
           </p>
         </div>
       </div>

@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ShoppingCart, ArrowRight, Check, X } from "lucide-react";
 import ModesyHeader from "@/components/layout/guest/ModesyHeader";
 import ModesyFooter from "@/components/layout/guest/ModesyFooter";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface CartItem {
   id: number;
@@ -144,12 +146,11 @@ export default function CartView() {
     }
   };
 
+  const router = useRouter();
+  const { t } = useLanguage();
+
   const handleCheckout = () => {
-    setIsCheckingOut(true);
-    showToast("Proceeding to checkout...");
-    setTimeout(() => {
-      setIsCheckingOut(false);
-    }, 2000);
+    router.push("/checkout");
   };
 
   // Calculations

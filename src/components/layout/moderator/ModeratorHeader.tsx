@@ -29,7 +29,7 @@ export default function ModeratorHeader() {
   const { totalCartItems } = useCart();
   const { totalWishlistItems } = useWishlist();
   const { currency, setCurrencyCode, currencies } = useCurrency();
-  const { language, setLanguage, languages } = useLanguage();
+  const { language, setLanguage, languages, t } = useLanguage();
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -145,13 +145,13 @@ export default function ModeratorHeader() {
               href="/guest/contact"
               className="text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer text-[14px]"
             >
-              Contact
+              {t("Contact")}
             </Link>
             <Link
               href="/moderator/dashboard"
               className="text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer text-[14px]"
             >
-              Sell on Modesy
+              {t("Sell on Modesy")}
             </Link>
           </div>
 
@@ -174,7 +174,7 @@ export default function ModeratorHeader() {
                 >
                   <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
                 </svg>
-                <span className="max-w-[260px] truncate">{currentLocation}</span>
+                <span className="max-w-[260px] truncate">{currentLocation === "Location" ? t("Location") : currentLocation}</span>
               </button>
               {currentLocation !== "Location" && (
                 <button
@@ -182,7 +182,7 @@ export default function ModeratorHeader() {
                   onClick={() => setCurrentLocation("Location")}
                   className="ml-2 inline-flex items-center bg-[#e3e3e7] hover:bg-[#d6d6da] text-[#515660] text-[12px] px-2 py-[2px] rounded-[3px] border-0 cursor-pointer"
                 >
-                  Reset
+                  {t("Reset")}
                 </button>
               )}
             </div>
@@ -342,7 +342,7 @@ export default function ModeratorHeader() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for products, categories or brands"
+                  placeholder={t("Search for products, categories or brands")}
                   className="w-full h-full bg-transparent pl-5 pr-12 text-[14px] text-[#7b808a] placeholder-[#7b808a] outline-none"
                 />
                 <button
@@ -369,7 +369,7 @@ export default function ModeratorHeader() {
                   {totalCartItems}
                 </span>
               </div>
-              <span className="text-[14px] font-medium leading-[26px]">Cart</span>
+              <span className="text-[14px] font-medium leading-[26px]">{t("Cart")}</span>
             </Link>
 
             {/* Wishlist */}
@@ -385,7 +385,7 @@ export default function ModeratorHeader() {
                   </span>
                 )}
               </div>
-              <span className="text-[14px] font-medium leading-[26px]">Wishlist</span>
+              <span className="text-[14px] font-medium leading-[26px]">{t("Wishlist")}</span>
             </Link>
 
             {/* Sell Now Button (matches photo green/teal button) */}
@@ -393,7 +393,7 @@ export default function ModeratorHeader() {
               href="/moderator/dashboard"
               className="bg-[#00a99d] hover:brightness-95 text-white text-[14px] font-medium px-5 py-2 rounded-[3px] transition-all cursor-pointer border-0 leading-[22px] inline-block text-center shadow-xs"
             >
-              Sell Now
+              {t("Sell Now")}
             </Link>
           </div>
         </div>
@@ -426,7 +426,7 @@ export default function ModeratorHeader() {
                         : "text-[#222222] hover:text-[#00a99d]"
                     }`}
                   >
-                    <span>{category.title}</span>
+                    <span>{t(category.title)}</span>
                     <span
                       className={`absolute bottom-0 left-0 right-0 h-[2px] bg-[#00a99d] transition-opacity ${
                         isHovered || isActive ? "opacity-100" : "opacity-0"
@@ -454,7 +454,7 @@ export default function ModeratorHeader() {
                       href={`/moderator/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(sub.title)}`}
                       className="font-bold text-[#222] text-[14px] mb-2.5 cursor-pointer hover:text-[#00a99d] transition-colors leading-[22px] block"
                     >
-                      {sub.title}
+                      {t(sub.title)}
                     </Link>
                     {sub.items.length > 0 && (
                       <ul className="space-y-1.5 list-none p-0 m-0">
@@ -464,7 +464,7 @@ export default function ModeratorHeader() {
                               href={`/moderator/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(sub.title)}&item=${encodeURIComponent(item)}`}
                               className="text-[13px] text-[#555] hover:text-[#00a99d] transition-colors cursor-pointer text-left block leading-[20px]"
                             >
-                              {item}
+                              {t(item)}
                             </Link>
                           </li>
                         ))}
@@ -489,7 +489,7 @@ export default function ModeratorHeader() {
                       />
                       <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
                       <span className="absolute bottom-0 left-0 right-0 p-2.5 text-white text-[13px] font-semibold text-left drop-shadow-sm select-none">
-                        {img.label}
+                        {t(img.label)}
                       </span>
                     </Link>
                   ))}
@@ -619,7 +619,7 @@ export default function ModeratorHeader() {
               onClick={() => setMobileMenuOpen(false)}
               className="block w-full bg-[#00a99d] text-white font-medium py-2.5 rounded-[3px] text-[14px] text-center"
             >
-              Sell Now
+              {t("Sell Now")}
             </Link>
 
             <div className="flex border-b border-gray-200">
@@ -632,7 +632,7 @@ export default function ModeratorHeader() {
                     : "border-transparent text-[#666]"
                 }`}
               >
-                Main Menu
+                {t("Main Menu")}
               </button>
               <button
                 type="button"
@@ -643,7 +643,7 @@ export default function ModeratorHeader() {
                     : "border-transparent text-[#666]"
                 }`}
               >
-                Categories
+                {t("Categories")}
               </button>
             </div>
 
@@ -678,7 +678,7 @@ export default function ModeratorHeader() {
                           className="flex items-center gap-2 p-1.5 text-[12px] text-gray-700 hover:text-[#00a99d] hover:bg-white rounded transition-colors"
                         >
                           <Icon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                          <span className="truncate">{item.title}</span>
+                          <span className="truncate">{t(item.title)}</span>
                         </Link>
                       );
                     })}
@@ -703,7 +703,7 @@ export default function ModeratorHeader() {
                       onClick={() => setMobileMenuOpen(false)}
                       className="block w-full text-left py-2 text-[14px] text-[#333] hover:text-[#00a99d] transition-colors border-b border-gray-100 last:border-0"
                     >
-                      {item}
+                      {t(item)}
                     </Link>
                   )
                 )}
@@ -728,7 +728,7 @@ export default function ModeratorHeader() {
                     >
                       <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
                     </svg>
-                    <span className="truncate">{currentLocation}</span>
+                    <span className="truncate">{currentLocation === "Location" ? t("Location") : currentLocation}</span>
                   </button>
 
                   {currentLocation !== "Location" && (
@@ -737,7 +737,7 @@ export default function ModeratorHeader() {
                       onClick={() => setCurrentLocation("Location")}
                       className="bg-[#e3e3e7] text-[#515660] text-[12px] px-2 py-0.5 rounded-[3px]"
                     >
-                      Reset
+                      {t("Reset")}
                     </button>
                   )}
                 </div>
@@ -745,7 +745,7 @@ export default function ModeratorHeader() {
                 {/* Mobile Currency & Language Selector */}
                 <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-[13px] gap-2">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[#666] text-[12px]">Currency:</span>
+                    <span className="text-[#666] text-[12px]">{t("Currency:")}</span>
                     <select
                       value={currency.code}
                       onChange={(e) => setCurrencyCode(e.target.value)}
@@ -760,7 +760,7 @@ export default function ModeratorHeader() {
                     </select>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[#666] text-[12px]">Lang:</span>
+                    <span className="text-[#666] text-[12px]">{t("Lang:")}</span>
                     <select
                       value={language.code}
                       onChange={(e) => setLanguage(e.target.value)}
@@ -789,7 +789,7 @@ export default function ModeratorHeader() {
                           onClick={() => setMobileMenuOpen(false)}
                           className="text-left text-[14px] font-medium text-[#333] hover:text-[#00a99d]"
                         >
-                          {cat.title}
+                          {t(cat.title)}
                         </Link>
                         {cat.subcategories.length > 0 && (
                           <button
@@ -819,7 +819,7 @@ export default function ModeratorHeader() {
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="text-[13px] font-semibold text-[#222] hover:text-[#00a99d] block"
                               >
-                                {sub.title}
+                                {t(sub.title)}
                               </Link>
                               {sub.items.length > 0 && (
                                 <div className="pl-2 space-y-1 mt-1">
@@ -830,7 +830,7 @@ export default function ModeratorHeader() {
                                       onClick={() => setMobileMenuOpen(false)}
                                       className="block text-[12px] text-[#666] hover:text-[#00a99d] py-0.5"
                                     >
-                                      {it}
+                                      {t(it)}
                                     </Link>
                                   ))}
                                 </div>

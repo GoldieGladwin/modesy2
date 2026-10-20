@@ -16,7 +16,10 @@ export const LANGUAGES: Language[] = [
 
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   ar: {
+    // Navigation & Top bar
     "Home": "الرئيسية",
+    "Contact": "اتصل بنا",
+    "Blog": "المدونة",
     "Products": "المنتجات",
     "Cart": "عربة التسوق",
     "Wishlist": "المفضلة",
@@ -30,25 +33,141 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     "Profile": "الملف الشخصي",
     "Dashboard": "لوحة التحكم",
     "Admin Panel": "لوحة الإدارة",
+    "Moderator Panel": "لوحة الإشراف",
     "Orders": "الطلبات",
     "Settings": "الإعدادات",
+    "Profile Settings": "إعدادات الملف الشخصي",
     "Wallet": "المحفظة",
     "Messages": "الرسائل",
     "My Coupons": "قسائمي",
+    "Location": "الموقع",
+    "Select Location": "اختر الموقع",
+    "Reset": "إعادة تعيين",
+    "Close": "إغلاق",
+    "Save Changes": "حفظ التغييرات",
     "Search for products, categories or brands": "ابحث عن المنتجات أو الفئات أو العلامات التجارية",
+    "Main Menu": "القائمة الرئيسية",
     "Categories": "الفئات",
-    "Proceed to Checkout": "متابعة إتمام الطلب",
+    "All Categories": "جميع الفئات",
+    "Currency:": "العملة:",
+    "Lang:": "اللغة:",
+
+    // Categories
+    "Clothing": "الملابس",
+    "Women's Clothing": "ملابس نسائية",
+    "Men's Clothing": "ملابس رجالية",
+    "Jewelry & Accessories": "مجوهرات وإكسسوارات",
+    "Electronics": "إلكترونيات",
+    "Home & Living": "المنزل والمعيشة",
+    "Beauty & Care": "الجمال والعناية",
+    "Kids & Babies": "أطفال ورضع",
+    "Shoes & Bags": "أحذية وحقائب",
+    "Sports & Outdoor": "رياضة وخارج المنزل",
+    "Books & Stationery": "كتب وقرطاسية",
+    "Auto & Moto": "سيارات ودراجات",
+    "Services": "خدمات",
+
+    // Subcategories & Items
+    "Dresses": "فساتين",
+    "T-shirts": "تيشيرتات",
+    "Shirts": "قمصان",
+    "Pants": "بنطلونات",
+    "Jackets & Coats": "سترات ومعاطف",
+    "Hoodies & Sweatshirts": "هوديز وسويت شيرت",
+    "Skirts": "تنانير",
+    "Suits & Blazers": "بدلات وبليزر",
+    "Underwear": "ملابس داخلية",
+    "Necklaces": "قلائد",
+    "Rings": "خواتم",
+    "Earrings": "أقراط",
+    "Bracelets": "أساور",
+    "Watches": "ساعات",
+    "Sunglasses": "نظارات شمسية",
+    "Smartphones": "هواتف ذكية",
+    "Laptops & Computers": "أجهزة كمبيوتر محمولة",
+    "Tablets": "أجهزة لوحية",
+    "Headphones": "سماعات",
+    "Cameras": "كاميرات",
+    "Furniture": "أثاث",
+    "Kitchenware": "أدوات المطبخ",
+    "Bedding": "مفروشات",
+    "Lighting": "إضاءة",
+    "Home Decor": "ديكور منزلي",
+    "Skincare": "العناية بالبشرة",
+    "Haircare": "العناية بالشعر",
+    "Makeup": "مكياج",
+    "Perfumes": "عطور",
+    "Personal Care": "عناية شخصية",
+
+    // Cart Page
+    "Shopping Cart": "عربة التسوق",
+    "Order Summary": "ملخص الطلب",
     "Estimated Total": "المجموع التقديري",
     "Subtotal": "المجموع الفرعي",
     "Shipping": "الشحن",
     "Calculated at checkout": "يتم الحساب عند الدفع",
+    "Proceed to Checkout": "متابعة إتمام الطلب",
     "Your cart is currently empty": "سلة التسوق الخاصة بك فارغة حاليًا",
     "Continue Shopping": "متابعة التسوق",
-    "Shopping Cart": "عربة التسوق",
-    "Location": "الموقع",
-    "Select Location": "اختر الموقع",
-    "Close": "إغلاق",
-    "Save Changes": "حفظ التغييرات",
+    "Clear Cart": "تفريغ السلة",
+    "Product": "المنتج",
+    "Price": "السعر",
+    "Quantity": "الكمية",
+    "Total": "الإجمالي",
+    "Remove": "حذف",
+    "Secure checkout powered by Modesy": "دفع آمن مدعوم من موديسي",
+
+    // Checkout Page (User Screenshot elements)
+    "Checkout": "إتمام الدفع",
+    "1. Payment Method": "١. طريقة الدفع",
+    "2. Payment": "٢. الدفع",
+    "Edit": "تعديل",
+    "Confirm and Pay": "تأكيد ودفع",
+    "Kartu Debit atau Kredit": "بطاقة مدين أو ائتمان",
+    "Debit or Credit Card": "بطاقة مدين أو ائتمان",
+    "Ditunjang teknologi PayPal": "مدعوم بتقنية PayPal",
+    "Powered by PayPal": "مدعوم بتقنية PayPal",
+    "Instant download": "تحميل فوري",
+    "License": "الترخيص",
+    "License:": "الترخيص:",
+    "Regular License": "ترخيص عادي",
+    "Extended License": "ترخيص موسع",
+    "Seller": "البائع",
+    "Seller:": "البائع:",
+    "Quantity:": "الكمية:",
+    "Price:": "السعر:",
+    "VAT": "ضريبة القيمة المضافة",
+    "VAT (10%):": "ضريبة القيمة المضافة (١٠٪):",
+    "Sale Tax": "ضريبة المبيعات",
+    "Sale Tax (5%)": "ضريبة المبيعات (٥٪)",
+    "Transaction Fee": "رسوم المعاملة",
+    "Transaction Fee (3%)": "رسوم المعاملة (٣٪)",
+    "I have read and agree to the": "لقد قرأت ووافقت على",
+    "Terms & Conditions": "الشروط والأحكام",
+    "Continue to Payment": "المتابعة إلى الدفع",
+    "Pay": "دفع",
+    "Pay with Card": "الدفع بالبطاقة",
+    "Card Number": "رقم البطاقة",
+    "Expiration Date": "تاريخ الانتهاء",
+    "Cardholder Name": "اسم حامل البطاقة",
+    "CVC": "رمز التحقق",
+    "Processing Payment...": "جاري معالجة الدفع...",
+    "Order Completed Successfully!": "تم إتمام الطلب بنجاح!",
+    "Thank you for your purchase.": "شكراً لشرائك.",
+    "Order Number:": "رقم الطلب:",
+    "View Orders": "عرض الطلبات",
+    "Pay with PayPal": "الدفع عبر PayPal",
+    "PayPal Payment": "الدفع عبر PayPal",
+    "Bank Transfer": "تحويل مصرفي",
+    "Cash on Delivery": "الدفع عند الاستلام",
+    "Select a payment method": "اختر طريقة الدفع",
+    "You will be redirected to PayPal to complete your purchase securely.": "سيتم توجيهك إلى PayPal لإتمام عملية الشراء بأمان.",
+    "Items": "العناصر",
+    "Order Placed": "تم تقديم الطلب",
+    "Back to Cart": "العودة إلى السلة",
+    "Items Total": "إجمالي العناصر",
+    "Processing Order...": "جاري معالجة الطلب...",
+    "Load Demo Items": "تحميل عناصر تجريبية",
   },
 };
 
@@ -141,8 +260,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   const t = (key: string, defaultText?: string): string => {
-    if (language.code === "ar" && TRANSLATIONS.ar[key]) {
-      return TRANSLATIONS.ar[key];
+    if (!key) return defaultText || "";
+    if (language.code === "ar") {
+      const trimmed = key.trim();
+      if (TRANSLATIONS.ar[trimmed]) {
+        return TRANSLATIONS.ar[trimmed];
+      }
+      const lower = trimmed.toLowerCase();
+      for (const [k, v] of Object.entries(TRANSLATIONS.ar)) {
+        if (k.toLowerCase() === lower) {
+          return v;
+        }
+      }
     }
     return defaultText !== undefined ? defaultText : key;
   };

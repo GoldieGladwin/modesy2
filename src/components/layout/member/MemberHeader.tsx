@@ -108,13 +108,13 @@ export default function MemberHeader() {
               href="/guest/contact"
               className="text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer text-[14px]"
             >
-              Contact
+              {t("Contact")}
             </Link>
             <Link
               href="/member/start-selling"
               className="text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer text-[14px]"
             >
-              Start Selling
+              {t("Start Selling")}
             </Link>
           </div>
 
@@ -137,7 +137,7 @@ export default function MemberHeader() {
                 >
                   <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
                 </svg>
-                <span className="max-w-[260px] truncate">{currentLocation}</span>
+                <span className="max-w-[260px] truncate">{currentLocation === "Location" ? t("Location") : currentLocation}</span>
               </button>
               {currentLocation !== "Location" && (
                 <button
@@ -145,7 +145,7 @@ export default function MemberHeader() {
                   onClick={() => setCurrentLocation("Location")}
                   className="ml-2 inline-flex items-center bg-[#e3e3e7] hover:bg-[#d6d6da] text-[#515660] text-[12px] px-2 py-[2px] rounded-[3px] border-0 cursor-pointer"
                 >
-                  Reset
+                  {t("Reset")}
                 </button>
               )}
             </div>
@@ -240,7 +240,7 @@ export default function MemberHeader() {
                     className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
                     <User className="w-4 h-4 text-gray-400 stroke-[1.8]" />
-                    <span>Profile</span>
+                    <span>{t("Profile")}</span>
                   </Link>
                   <Link
                     href="/member/wallet"
@@ -248,7 +248,7 @@ export default function MemberHeader() {
                     className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
                     <Wallet className="w-4 h-4 text-gray-400 stroke-[1.8]" />
-                    <span>Wallet</span>
+                    <span>{t("Wallet")}</span>
                   </Link>
                   <Link
                     href="/member/orders"
@@ -256,7 +256,7 @@ export default function MemberHeader() {
                     className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
                     <ShoppingBag className="w-4 h-4 text-gray-400 stroke-[1.8]" />
-                    <span>Orders</span>
+                    <span>{t("Orders")}</span>
                   </Link>
                   <Link
                     href="/member/my-coupons"
@@ -264,7 +264,7 @@ export default function MemberHeader() {
                     className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
                     <Tag className="w-4 h-4 text-gray-400 stroke-[1.8]" />
-                    <span>My Coupons</span>
+                    <span>{t("My Coupons")}</span>
                   </Link>
                   <Link
                     href="/member/messages"
@@ -272,7 +272,7 @@ export default function MemberHeader() {
                     className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
                     <MessageSquare className="w-4 h-4 text-gray-400 stroke-[1.8]" />
-                    <span>Messages</span>
+                    <span>{t("Messages")}</span>
                   </Link>
                   <Link
                     href="/member/settings"
@@ -280,7 +280,7 @@ export default function MemberHeader() {
                     className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
                     <Settings className="w-4 h-4 text-gray-400 stroke-[1.8]" />
-                    <span>Profile Settings</span>
+                    <span>{t("Profile Settings")}</span>
                   </Link>
                   <Link
                     href="/guest"
@@ -288,7 +288,7 @@ export default function MemberHeader() {
                     className="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-[#00a99d] transition-colors"
                   >
                     <LogOut className="w-4 h-4 text-gray-400 stroke-[1.8]" />
-                    <span>Logout</span>
+                    <span>{t("Logout")}</span>
                   </Link>
                 </div>
               )}
@@ -320,7 +320,7 @@ export default function MemberHeader() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for products, categories or brands"
+                  placeholder={t("Search for products, categories or brands")}
                   className="w-full h-full bg-transparent pl-5 pr-12 text-[14px] text-[#7b808a] placeholder-[#7b808a] outline-none"
                 />
                 <button
@@ -348,7 +348,7 @@ export default function MemberHeader() {
                   </span>
                 )}
               </div>
-              <span className="text-[14px] font-medium">Cart</span>
+              <span className="text-[14px] font-medium">{t("Cart")}</span>
             </Link>
 
             <Link
@@ -363,14 +363,14 @@ export default function MemberHeader() {
                   </span>
                 )}
               </div>
-              <span className="text-[14px] font-medium">Wishlist</span>
+              <span className="text-[14px] font-medium">{t("Wishlist")}</span>
             </Link>
 
             <Link
               href="/member/start-selling"
               className="bg-[#00a99d] hover:brightness-95 text-white text-[14px] font-medium px-5 py-2 rounded-[3px] transition-all cursor-pointer border-0 leading-[22px] inline-block text-center"
             >
-              Start Selling
+              {t("Start Selling")}
             </Link>
           </div>
         </div>
@@ -403,7 +403,7 @@ export default function MemberHeader() {
                         : "text-[#222222] hover:text-[#00a99d]"
                     }`}
                   >
-                    <span>{category.title}</span>
+                    <span>{t(category.title)}</span>
                     <span
                       className={`absolute bottom-0 left-0 right-0 h-[2px] bg-[#00a99d] transition-opacity ${
                         isHovered || isActive ? "opacity-100" : "opacity-0"
@@ -431,7 +431,7 @@ export default function MemberHeader() {
                       href={`/member/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(sub.title)}`}
                       className="font-bold text-[#222] text-[14px] mb-2.5 cursor-pointer hover:text-[#00a99d] transition-colors leading-[22px] block"
                     >
-                      {sub.title}
+                      {t(sub.title)}
                     </Link>
                     {sub.items.length > 0 && (
                       <ul className="space-y-1.5 list-none p-0 m-0">
@@ -441,7 +441,7 @@ export default function MemberHeader() {
                               href={`/member/category/${getCategorySlug(activeCategory)}?sub=${encodeURIComponent(sub.title)}&item=${encodeURIComponent(item)}`}
                               className="text-[13px] text-[#555] hover:text-[#00a99d] transition-colors cursor-pointer text-left block leading-[20px]"
                             >
-                              {item}
+                              {t(item)}
                             </Link>
                           </li>
                         ))}
@@ -466,7 +466,7 @@ export default function MemberHeader() {
                       />
                       <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent flex items-end p-2.5">
                         <span className="text-white text-xs font-semibold leading-tight line-clamp-2">
-                          {img.label}
+                          {t(img.label)}
                         </span>
                       </div>
                     </Link>
@@ -556,7 +556,7 @@ export default function MemberHeader() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for products, categories or brands"
+                placeholder={t("Search for products, categories or brands")}
                 className="w-full h-full bg-transparent pl-4 pr-10 text-[13px] text-[#333] placeholder-[#888] outline-none"
               />
               <button
@@ -584,7 +584,7 @@ export default function MemberHeader() {
                     : "border-transparent text-[#666]"
                 }`}
               >
-                Main Menu
+                {t("Main Menu")}
               </button>
               <button
                 type="button"
@@ -595,7 +595,7 @@ export default function MemberHeader() {
                     : "border-transparent text-[#666]"
                 }`}
               >
-                Categories
+                {t("Categories")}
               </button>
             </div>
 
@@ -625,7 +625,7 @@ export default function MemberHeader() {
                         className="flex items-center gap-2 p-2 text-xs text-gray-700 hover:text-[#00a99d] hover:bg-gray-50 rounded transition-colors"
                       >
                         <Icon className="w-4 h-4 text-gray-400 shrink-0" />
-                        <span className="truncate">{item.title}</span>
+                        <span className="truncate">{t(item.title)}</span>
                       </Link>
                     );
                   })}
@@ -636,21 +636,21 @@ export default function MemberHeader() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-2 text-[14px] text-gray-800 hover:text-[#00a99d] border-b border-gray-100"
                 >
-                  Home
+                  {t("Home")}
                 </Link>
                 <Link
                   href="/member/start-selling"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-2 text-[14px] text-gray-800 hover:text-[#00a99d] border-b border-gray-100"
                 >
-                  Start Selling
+                  {t("Start Selling")}
                 </Link>
                 <Link
                   href="/member/orders"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-2 text-[14px] text-gray-800 hover:text-[#00a99d] border-b border-gray-100"
                 >
-                  Orders
+                  {t("Orders")}
                 </Link>
                 <button
                   type="button"
@@ -662,7 +662,7 @@ export default function MemberHeader() {
                   className="w-full text-left py-2 text-[14px] text-red-600 hover:text-red-700 flex items-center gap-2 cursor-pointer bg-transparent border-0"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
+                  <span>{t("Logout")}</span>
                 </button>
               </div>
             ) : (
@@ -674,7 +674,7 @@ export default function MemberHeader() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block py-2 text-[14px] text-gray-700 hover:text-[#00a99d] border-b border-gray-100 last:border-0"
                   >
-                    {cat.title}
+                    {t(cat.title)}
                   </Link>
                 ))}
               </div>
