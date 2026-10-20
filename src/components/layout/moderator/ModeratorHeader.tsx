@@ -8,6 +8,8 @@ import LocationModal from "@/components/modals/LocationModal";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCurrency } from "@/context/CurrencyContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   Layers,
   User,
@@ -26,6 +28,8 @@ import {
 export default function ModeratorHeader() {
   const { totalCartItems } = useCart();
   const { totalWishlistItems } = useWishlist();
+  const { currency, setCurrencyCode, currencies } = useCurrency();
+  const { language, setLanguage, languages } = useLanguage();
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -43,12 +47,7 @@ export default function ModeratorHeader() {
 
   // Dropdown states
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState({
-    name: "English",
-    flag: "/assets/img/flag_eng.jpg",
-  });
   const [modDropdownOpen, setModDropdownOpen] = useState(false);
 
   // Mobile navigation states
@@ -67,23 +66,6 @@ export default function ModeratorHeader() {
   const currencyRef = useRef<HTMLDivElement>(null);
   const languageRef = useRef<HTMLDivElement>(null);
   const modRef = useRef<HTMLDivElement>(null);
-
-  const currencies = [
-    "USD ($)",
-    "EUR (€)",
-    "BRL (R$)",
-    "GBP (£)",
-    "IDR (Rp)",
-    "INR (₹)",
-    "NGN (₦)",
-    "RUB (₽)",
-    "TRY (₺)",
-  ];
-
-  const languages = [
-    { name: "English", flag: "/assets/img/flag_eng.jpg" },
-    { name: "Arabic", flag: "/assets/img/flag_ar.png" },
-  ];
 
   // Moderator / User Dropdown items matching the image exactly, strictly pointing to moderator routes
   const profileMenuItems = [
@@ -212,24 +194,24 @@ export default function ModeratorHeader() {
                 onClick={() => setCurrencyDropdownOpen(!currencyDropdownOpen)}
                 className="flex items-center text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
               >
-                <span>{selectedCurrency}</span>
+                <span>{currency.code} ({currency.symbol})</span>
                 <ChevronDown className="w-3.5 h-3.5 ml-1 text-gray-500" />
               </button>
               {currencyDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-[#ebebeb] rounded shadow-md z-50 py-1">
                   {currencies.map((curr) => (
                     <button
-                      key={curr}
+                      key={curr.code}
                       type="button"
                       onClick={() => {
-                        setSelectedCurrency(curr);
+                        setCurrencyCode(curr.code);
                         setCurrencyDropdownOpen(false);
                       }}
                       className={`w-full text-left px-3 py-1.5 text-[13px] hover:bg-gray-100 transition-colors ${
-                        selectedCurrency === curr ? "text-[#00a99d] font-semibold" : "text-[#555]"
+                        currency.code === curr.code ? "text-[#00a99d] font-semibold" : "text-[#555]"
                       }`}
                     >
-                      {curr}
+                      {curr.code} ({curr.symbol})
                     </button>
                   ))}
                 </div>
@@ -247,21 +229,21 @@ export default function ModeratorHeader() {
                 className="flex items-center text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
               >
                 <img
-                  src={selectedLanguage.flag}
-                  alt={selectedLanguage.name}
+                  src={language.flag}
+                  alt={language.name}
                   className="w-[18px] h-auto mr-1.5 border border-gray-200"
                 />
-                <span>{selectedLanguage.name}</span>
+                <span>{language.name}</span>
                 <ChevronDown className="w-3.5 h-3.5 ml-1 text-gray-500" />
               </button>
               {languageDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-[#ebebeb] rounded shadow-md z-50 py-1">
                   {languages.map((lang) => (
                     <button
-                      key={lang.name}
+                      key={lang.code}
                       type="button"
                       onClick={() => {
-                        setSelectedLanguage(lang);
+                        setLanguage(lang.code);
                         setLanguageDropdownOpen(false);
                       }}
                       className="w-full text-left px-3 py-1.5 text-[13px] flex items-center hover:bg-gray-100 transition-colors text-[#555] cursor-pointer"
@@ -591,6 +573,19 @@ export default function ModeratorHeader() {
                 </span>
               )}
             </Link>
+
+            {/* Profile Avatar */}
+            <Link
+              href="/moderator/profile"
+              className="p-0.5 border-0 bg-transparent cursor-pointer flex items-center"
+              aria-label="Profile"
+            >
+              <img
+                src={user?.avatar || "/assets/img/roger-avatar.jpg"}
+                alt={user?.name || "Roger Novak"}
+                className="w-[24px] h-[24px] rounded-full object-cover ring-1 ring-gray-300"
+              />
+            </Link>
           </div>
         </div>
 
@@ -745,6 +740,40 @@ export default function ModeratorHeader() {
                       Reset
                     </button>
                   )}
+                </div>
+
+                {/* Mobile Currency & Language Selector */}
+                <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-[13px] gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#666] text-[12px]">Currency:</span>
+                    <select
+                      value={currency.code}
+                      onChange={(e) => setCurrencyCode(e.target.value)}
+                      aria-label="Select Currency"
+                      className="text-[12px] bg-gray-50 border border-gray-200 rounded px-2 py-1 text-[#333] outline-none"
+                    >
+                      {currencies.map((curr) => (
+                        <option key={curr.code} value={curr.code}>
+                          {curr.code} ({curr.symbol})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#666] text-[12px]">Lang:</span>
+                    <select
+                      value={language.code}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      aria-label="Select Language"
+                      className="text-[12px] bg-gray-50 border border-gray-200 rounded px-2 py-1 text-[#333] outline-none"
+                    >
+                      {languages.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             ) : (

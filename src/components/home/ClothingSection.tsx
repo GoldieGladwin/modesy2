@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Star, Heart, ShoppingBag, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -191,6 +192,7 @@ const N = CLOTHING_PRODUCTS.length; // 11 produk
 export default function ClothingSection() {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist: toggleWishlistGlobal } = useWishlist();
+  const { formatPrice } = useCurrency();
   const [clothingList, setClothingList] = useState<ClothingProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(6);
@@ -565,11 +567,11 @@ export default function ClothingSection() {
                                     : "text-gray-900"
                                 }`}
                               >
-                                ${product.price}
+                                {formatPrice(product.price)}
                               </span>
                               {product.oldPrice && (
                                 <del className="text-xs sm:text-sm text-gray-400 font-medium line-through">
-                                  ${product.oldPrice}
+                                  {formatPrice(product.oldPrice)}
                                 </del>
                               )}
                             </div>

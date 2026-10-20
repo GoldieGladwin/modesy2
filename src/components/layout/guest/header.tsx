@@ -8,6 +8,8 @@ import LocationModal from "@/components/modals/LocationModal";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCurrency } from "@/context/CurrencyContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   Layers,
   LayoutGrid,
@@ -41,15 +43,12 @@ export default function Header({
   const router = useRouter();
   const { totalCartItems } = useCart();
   const { totalWishlistItems } = useWishlist();
+  const { currency, currencies, setCurrencyCode } = useCurrency();
+  const { language, languages, setLanguage, t } = useLanguage();
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState({
-    name: "English",
-    flag: "/assets/img/flag_eng.jpg",
-  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<"menu" | "categories">("menu");
@@ -265,23 +264,6 @@ export default function Header({
   const currencyRef = useRef<HTMLDivElement>(null);
   const languageRef = useRef<HTMLDivElement>(null);
 
-  const currencies = [
-    "USD ($)",
-    "EUR (€)",
-    "BRL (R$)",
-    "GBP (£)",
-    "IDR (Rp)",
-    "INR (₹)",
-    "NGN (₦)",
-    "RUB (₽)",
-    "TRY (₺)",
-  ];
-
-  const languages = [
-    { name: "English", flag: "/assets/img/flag_eng.jpg" },
-    { name: "Arabic", flag: "/assets/img/flag_ar.png" },
-  ];
-
   // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -372,7 +354,7 @@ export default function Header({
                 onClick={() => setCurrencyDropdownOpen(!currencyDropdownOpen)}
                 className="flex items-center text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
               >
-                <span>{selectedCurrency}</span>
+                <span>{currency.label}</span>
                 <svg
                   width="10"
                   height="6"
@@ -394,19 +376,19 @@ export default function Header({
                 <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-[#ebebeb] rounded shadow-md z-50 py-1">
                   {currencies.map((curr) => (
                     <button
-                      key={curr}
+                      key={curr.code}
                       type="button"
                       onClick={() => {
-                        setSelectedCurrency(curr);
+                        setCurrencyCode(curr.code);
                         setCurrencyDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-1.5 text-[13px] hover:bg-gray-100 transition-colors ${
-                        selectedCurrency === curr
+                      className={`w-full text-left px-3 py-1.5 text-[13px] hover:bg-gray-100 transition-colors cursor-pointer ${
+                        currency.code === curr.code
                           ? "text-[#00a99d] font-semibold"
                           : "text-[#555]"
                       }`}
                     >
-                      {curr}
+                      {curr.label}
                     </button>
                   ))}
                 </div>
@@ -421,11 +403,11 @@ export default function Header({
                 className="flex items-center text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
               >
                 <img
-                  src={selectedLanguage.flag}
-                  alt={selectedLanguage.name}
+                  src={language.flag}
+                  alt={language.name}
                   className="w-[18px] h-auto mr-1.5 border border-gray-200"
                 />
-                <span>{selectedLanguage.name}</span>
+                <span>{language.name}</span>
                 <svg
                   width="10"
                   height="6"
@@ -447,14 +429,14 @@ export default function Header({
                 <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-[#ebebeb] rounded shadow-md z-50 py-1">
                   {languages.map((lang) => (
                     <button
-                      key={lang.name}
+                      key={lang.code}
                       type="button"
                       onClick={() => {
-                        setSelectedLanguage(lang);
+                        setLanguage(lang.code);
                         setLanguageDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-1.5 text-[13px] flex items-center hover:bg-gray-100 transition-colors ${
-                        selectedLanguage.name === lang.name
+                      className={`w-full text-left px-3 py-1.5 text-[13px] flex items-center hover:bg-gray-100 transition-colors cursor-pointer ${
+                        language.code === lang.code
                           ? "text-[#00a99d] font-semibold"
                           : "text-[#555]"
                       }`}
@@ -885,6 +867,33 @@ export default function Header({
               </svg>
             </button>
 
+            {/* Profile Avatar Mobile (when logged in) */}
+            {effectiveIsLoggedIn && (
+              <Link
+                href={
+                  effectiveUser?.role === "admin"
+                    ? "/admin/profile"
+                    : effectiveUser?.role === "vendor"
+                    ? "/vendor/profile"
+                    : effectiveUser?.role === "moderator"
+                    ? "/moderator/profile"
+                    : "/member/profile"
+                }
+                className="w-7 h-7 rounded-full overflow-hidden border border-gray-200 block shrink-0"
+              >
+                <img
+                  src={
+                    effectiveUser?.avatar ||
+                    (isVendor
+                      ? "/assets/img/trendshop-avatar.jpg"
+                      : "/assets/img/admin-avatar.jpg")
+                  }
+                  alt={effectiveUser?.name || "User"}
+                  className="w-full h-full object-cover"
+                />
+              </Link>
+            )}
+
             {/* Wishlist Icon Mobile */}
             <Link
               href={isGuestRoute ? "/guest/wishlist" : effectiveUser?.role === "vendor" ? "/vendor/wishlist" : "/wishlist"}
@@ -1141,6 +1150,33 @@ export default function Header({
                       Reset
                     </button>
                   )}
+                </div>
+                {/* Mobile Currency & Language Selectors */}
+                <div className="pt-3 border-t border-gray-100 grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <label className="text-[11px] text-gray-400 block mb-1">Currency</label>
+                    <select
+                      value={currency.code}
+                      onChange={(e) => setCurrencyCode(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-700"
+                    >
+                      {currencies.map((c) => (
+                        <option key={c.code} value={c.code}>{c.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-gray-400 block mb-1">Language</label>
+                    <select
+                      value={language.code}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded px-2 py-1 text-gray-700"
+                    >
+                      {languages.map((l) => (
+                        <option key={l.code} value={l.code}>{l.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             ) : (

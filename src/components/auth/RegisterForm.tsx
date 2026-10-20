@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 interface RegisterFormProps {
   onOpenLoginModal?: () => void;
@@ -15,6 +16,7 @@ export default function RegisterForm({
   onSuccess,
   isModal,
 }: RegisterFormProps) {
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -38,7 +40,7 @@ export default function RegisterForm({
     if (error) setError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
@@ -76,17 +78,26 @@ export default function RegisterForm({
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      await register({
+        email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        password: formData.password,
+        role: "member",
+      });
       setIsLoading(false);
       setSuccess("Account created successfully!");
       if (onSuccess) {
         onSuccess({
           email: formData.email,
-          name: `${formData.firstName} ${formData.lastName}`,
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
           password: formData.password,
         });
       }
-    }, 1000);
+    } catch (err: any) {
+      setIsLoading(false);
+      setError(err?.message || "Registration failed. Please try again.");
+    }
   };
 
   return (

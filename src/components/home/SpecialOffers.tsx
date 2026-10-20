@@ -8,6 +8,7 @@ import {
 } from "@/data/specialOffers";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { Heart, ShoppingCart } from "lucide-react";
@@ -15,6 +16,7 @@ import { Heart, ShoppingCart } from "lucide-react";
 export default function SpecialOffers() {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<SpecialOfferProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -504,11 +506,11 @@ export default function SpecialOffers() {
                       {/* Price */}
                       <div className="flex items-center space-x-2">
                         <span className="text-[15px] font-bold text-[#00a99d] leading-none">
-                          {product.price}
+                          {formatPrice(product.price)}
                         </span>
                         {product.originalPrice && (
                           <span className="text-[13px] text-[#868e96] line-through leading-none">
-                            {product.originalPrice}
+                            {formatPrice(product.originalPrice)}
                           </span>
                         )}
                       </div>

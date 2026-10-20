@@ -1,23 +1,42 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, ArrowRight, Trash2, Plus, Minus, ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  ShoppingCart,
+  ArrowRight,
+  Trash2,
+  Plus,
+  Minus,
+  ArrowLeft,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useCurrency } from "@/context/CurrencyContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface CartPageViewProps {
   role?: "guest" | "member" | "vendor" | "admin" | "moderator";
 }
 
 export default function CartPageView({ role = "guest" }: CartPageViewProps) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { currency, formatPrice } = useCurrency();
   const {
     cartItems,
     totalCartItems,
+    totalCartPrice,
     formattedTotalPrice,
     removeFromCart,
     updateQuantity,
     clearCart,
   } = useCart();
+
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
 
   const homeUrl =
     role === "admin"
@@ -30,7 +49,57 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
       ? "/vendor"
       : "/guest";
 
-  if (cartItems.length === 0) {
+  const handleCheckout = () => {
+    if (cartItems.length === 0) return;
+
+    setIsCheckingOut(true);
+
+    setTimeout(() => {
+      const orderNumber = Math.floor(100000 + Math.random() * 900000);
+      const orderDate = new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+
+      const newOrder = {
+        id: orderNumber,
+        orderNumber: String(orderNumber),
+        total: totalCartPrice,
+        currency: currency.symbol.trim() || "$",
+        paymentStatus: "Payment Received",
+        orderStatus: "Processing",
+        date: orderDate,
+        itemsCount: totalCartItems,
+        items: [...cartItems],
+      };
+
+      try {
+        const key = `modesy_orders_${role}`;
+        const existing = localStorage.getItem(key);
+        const parsed = existing ? JSON.parse(existing) : [];
+        localStorage.setItem(key, JSON.stringify([newOrder, ...parsed]));
+      } catch (e) {
+        console.error("Failed to save order", e);
+      }
+
+      // 1. Clear cart state & localStorage
+      clearCart();
+      setIsCheckingOut(false);
+      setCheckoutSuccess(true);
+
+      // 2. Redirect to order details or orders page
+      setTimeout(() => {
+        if (role === "guest") {
+          router.push(`/order-details/${orderNumber}`);
+        } else {
+          router.push(`/${role}/orders`);
+        }
+      }, 1500);
+    }, 1000);
+  };
+
+  if (cartItems.length === 0 && !checkoutSuccess) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <nav className="text-xs text-gray-500 mb-6 flex items-center gap-1.5">
@@ -65,6 +134,25 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      {/* Checkout Success Modal Overlay */}
+      {checkoutSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-md p-8 max-w-md w-full text-center shadow-2xl animate-fadeIn">
+            <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+              <CheckCircle2 className="w-10 h-10 text-[#00a99d]" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Order Confirmed!</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Thank you for your purchase. Your cart has been cleared and your order is being processed.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-xs text-[#00a99d] font-semibold">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Redirecting to order confirmation...</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <nav className="text-xs text-gray-500 mb-6 flex items-center gap-1.5">
         <Link href={homeUrl} className="hover:text-[#00a99d]">
@@ -92,11 +180,11 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
                 {cartItems.map((item) => {
+                  const itemUnitPrice =
+                    item.numericPrice > 0 ? formatPrice(item.numericPrice) : item.price;
                   const itemTotal =
                     item.numericPrice > 0
-                      ? item.numericPrice * item.quantity % 1 !== 0
-                        ? `$${(item.numericPrice * item.quantity).toFixed(2)}`
-                        : `$${item.numericPrice * item.quantity}`
+                      ? formatPrice(item.numericPrice * item.quantity)
                       : item.price;
 
                   return (
@@ -106,7 +194,10 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
                         <div className="flex items-center gap-3">
                           <div className="w-16 h-16 rounded overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
                             <img
-                              src={item.image || "https://modesy.codingest.net/uploads/images/202508/img_w480_68b48029e507b3-80580535.webp"}
+                              src={
+                                item.image ||
+                                "https://modesy.codingest.net/uploads/images/202508/img_w480_68b48029e507b3-80580535.webp"
+                              }
                               alt={item.title}
                               className="w-full h-full object-cover"
                             />
@@ -129,7 +220,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
 
                       {/* Unit Price */}
                       <td className="py-4 px-4 font-semibold text-gray-800 whitespace-nowrap">
-                        {item.price}
+                        {itemUnitPrice}
                       </td>
 
                       {/* Quantity */}
@@ -139,7 +230,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
                             <button
                               type="button"
                               onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              className="px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 transition"
+                              className="px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 transition cursor-pointer"
                               aria-label="Decrease quantity"
                             >
                               <Minus className="w-3 h-3" />
@@ -150,7 +241,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
                             <button
                               type="button"
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 transition"
+                              className="px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 transition cursor-pointer"
                               aria-label="Increase quantity"
                             >
                               <Plus className="w-3 h-3" />
@@ -169,7 +260,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
                         <button
                           type="button"
                           onClick={() => removeFromCart(item.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition"
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition cursor-pointer"
                           title="Remove item"
                           aria-label="Remove item"
                         >
@@ -187,7 +278,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
           <div className="p-4 bg-gray-50 border-t border-gray-200 flex flex-wrap items-center justify-between gap-3">
             <Link
               href={homeUrl}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-[#00a99d] transition"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-[#00a99d] transition cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Continue Shopping</span>
@@ -196,7 +287,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
             <button
               type="button"
               onClick={clearCart}
-              className="text-xs text-red-600 hover:text-red-700 font-semibold transition"
+              className="text-xs text-red-600 hover:text-red-700 font-semibold transition cursor-pointer"
             >
               Clear Cart
             </button>
@@ -224,7 +315,7 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
 
             <div className="border-t border-gray-200 pt-3 flex justify-between text-base font-bold text-gray-900">
               <span>Estimated Total:</span>
-              <span className="text-[#00a99d] text-lg">
+              <span className="text-[#00a99d] text-lg font-bold">
                 {formattedTotalPrice}
               </span>
             </div>
@@ -232,10 +323,18 @@ export default function CartPageView({ role = "guest" }: CartPageViewProps) {
 
           <button
             type="button"
-            onClick={() => alert("Proceeding to checkout...")}
-            className="w-full mt-6 py-3 px-4 bg-[#00a99d] hover:bg-[#008f85] text-white font-bold text-sm rounded transition shadow-xs text-center cursor-pointer"
+            disabled={isCheckingOut}
+            onClick={handleCheckout}
+            className="w-full mt-6 py-3 px-4 bg-[#00a99d] hover:bg-[#008f85] disabled:opacity-75 text-white font-bold text-sm rounded transition shadow-xs text-center cursor-pointer flex items-center justify-center gap-2"
           >
-            Proceed to Checkout
+            {isCheckingOut ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Processing Order...</span>
+              </>
+            ) : (
+              <span>Proceed to Checkout</span>
+            )}
           </button>
 
           <p className="text-[11px] text-gray-400 text-center mt-3">

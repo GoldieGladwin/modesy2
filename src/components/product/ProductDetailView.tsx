@@ -28,6 +28,7 @@ import LoginModal from "@/components/auth/LoginModal";
 import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import {
   getProductReviews,
   addProductReview,
@@ -119,6 +120,7 @@ export default function ProductDetailView({
   const { user } = useAuth();
   const { isInWishlist, toggleWishlist: contextToggleWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { formatPrice } = useCurrency();
   const isWishlisted = isInWishlist(product.id);
   const [quantity, setQuantity] = useState(1);
   const initialTabParam = searchParams.get("tab");
@@ -495,11 +497,11 @@ export default function ProductDetailView({
                   ) : (
                     <>
                       <span className="text-[26px] sm:text-[28px] font-bold text-[#00a99d]">
-                        {product.price}
+                        {formatPrice(product.price)}
                       </span>
                       {product.originalPrice && (
                         <span className="text-base text-gray-400 line-through">
-                          {product.originalPrice}
+                          {formatPrice(product.originalPrice)}
                         </span>
                       )}
                       {product.discountPercent && (

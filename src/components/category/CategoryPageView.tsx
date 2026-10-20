@@ -25,6 +25,7 @@ import {
 } from "@/data/categoryProducts";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -39,6 +40,7 @@ function CategoryPageContent({
 }: CategoryPageViewProps) {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { formatPrice } = useCurrency();
   const searchParams = useSearchParams();
   const initialSub = searchParams.get("sub");
   const urlSearch = searchParams.get("search") || searchParams.get("q") || "";
@@ -713,15 +715,15 @@ function CategoryPageContent({
                               product.originalPrice ? (
                               <>
                                 <span className="text-sm font-bold text-[#00a99d]">
-                                  {product.price}
+                                  {formatPrice(product.price)}
                                 </span>
                                 <span className="text-xs text-gray-400 line-through font-normal">
-                                  {product.originalPrice}
+                                  {formatPrice(product.originalPrice)}
                                 </span>
                               </>
                             ) : (
                               <span className="text-sm font-bold text-gray-900">
-                                {product.price}
+                                {formatPrice(product.price)}
                               </span>
                             )}
                           </div>

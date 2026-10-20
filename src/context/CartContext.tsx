@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "./AuthContext";
+import { useCurrency } from "./CurrencyContext";
 import { getStorageScope } from "@/lib/storageScope";
 
 export interface CartProductInput {
@@ -70,6 +71,7 @@ export function formatPrice(num: number): string {
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const { formatPrice: formatCurrencyPrice, currency } = useCurrency();
   const pathname = usePathname();
   const scope = getStorageScope(user, pathname);
   const storageKey = `modesy_cart_${scope}`;
@@ -140,8 +142,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const numPrice = parsePrice(product.price);
     const isQuote = typeof product.price === "string" && product.price.toLowerCase().includes("quote");
 
-    const formattedUnit = isQuote ? "Request a Quote" : formatPrice(numPrice);
-    const subtotal = isQuote ? "Request a Quote" : formatPrice(numPrice * qty);
+    const formattedUnit = isQuote ? "Request a Quote" : formatCurrencyPrice(numPrice);
+    const subtotal = isQuote ? "Request a Quote" : formatCurrencyPrice(numPrice * qty);
 
     setCartItems((prevItems) => {
       const existingIdx = prevItems.findIndex(
@@ -215,7 +217,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     (acc, item) => acc + item.numericPrice * item.quantity,
     0
   );
-  const formattedTotalPrice = formatPrice(totalCartPrice);
+  const formattedTotalPrice = formatCurrencyPrice(totalCartPrice);
 
   return (
     <CartContext.Provider

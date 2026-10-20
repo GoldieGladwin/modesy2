@@ -23,11 +23,15 @@ import {
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import { useCurrency } from "@/context/CurrencyContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function MemberHeader() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { totalCartItems } = useCart();
   const { totalWishlistItems } = useWishlist();
+  const { currency, currencies, setCurrencyCode } = useCurrency();
+  const { language, languages, setLanguage, t } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,14 +46,10 @@ export default function MemberHeader() {
     }
   };
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("USD ($)");
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState({
-    name: "English",
-    flag: "/assets/img/flag_eng.jpg",
-  });
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<"menu" | "categories">("menu");
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
 
@@ -61,21 +61,13 @@ export default function MemberHeader() {
   const languageRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
 
-  const currencies = [
-    "USD ($)",
-    "EUR (€)",
-    "BRL (R$)",
-    "GBP (£)",
-    "IDR (Rp)",
-    "INR (₹)",
-    "NGN (₦)",
-    "RUB (₽)",
-    "TRY (₺)",
-  ];
-
-  const languages = [
-    { name: "English", flag: "/assets/img/flag_eng.jpg" },
-    { name: "Arabic", flag: "/assets/img/flag_ar.png" },
+  const memberMenuItems = [
+    { title: "Profile", href: "/member/profile", icon: User },
+    { title: "Wallet", href: "/member/wallet", icon: Wallet },
+    { title: "Orders", href: "/member/orders", icon: ShoppingBag },
+    { title: "My Coupons", href: "/member/my-coupons", icon: Tag },
+    { title: "Messages", href: "/member/messages", icon: MessageSquare },
+    { title: "Profile Settings", href: "/member/settings", icon: Settings },
   ];
 
   useEffect(() => {
@@ -165,24 +157,24 @@ export default function MemberHeader() {
                 onClick={() => setCurrencyDropdownOpen(!currencyDropdownOpen)}
                 className="flex items-center text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
               >
-                <span>{selectedCurrency}</span>
+                <span>{currency.label}</span>
                 <ChevronDown className="w-3.5 h-3.5 ml-1 text-gray-500" />
               </button>
               {currencyDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-[#ebebeb] rounded shadow-md z-50 py-1">
                   {currencies.map((curr) => (
                     <button
-                      key={curr}
+                      key={curr.code}
                       type="button"
                       onClick={() => {
-                        setSelectedCurrency(curr);
+                        setCurrencyCode(curr.code);
                         setCurrencyDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-1.5 text-[13px] hover:bg-gray-100 ${
-                        selectedCurrency === curr ? "text-[#00a99d] font-semibold" : "text-[#555]"
+                      className={`w-full text-left px-3 py-1.5 text-[13px] hover:bg-gray-100 cursor-pointer ${
+                        currency.code === curr.code ? "text-[#00a99d] font-semibold" : "text-[#555]"
                       }`}
                     >
-                      {curr}
+                      {curr.label}
                     </button>
                   ))}
                 </div>
@@ -197,24 +189,24 @@ export default function MemberHeader() {
                 className="flex items-center text-[#666666] hover:text-[#00a99d] transition-colors cursor-pointer bg-transparent border-0 p-0 text-[14px]"
               >
                 <img
-                  src={selectedLanguage.flag}
-                  alt={selectedLanguage.name}
+                  src={language.flag}
+                  alt={language.name}
                   className="w-[18px] h-auto mr-1.5 border border-gray-200"
                 />
-                <span>{selectedLanguage.name}</span>
+                <span>{language.name}</span>
                 <ChevronDown className="w-3.5 h-3.5 ml-1 text-gray-500" />
               </button>
               {languageDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-32 bg-white border border-[#ebebeb] rounded shadow-md z-50 py-1">
                   {languages.map((lang) => (
                     <button
-                      key={lang.name}
+                      key={lang.code}
                       type="button"
                       onClick={() => {
-                        setSelectedLanguage(lang);
+                        setLanguage(lang.code);
                         setLanguageDropdownOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[13px] flex items-center hover:bg-gray-100 text-[#555]"
+                      className="w-full text-left px-3 py-1.5 text-[13px] flex items-center hover:bg-gray-100 text-[#555] cursor-pointer"
                     >
                       <img src={lang.flag} alt={lang.name} className="w-[18px] h-auto mr-2" />
                       <span>{lang.name}</span>
@@ -487,35 +479,208 @@ export default function MemberHeader() {
       </div>
 
       {/* MOBILE HEADER */}
-      <div className="lg:hidden border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <Link href="/member">
-          <img src="/assets/img/logo.svg" alt="Modesy" className="h-8 object-contain" />
-        </Link>
-        <div className="flex items-center gap-3">
-          <Link href="/member/wishlist" className="text-gray-700 relative">
-            <Heart className="w-5 h-5" />
-            {totalWishlistItems > 0 && (
-              <span className="absolute -top-1.5 -right-2 bg-[#f43f5e] text-white text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold">
-                {totalWishlistItems}
-              </span>
-            )}
-          </Link>
-          <Link href="/member/cart" className="text-gray-700 relative">
-            <ShoppingCart className="w-5 h-5" />
-            {totalCartItems > 0 && (
-              <span className="absolute -top-1.5 -right-2 bg-[#00a99d] text-white text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold">
-                {totalCartItems}
-              </span>
-            )}
-          </Link>
-          <Link href="/member/profile" className="w-7 h-7 rounded-full overflow-hidden border border-gray-200 block">
-            <img
-              src={user?.avatar || "/images/peter-jone-avatar.jpg"}
-              alt={user?.name || "Member"}
-              className="w-full h-full object-cover"
-            />
-          </Link>
+      <div className="lg:hidden border-b border-gray-200 bg-white">
+        <div className="px-4 py-3 flex items-center justify-between">
+          {/* Hamburger Menu Toggle (Preserved on mobile for full navigation access) */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-1 text-[#222] bg-transparent border-0 cursor-pointer flex items-center justify-center"
+              aria-label="Open Mobile Menu"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+
+            <Link href="/member">
+              <img src="/assets/img/logo.svg" alt="Modesy" className="h-8 object-contain" />
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              className="p-1 text-gray-700 bg-transparent border-0 cursor-pointer"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            <Link href="/member/wishlist" className="text-gray-700 relative p-1">
+              <Heart className="w-5 h-5" />
+              {totalWishlistItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#f43f5e] text-white text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold">
+                  {totalWishlistItems}
+                </span>
+              )}
+            </Link>
+
+            <Link href="/member/cart" className="text-gray-700 relative p-1">
+              <ShoppingCart className="w-5 h-5" />
+              {totalCartItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#00a99d] text-white text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center font-bold">
+                  {totalCartItems}
+                </span>
+              )}
+            </Link>
+
+            <Link href="/member/profile" className="w-7 h-7 rounded-full overflow-hidden border border-gray-200 block shrink-0">
+              <img
+                src={user?.avatar || "/images/peter-jone-avatar.jpg"}
+                alt={user?.name || "Member"}
+                className="w-full h-full object-cover"
+              />
+            </Link>
+          </div>
         </div>
+
+        {/* Mobile Search Row */}
+        {mobileSearchOpen && (
+          <form onSubmit={handleSearch} className="px-4 pb-3">
+            <div className="relative flex items-center bg-[#f6f6f6] border border-[#f6f6f6] rounded-[4px] h-[40px] w-full">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for products, categories or brands"
+                className="w-full h-full bg-transparent pl-4 pr-10 text-[13px] text-[#333] placeholder-[#888] outline-none"
+              />
+              <button
+                type="submit"
+                aria-label="Search"
+                className="absolute right-0 top-0 h-full w-[40px] flex items-center justify-center text-[#777]"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="border-t border-gray-200 bg-white px-4 py-4 space-y-4 animate-fadeIn">
+            {/* Tabs: Main Menu vs Categories */}
+            <div className="flex border-b border-gray-200">
+              <button
+                type="button"
+                onClick={() => setMobileTab("menu")}
+                className={`flex-1 py-2 text-center text-[14px] font-semibold transition-colors border-b-2 cursor-pointer ${
+                  mobileTab === "menu"
+                    ? "border-[#00a99d] text-[#00a99d]"
+                    : "border-transparent text-[#666]"
+                }`}
+              >
+                Main Menu
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileTab("categories")}
+                className={`flex-1 py-2 text-center text-[14px] font-semibold transition-colors border-b-2 cursor-pointer ${
+                  mobileTab === "categories"
+                    ? "border-[#00a99d] text-[#00a99d]"
+                    : "border-transparent text-[#666]"
+                }`}
+              >
+                Categories
+              </button>
+            </div>
+
+            {mobileTab === "menu" ? (
+              <div className="space-y-1 py-2">
+                {/* Profile Summary Box */}
+                <div className="p-3 bg-gray-50 rounded border border-gray-200 mb-3 flex items-center gap-3">
+                  <img
+                    src={user?.avatar || "/images/peter-jone-avatar.jpg"}
+                    alt={user?.name || "Member"}
+                    className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-gray-900 truncate">{user?.name || "Member"}</p>
+                    <p className="text-xs text-gray-500 truncate">{user?.email || "members@gmail.com"}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5 pb-2 border-b border-gray-100">
+                  {memberMenuItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.title}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-2 p-2 text-xs text-gray-700 hover:text-[#00a99d] hover:bg-gray-50 rounded transition-colors"
+                      >
+                        <Icon className="w-4 h-4 text-gray-400 shrink-0" />
+                        <span className="truncate">{item.title}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <Link
+                  href="/member"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-[14px] text-gray-800 hover:text-[#00a99d] border-b border-gray-100"
+                >
+                  Home
+                </Link>
+                <Link
+                  href="/member/start-selling"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-[14px] text-gray-800 hover:text-[#00a99d] border-b border-gray-100"
+                >
+                  Start Selling
+                </Link>
+                <Link
+                  href="/member/orders"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-[14px] text-gray-800 hover:text-[#00a99d] border-b border-gray-100"
+                >
+                  Orders
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                    router.push("/guest");
+                  }}
+                  className="w-full text-left py-2 text-[14px] text-red-600 hover:text-red-700 flex items-center gap-2 cursor-pointer bg-transparent border-0"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-1 py-2">
+                {CATEGORIES.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/member/category/${getCategorySlug(cat)}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block py-2 text-[14px] text-gray-700 hover:text-[#00a99d] border-b border-gray-100 last:border-0"
+                  >
+                    {cat.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Location Modal */}

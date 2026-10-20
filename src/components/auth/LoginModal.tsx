@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export default function LoginModal({
   onSuccess,
 }: LoginModalProps) {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -49,41 +51,58 @@ export default function LoginModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
 
-    if (!email.trim() || !password.trim()) {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
       setError("Please fill in all required fields.");
       return;
     }
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const res = await login({ email: cleanEmail, password: cleanPassword });
       setIsLoading(false);
+
+      if (!res.success) {
+        setError(res.error || "Invalid email or password.");
+        return;
+      }
+
       setSuccess("Login successful!");
-      if (onSuccess) {
-        const isVendor =
-          email.toLowerCase().includes("trendshop") ||
-          email.toLowerCase().includes("vendor");
-        const isModerator = email.toLowerCase().includes("moderator");
-        const isAdmin = !isVendor && !isModerator && email.toLowerCase().includes("admin");
+      if (onSuccess && res.user) {
         onSuccess({
-          email,
-          password,
-          name: isVendor
-            ? "Trendshop"
-            : isModerator
-            ? "Moderator"
-            : isAdmin
-            ? "Admin"
-            : "Member",
+          email: res.user.email,
+          name: res.user.name,
+          password: cleanPassword,
         });
       }
-      setTimeout(onClose, 800);
-    }, 600);
+
+      setTimeout(() => {
+        onClose();
+        if (res.user) {
+          const role = res.user.role;
+          if (role === "admin") {
+            router.push("/admin");
+          } else if (role === "vendor") {
+            router.push("/vendor");
+          } else if (role === "moderator") {
+            router.push("/moderator");
+          } else {
+            router.push("/member");
+          }
+        }
+      }, 500);
+    } catch (err: any) {
+      setIsLoading(false);
+      setError(err?.message || "An error occurred during login.");
+    }
   };
 
   const handleGoToRegister = () => {

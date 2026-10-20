@@ -5,12 +5,14 @@ import Link from "next/link";
 import { Star, Heart, ShoppingBag, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 export default function JewelrySection() {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist: toggleWishlistGlobal } = useWishlist();
+  const { formatPrice } = useCurrency();
   const [jewelryList, setJewelryList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(6);
@@ -383,11 +385,11 @@ export default function JewelrySection() {
                                     : "text-gray-900"
                                 }`}
                               >
-                                {product.price}
+                                {formatPrice(product.price)}
                               </span>
                               {product.originalPrice && (
                                 <del className="text-xs sm:text-sm text-gray-400 font-medium line-through">
-                                  {product.originalPrice}
+                                  {formatPrice(product.originalPrice)}
                                 </del>
                               )}
                             </div>

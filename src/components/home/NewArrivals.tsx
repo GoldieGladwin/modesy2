@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Star, Heart, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { getProducts } from "@/lib/supabase/products";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -240,6 +241,7 @@ export const PROMO_BANNERS = [
 export default function NewArrivals() {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist: toggleWishlistGlobal } = useWishlist();
+  const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -491,11 +493,11 @@ export default function NewArrivals() {
                               : "text-gray-900"
                           }`}
                         >
-                          ${product.price}
+                          {formatPrice(product.price)}
                         </span>
                         {product.oldPrice && (
                           <del className="text-xs sm:text-sm text-gray-400 font-medium line-through">
-                            ${product.oldPrice}
+                            {formatPrice(product.oldPrice)}
                           </del>
                         )}
                       </div>

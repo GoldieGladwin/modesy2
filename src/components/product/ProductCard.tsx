@@ -8,6 +8,7 @@ import { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCurrency } from "@/context/CurrencyContext";
 
 interface ProductCardProps {
   product: Product;
@@ -17,6 +18,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { user } = useAuth();
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { formatPrice } = useCurrency();
   const isWishlisted = isInWishlist(product.id);
   const [isImageHovered, setIsImageHovered] = useState(false);
   const hasMultipleImages = Boolean(product.secondaryImage);
@@ -188,15 +190,15 @@ export default function ProductCard({ product }: ProductCardProps) {
             ) : product.isDiscounted && product.originalPrice ? (
               <>
                 <span className="text-sm font-bold text-[#00a99d]">
-                  {product.price}
+                  {formatPrice(product.price)}
                 </span>
                 <span className="text-xs text-gray-400 line-through font-normal">
-                  {product.originalPrice}
+                  {formatPrice(product.originalPrice)}
                 </span>
               </>
             ) : (
               <span className="text-sm font-bold text-gray-900">
-                {product.price}
+                {formatPrice(product.price)}
               </span>
             )}
           </div>

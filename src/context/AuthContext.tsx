@@ -150,6 +150,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  const REGISTERED_USERS_KEY = "modesy_registered_users";
+
+  const getRegisteredUsers = () => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem(REGISTERED_USERS_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveRegisteredUser = (newUser: {
+    email: string;
+    password?: string;
+    name: string;
+    role: "admin" | "vendor" | "member" | "moderator";
+    avatar?: string;
+  }) => {
+    if (typeof window === "undefined") return;
+    try {
+      const users = getRegisteredUsers();
+      const existingIdx = users.findIndex(
+        (u: any) => u.email.toLowerCase() === newUser.email.toLowerCase()
+      );
+      if (existingIdx >= 0) {
+        users[existingIdx] = { ...users[existingIdx], ...newUser };
+      } else {
+        users.push(newUser);
+      }
+      localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(users));
+    } catch (e) {
+      console.error("Failed to save registered user", e);
+    }
+  };
+
   const login = async (
     userData?: Partial<User> & { password?: string }
   ): Promise<{ success: boolean; error?: string; user?: User }> => {
@@ -158,7 +194,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {}
 
     const email = (userData?.email || "").trim();
-    const password = userData?.password;
+    const password = (userData?.password || "").trim();
+
+    if (!email) {
+      return { success: false, error: "Please enter your email address." };
+    }
+    if (!password) {
+      return { success: false, error: "Please enter your password." };
+    }
 
     // 1. If Supabase is connected and password provided, authenticate against Supabase Auth
     if (isSupabaseConfigured() && password && email) {
@@ -170,34 +213,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!error && data.user) {
         const syncedUser = await syncSupabaseUser(data.user);
         return { success: true, user: syncedUser || undefined };
-      } else if (
-        error &&
-        !email.includes("codingest.net") &&
-        !["admin@gmail.com", "trendshop@gmail.com", "moderator@gmail.com", "members@gmail.com"].includes(
-          email.toLowerCase()
-        )
-      ) {
-        // If it's a real Supabase account and error occurred, return error
-        return { success: false, error: error.message };
       }
     }
 
-    // 2. Demo / Fallback login (works offline or without Supabase config)
     const normalizedEmail = email.toLowerCase();
+    const registeredUsers = getRegisteredUsers();
+    const foundRegistered = registeredUsers.find(
+      (u: any) => u.email.toLowerCase() === normalizedEmail
+    );
+
+    // If found in local registered users
+    if (foundRegistered) {
+      if (foundRegistered.password && foundRegistered.password !== password) {
+        return { success: false, error: "Incorrect password. Please try again." };
+      }
+      const role = (foundRegistered.role || "member") as "admin" | "vendor" | "member" | "moderator";
+      const authenticatedUser: User = {
+        id: foundRegistered.id || "00000000-0000-0000-0000-000000000004",
+        name: foundRegistered.name || email.split("@")[0],
+        email: foundRegistered.email,
+        role: role,
+        avatar: foundRegistered.avatar || "/images/peter-jone-avatar.jpg",
+        is_vendor: role === "vendor",
+        wallet_balance: role === "admin" ? 1250.0 : role === "vendor" ? 793.52 : role === "moderator" ? 150.0 : 45.0,
+      };
+
+      setUser(authenticatedUser);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(authenticatedUser));
+        window.dispatchEvent(new CustomEvent("modesy_auth_change", { detail: authenticatedUser }));
+      } catch (e) {}
+      return { success: true, user: authenticatedUser };
+    }
+
+    // 2. Demo accounts validation
     const isVendor =
       userData?.role === "vendor" ||
-      normalizedEmail.includes("trendshop") ||
-      normalizedEmail.includes("vendor");
+      normalizedEmail === "trendshop@gmail.com" ||
+      normalizedEmail === "vendor@gmail.com";
     const isModerator =
       userData?.role === "moderator" ||
-      normalizedEmail.includes("moderator");
+      normalizedEmail === "moderator@gmail.com";
     const isAdmin =
       !isVendor &&
       !isModerator &&
       (userData?.role === "admin" ||
-        normalizedEmail.includes("admin") ||
         normalizedEmail === "admin@gmail.com" ||
         normalizedEmail === "admin@codingest.net");
+    const isMember =
+      normalizedEmail === "member@gmail.com" ||
+      normalizedEmail === "members@gmail.com" ||
+      normalizedEmail === "user@gmail.com";
+
+    const isRecognizedDemo = isAdmin || isVendor || isModerator || isMember;
+
+    if (!isRecognizedDemo && !isSupabaseConfigured()) {
+      return {
+        success: false,
+        error: "Account not registered. Please create an account first.",
+      };
+    }
 
     const resolvedRole: "admin" | "vendor" | "member" | "moderator" = isVendor
       ? "vendor"
@@ -224,8 +299,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           : isVendor
           ? "Trendshop"
           : isModerator
-          ? "Moderator"
-          : "Member"),
+          ? "Roger Novak"
+          : "Peter Jone"),
       email:
         email ||
         (isAdmin
@@ -240,9 +315,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userData?.avatar ||
         (isVendor
           ? "/assets/img/trendshop-avatar.jpg"
+          : isModerator
+          ? "/assets/img/roger-avatar.jpg"
           : isAdmin
           ? "/assets/img/admin-avatar.jpg"
-          : "/assets/img/admin-avatar.jpg"),
+          : "/images/peter-jone-avatar.jpg"),
       is_vendor: isVendor,
       wallet_balance: isAdmin ? 1250.0 : isVendor ? 793.52 : isModerator ? 150.0 : 45.0,
     };
@@ -250,6 +327,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(authenticatedUser);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(authenticatedUser));
+      window.dispatchEvent(new CustomEvent("modesy_auth_change", { detail: authenticatedUser }));
     } catch (e) {
       console.error("Failed to store user", e);
     }
@@ -258,6 +336,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (userData: { email: string; password?: string; name?: string; role?: string }) => {
+    saveRegisteredUser({
+      email: userData.email.trim(),
+      password: userData.password,
+      name: userData.name || userData.email.split("@")[0],
+      role: (userData.role as any) || "member",
+    });
+
     if (isSupabaseConfigured() && userData.password) {
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
@@ -274,8 +359,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
     }
-    // Fallback
-    await login({ email: userData.email, name: userData.name, role: (userData.role as any) || "member" });
+    // Authenticate and save local session
+    await login({
+      email: userData.email,
+      password: userData.password,
+      name: userData.name,
+      role: (userData.role as any) || "member",
+    });
   };
 
   const updateUser = async (data: Partial<User>): Promise<boolean> => {
